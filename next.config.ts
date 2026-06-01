@@ -63,6 +63,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.vnexpress.net" },
       { protocol: "https", hostname: "**.naver.com" },
       { protocol: "https", hostname: "**.naver.net" },
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
     ],
   },
 };

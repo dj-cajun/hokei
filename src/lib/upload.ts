@@ -3,6 +3,7 @@ import path from "path";
 import { randomUUID } from "crypto";
 import { assertAllowedUpload } from "@/lib/file-sniff";
 import { MAX_FILE_BYTES, MAX_IMAGE_BYTES } from "@/lib/constants";
+import { isBlobStorageEnabled, saveUploadToBlob } from "@/lib/upload-blob";
 
 const IMAGE_TYPES = new Set([
   "image/jpeg",
@@ -30,6 +31,10 @@ export async function saveUpload(file: File): Promise<{
   kind: "IMAGE" | "FILE";
   diskPath: string;
 }> {
+  if (isBlobStorageEnabled()) {
+    return saveUploadToBlob(file);
+  }
+
   const buffer = Buffer.from(await file.arrayBuffer());
   const { mimeType, kind } = assertAllowedUpload(
     buffer,
@@ -68,6 +73,11 @@ export async function saveUpload(file: File): Promise<{
 }
 
 export async function deleteUploadFile(publicUrl: string): Promise<void> {
+  if (publicUrl.includes("blob.vercel-storage.com")) {
+    const { deleteBlobUpload } = await import("@/lib/upload-blob");
+    await deleteBlobUpload(publicUrl);
+    return;
+  }
   if (!publicUrl.startsWith("/uploads/")) return;
   const diskPath = path.join(process.cwd(), "public", publicUrl);
   try {

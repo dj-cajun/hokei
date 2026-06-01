@@ -105,9 +105,17 @@ docs/DATABASE.md         # SQLite ↔ PostgreSQL
 
 ## 배포 (Vercel)
 
-1. 환경 변수: `AUTH_SECRET`, `DATABASE_URL`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`
-2. Cron: `vercel.json` 참고
-3. 프로덕션 DB는 Neon/Supabase PostgreSQL 권장 — [docs/DATABASE.md](docs/DATABASE.md)
+```bash
+npm run predeploy           # 배포 전 점검
+npm run predeploy:prod      # 프로덕션 env 규칙 포함
+npm run vercel:env          # Vercel 변수 체크리스트
+```
+
+상세: **[docs/DEPLOY.md](docs/DEPLOY.md)**
+
+1. **PostgreSQL** + `BLOB_READ_WRITE_TOKEN` + `CRON_SECRET` + `AUTH_SECRET`
+2. `npx prisma migrate deploy` 후 `npm run search:pg:setup`
+3. Cron 09:00 ICT — `vercel.json` 참고
 
 ## 아키텍처 (요약)
 

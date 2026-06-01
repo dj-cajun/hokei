@@ -17,3 +17,7 @@ npm run naver:test
 ```
 
 성공 시 `OK — 뉴스 N건 샘플 수신`이 출력됩니다.
+
+## errorCode 024
+
+`Scope Status Invalid` / `Authentication failed` → 검색 API 미활성화이거나 Secret이 잘못됐습니다. 키 재발급 후 `npm run naver:test`로 확인하세요.

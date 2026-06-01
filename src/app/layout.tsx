@@ -8,7 +8,12 @@ import { LoginModalProvider } from "@/components/auth/login-modal-context";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  "http://localhost:3001";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "호케이 Hokei - 호치민 한국 교민 포털",
   description:
     "호케이(Hokei). 호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 퀴즈, 커뮤니티.",

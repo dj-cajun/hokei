@@ -28,6 +28,11 @@ console.log(`
   npm run db:pg:push     PG 스키마 반영
   npm run db:pg:studio   PG Prisma Studio
 
+【 배포 】
+  npm run predeploy      배포 전 점검 (lint·test·build)
+  npm run predeploy:prod 프로덕션 env 규칙 포함
+  npm run vercel:env     Vercel 환경 변수 목록
+
 【 품질 】
   npm run lint
   npm run test
