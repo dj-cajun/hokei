@@ -22,6 +22,8 @@
     "predeploy": "tsx scripts/predeploy.ts",
     "predeploy:prod": "tsx scripts/predeploy.ts --production",
     "vercel:env": "tsx scripts/print-vercel-env.ts",
+    "vercel:env:sync": "tsx scripts/sync-vercel-env.ts",
+    "vercel:deploy": "vercel deploy --prod --yes",
     "db:migrate:deploy": "prisma migrate deploy",
     "check": "npm run lint && npm run test && npm run build",
     "naver:test": "tsx scripts/test-naver-api.ts",
@@ -101,6 +103,7 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vercel": "^54.6.1",
     "vitest": "^4.1.8"
   }
 }

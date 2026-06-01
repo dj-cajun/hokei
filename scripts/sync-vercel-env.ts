@@ -34,7 +34,9 @@ if (!existsSync(envPath)) {
 }
 
 const vars = parseEnv(readFileSync(envPath, "utf8"));
-const targets = ["production", "preview", "development"] as const;
+const targets = (process.argv.includes("--all")
+  ? ["production", "preview", "development"]
+  : ["production"]) as readonly ("production" | "preview" | "development")[];
 
 for (const [key, value] of Object.entries(vars)) {
   if (SKIP.has(key)) {
