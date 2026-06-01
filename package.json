@@ -13,7 +13,7 @@
     "setup": "tsx scripts/setup-sqlite.ts",
     "setup:pg": "tsx scripts/setup-postgres.ts",
     "dev": "next dev -p 3001",
-    "build": "prisma generate && next build",
+    "build": "tsx scripts/prisma-generate-for-deploy.ts && next build",
     "start": "next start -p 3001",
     "lint": "eslint",
     "test": "vitest run",

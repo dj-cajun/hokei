@@ -20,15 +20,18 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 
 ## 3. DB 마이그레이션 (최초 1회)
 
-로컬에서 프로덕션 DB URL로:
+Neon 등 PostgreSQL URL 확보 후 (예: `npx neon-new -y -e .env.production.pg`):
 
 ```bash
-export DATABASE_URL="postgresql://..."
-npx prisma migrate deploy
-npm run db:pg:generate   # 또는 deploy 빌드 시 prisma generate
+export DATABASE_URL="postgresql://..."   # .env.production.pg 참고
+npx prisma db push                      # PRISMA_SCHEMA=prisma/schema.postgresql.prisma
+npm run db:migrate:sqlite-to-pg         # 기존 dev.db 데이터 이전
 npm run search:pg:setup
-npm run db:seed          # 최초 카테고리·관리자 (선택)
+npm run db:sync:category-descriptions
+npx vercel env add DATABASE_URL production   # Vercel에 동일 URL 등록
 ```
+
+> 빌드 시 `tsx scripts/prisma-generate-for-deploy.ts`가 `DATABASE_URL`에 맞는 Prisma Client를 생성합니다.
 
 ## 4. Cron (뉴스 수집)
 
