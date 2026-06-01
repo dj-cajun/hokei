@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hokei
+      POSTGRES_PASSWORD: hokei_local
+      POSTGRES_DB: hokei
+    volumes:
+      - hokei_pg_data:/var/lib/postgresql/data
+
+volumes:
+  hokei_pg_data:

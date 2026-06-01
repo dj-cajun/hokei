@@ -1,0 +1,14 @@
+export const POST_SUMMARY_MAX_LENGTH = 160;
+export const POST_TITLE_MAX_LENGTH = 200;
+export const POST_CONTENT_MAX_LENGTH = 50_000;
+export const COMMENT_MAX_LENGTH = 2_000;
+export const GUEST_NAME_MAX_LENGTH = 40;
+export const GUEST_PASSWORD_MIN_LENGTH = 4;
+export const GUEST_PASSWORD_MAX_LENGTH = 40;
+export const MAX_ATTACHMENTS_PER_POST = 10;
+export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+export const MAX_FILE_BYTES = 15 * 1024 * 1024;
+export const SEARCH_MIN_QUERY_LENGTH = 2;
+export const TIMEZONE = "Asia/Ho_Chi_Minh";
+export const COMMUNITY_PAGE_SIZE = 20;
+export const LIST_PAGE_SIZE = 20;

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Google One Tap — g_id_onload 예시</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <!--
+      Client ID: Google Cloud Console → OAuth 2.0 클라이언트
+      로그아웃 시: onUserSignOut() → disableAutoSelect (social-auth.vanilla.js)
+    -->
+    <div
+      id="g_id_onload"
+      data-client_id="YOUR_GOOGLE_CLIENT_ID"
+      data-context="signin"
+      data-auto_select="true"
+      data-cancel_on_tap_outside="false"
+      data-itp_support="true"
+      data-use_fedcm_for_prompt="true"
+      data-callback="handleCredentialResponse"
+    ></div>
+
+    <script type="module">
+      import {
+        onUserSignOut,
+        clearGoogleAutoSelectDisabled,
+      } from "./social-auth.vanilla.js";
+
+      window.handleCredentialResponse = async (response) => {
+        clearGoogleAutoSelectDisabled();
+        await fetch("/api/auth/google/credential", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+      };
+
+      document.getElementById("logout-btn")?.addEventListener("click", () => {
+        onUserSignOut();
+      });
+    </script>
+
+    <button id="logout-btn" type="button">로그아웃 (원탭 자동선택 끔)</button>
+  </body>
+</html>

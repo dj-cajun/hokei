@@ -1,0 +1,63 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  ArrowLeft,
+  FolderTree,
+  LayoutDashboard,
+  Users,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/admin", label: "대시보드", icon: LayoutDashboard },
+  { href: "/admin/users", label: "회원 관리", icon: Users },
+  { href: "/admin/categories", label: "카테고리", icon: FolderTree },
+];
+
+export function AdminSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="w-full shrink-0 lg:w-56">
+      <div className="rounded-2xl bg-white p-3">
+        <Link
+          href="/"
+          className="mb-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          사이트로 돌아가기
+        </Link>
+        <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          관리자
+        </p>
+        <nav className="flex flex-col gap-0.5">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-accent text-primary"
+                    : "text-foreground hover:bg-secondary"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </aside>
+  );
+}

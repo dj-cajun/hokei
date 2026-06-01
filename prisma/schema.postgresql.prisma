@@ -1,0 +1,143 @@
+// PostgreSQL용 스키마 — npm run db:pg:setup 시 사용
+// prisma.config.ts 의 PRISMA_SCHEMA=prisma/schema.postgresql.prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostTopic {
+  KOREA
+  TRAVEL
+  VIETNAM_POLICY
+  TOURIST
+}
+
+enum PostStatus {
+  PUBLISHED
+  DRAFT
+}
+
+enum AttachmentKind {
+  IMAGE
+  FILE
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      Role      @default(USER)
+  posts     Post[]
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  label       String
+  description String?
+  icon        String     @default("Folder")
+  colorClass  String     @default("bg-secondary text-muted-foreground")
+  href        String
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  parentId    String?
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryTree")
+  posts       Post[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([parentId])
+  @@index([sortOrder])
+}
+
+model Post {
+  id                  String           @id @default(cuid())
+  title               String
+  summary             String
+  content             String?
+  sourceUrl           String           @unique
+  sourceName          String?
+  topic               PostTopic
+  categoryId          String
+  category            Category         @relation(fields: [categoryId], references: [id])
+  authorId            String?
+  author              User?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  guestName           String?
+  guestPasswordHash   String?
+  isNotice            Boolean          @default(false)
+  originalTitle       String?
+  thumbnail           String?
+  publishedAt         DateTime
+  views               Int              @default(0)
+  commentCount        Int              @default(0)
+  status              PostStatus       @default(PUBLISHED)
+  isAutomated         Boolean          @default(true)
+  ingestedAt          DateTime         @default(now())
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  attachments         PostAttachment[]
+  comments            Comment[]
+
+  @@index([categoryId])
+  @@index([publishedAt])
+  @@index([status, publishedAt])
+  @@index([topic])
+  @@index([ingestedAt])
+  @@index([authorId])
+  @@index([isAutomated])
+}
+
+model PostAttachment {
+  id        String         @id @default(cuid())
+  postId    String
+  post      Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  url       String
+  fileName  String
+  mimeType  String
+  size      Int
+  kind      AttachmentKind
+  sortOrder Int            @default(0)
+  createdAt DateTime       @default(now())
+
+  @@index([postId])
+}
+
+model Comment {
+  id                String   @id @default(cuid())
+  postId            String
+  post              Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId          String?
+  author            User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  guestName         String?
+  guestPasswordHash String?
+  content           String
+  createdAt         DateTime @default(now())
+
+  @@index([postId])
+  @@index([createdAt])
+  @@index([authorId])
+}
+
+model NewsIngestRun {
+  id       String   @id @default(cuid())
+  runAt    DateTime @default(now())
+  inserted Int      @default(0)
+  skipped  Int      @default(0)
+  errors   String?
+  timezone String   @default("Asia/Ho_Chi_Minh")
+}
