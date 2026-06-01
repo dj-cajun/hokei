@@ -17,6 +17,8 @@ console.log(`
   npm run db:generate    Prisma Client 생성
   npm run db:push        스키마 → DB 반영
   npm run db:seed        회원·카테고리 시드
+  npm run db:sync:category-descriptions  카테고리 설명만 DB 동기화
+  npm run db:seed:e2e    CI·E2E용 샘플 글 1건
   npm run db:studio      Prisma Studio GUI
   npm run search:reindex FTS 검색 인덱스 (SQLite만)
   npm run search:pg:setup  PG tsvector 검색 (PostgreSQL)

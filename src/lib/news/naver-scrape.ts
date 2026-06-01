@@ -5,7 +5,11 @@ import { log } from "@/lib/logger";
 import type { RawNewsItem } from "@/lib/news/rss";
 import { stripNaverHtml } from "@/lib/news/naver-news";
 
-const PYTHON_DIR = path.join(process.cwd(), "scripts/python");
+const PYTHON_DIR = path.join(
+  /* turbopackIgnore: true */ process.cwd(),
+  "scripts",
+  "python"
+);
 
 export type NaverScrapedArticle = {
   title: string;

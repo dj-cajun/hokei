@@ -59,6 +59,7 @@ Google/Kakao 콘솔에 **프로덕션 도메인**과 redirect URI 등록:
 - [ ] 로그인·글쓰기·이미지 업로드
 - [ ] `/api/cron/news` 수동 호출 (Bearer)
 - [ ] 관리자 `/admin` 뉴스 수집
+- [ ] 카테고리 설명 복구: `DATABASE_URL=postgresql://... npm run db:sync:category-descriptions`
 
 ## 8. SQLite 데이터 이전
 
@@ -67,3 +68,7 @@ Google/Kakao 콘솔에 **프로덕션 도메인**과 redirect URI 등록:
 ```bash
 DATABASE_URL=postgresql://... npm run db:migrate:sqlite-to-pg
 ```
+
+## 9. GitHub CI
+
+`main` push 시 Node 22 + `npm ci` + E2E smoke. 로컬과 동일하게 맞추려면 Node 22 사용.

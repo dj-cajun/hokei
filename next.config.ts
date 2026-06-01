@@ -70,7 +70,11 @@ const nextConfig: NextConfig = {
 
 export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
-  disableLogger: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
   org: process.env.SENTRY_ORG ?? "nam-bac-technology-and-service",
   project: process.env.SENTRY_PROJECT ?? "javascript-nextjs",
 });
