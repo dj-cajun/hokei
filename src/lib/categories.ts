@@ -1,16 +1,16 @@
 import { unstable_cache } from "next/cache";
+import {
+  STATIC_SECTION_PARAMS,
+  STATIC_SUBCATEGORY_PARAMS,
+  findStaticSection,
+  findStaticSubcategory,
+  staticCategoryTree,
+} from "@/lib/category-static-params";
+import { isDatabaseAvailable } from "@/lib/database-available";
+import type { CategoryNavItem } from "@/lib/category-types";
 import { prisma } from "@/lib/prisma";
 
-export type CategoryNavItem = {
-  id: string;
-  slug: string;
-  label: string;
-  description: string | null;
-  href: string;
-  icon: string;
-  colorClass: string;
-  children: CategoryNavItem[];
-};
+export type { CategoryNavItem } from "@/lib/category-types";
 
 function mapChild(child: {
   id: string;
@@ -34,27 +34,35 @@ function mapChild(child: {
 }
 
 async function fetchCategoryTree(): Promise<CategoryNavItem[]> {
-  const sections = await prisma.category.findMany({
-    where: { parentId: null, isActive: true },
-    orderBy: { sortOrder: "asc" },
-    include: {
-      children: {
-        where: { isActive: true },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
+  if (!isDatabaseAvailable()) return staticCategoryTree();
 
-  return sections.map((section) => ({
-    id: section.id,
-    slug: section.slug,
-    label: section.label,
-    description: section.description,
-    href: section.href,
-    icon: section.icon,
-    colorClass: section.colorClass,
-    children: section.children.map(mapChild),
-  }));
+  try {
+    const sections = await prisma.category.findMany({
+      where: { parentId: null, isActive: true },
+      orderBy: { sortOrder: "asc" },
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (sections.length === 0) return staticCategoryTree();
+
+    return sections.map((section) => ({
+      id: section.id,
+      slug: section.slug,
+      label: section.label,
+      description: section.description,
+      href: section.href,
+      icon: section.icon,
+      colorClass: section.colorClass,
+      children: section.children.map(mapChild),
+    }));
+  } catch {
+    return staticCategoryTree();
+  }
 }
 
 export const getCategoryTree = unstable_cache(
@@ -76,6 +84,7 @@ async function fetchSectionBySlug(slug: string) {
 }
 
 export async function getSectionBySlug(slug: string) {
+  if (!isDatabaseAvailable()) return findStaticSection(slug);
   return unstable_cache(
     () => fetchSectionBySlug(slug),
     ["section-by-slug", slug],
@@ -84,39 +93,57 @@ export async function getSectionBySlug(slug: string) {
 }
 
 export async function getSubcategoryByPath(sectionSlug: string, childSlug: string) {
-  return prisma.category.findFirst({
-    where: {
-      href: `/${sectionSlug}/${childSlug}`,
-      isActive: true,
-      parent: { slug: sectionSlug },
-    },
-    include: { parent: true },
-  });
+  if (!isDatabaseAvailable()) return findStaticSubcategory(sectionSlug, childSlug);
+  try {
+    return await prisma.category.findFirst({
+      where: {
+        href: `/${sectionSlug}/${childSlug}`,
+        isActive: true,
+        parent: { slug: sectionSlug },
+      },
+      include: { parent: true },
+    });
+  } catch {
+    return findStaticSubcategory(sectionSlug, childSlug);
+  }
 }
 
 export async function getSectionSlugs() {
-  const sections = await prisma.category.findMany({
-    where: { parentId: null, isActive: true },
-    select: { slug: true },
-  });
-  return sections.map((s) => ({ section: s.slug }));
+  if (!isDatabaseAvailable()) return [];
+  try {
+    const sections = await prisma.category.findMany({
+      where: { parentId: null, isActive: true },
+      select: { slug: true },
+    });
+    if (sections.length === 0) return STATIC_SECTION_PARAMS;
+    return sections.map((s) => ({ section: s.slug }));
+  } catch {
+    return STATIC_SECTION_PARAMS;
+  }
 }
 
 export async function getSubcategoryParams() {
-  const children = await prisma.category.findMany({
-    where: { parentId: { not: null }, isActive: true },
-    include: { parent: { select: { slug: true } } },
-  });
-
-  return children
-    .filter((c) => c.parent)
-    .map((c) => {
-      const parts = c.href.split("/").filter(Boolean);
-      return {
-        section: parts[0] ?? c.parent!.slug,
-        slug: parts[1] ?? c.slug,
-      };
+  if (!isDatabaseAvailable()) return [];
+  try {
+    const children = await prisma.category.findMany({
+      where: { parentId: { not: null }, isActive: true },
+      include: { parent: { select: { slug: true } } },
     });
+
+    if (children.length === 0) return STATIC_SUBCATEGORY_PARAMS;
+
+    return children
+      .filter((c) => c.parent)
+      .map((c) => {
+        const parts = c.href.split("/").filter(Boolean);
+        return {
+          section: parts[0] ?? c.parent!.slug,
+          slug: parts[1] ?? c.slug,
+        };
+      });
+  } catch {
+    return STATIC_SUBCATEGORY_PARAMS;
+  }
 }
 
 export async function getAllCategoriesFlat() {

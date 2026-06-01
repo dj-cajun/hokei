@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/lib/constants";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { searchPosts } from "@/lib/posts";
 import { enforceSearchRateLimitByIpAsync } from "@/lib/rate-limit";
 
@@ -33,7 +34,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
   }
 
   const results =
-    query.length >= SEARCH_MIN_QUERY_LENGTH && !rateLimited
+    isDatabaseAvailable() &&
+    query.length >= SEARCH_MIN_QUERY_LENGTH &&
+    !rateLimited
       ? await searchPosts(query)
       : [];
 

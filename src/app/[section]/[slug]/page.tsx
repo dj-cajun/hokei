@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SubcategoryPage } from "@/components/category/subcategory-page";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { getSubcategoryByPath, getSubcategoryParams } from "@/lib/categories";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import {
@@ -44,10 +45,12 @@ export default async function SubcategoryRoutePage({
   const category = await getSubcategoryByPath(section, slug);
   if (!category?.parent) notFound();
 
-  const [posts, totalCount] = await Promise.all([
-    getPostsByCategorySlug(category.slug, LIST_PAGE_SIZE, currentPage),
-    countPostsByCategorySlug(category.slug),
-  ]);
+  const [posts, totalCount] = isDatabaseAvailable()
+    ? await Promise.all([
+        getPostsByCategorySlug(category.slug, LIST_PAGE_SIZE, currentPage),
+        countPostsByCategorySlug(category.slug),
+      ])
+    : [[], 0];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
   const sectionSlug = section;

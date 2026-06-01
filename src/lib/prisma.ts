@@ -3,7 +3,9 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
 
-const connectionString = process.env.DATABASE_URL ?? "file:./dev.db";
+const connectionString =
+  process.env.DATABASE_URL?.trim() ||
+  (process.env.VERCEL === "1" ? "" : "file:./dev.db");
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -14,6 +16,9 @@ function isPostgresUrl(url: string): boolean {
 }
 
 function createPrismaClient(): PrismaClient {
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not configured");
+  }
   if (isPostgresUrl(connectionString)) {
     return createPostgresPrisma(connectionString);
   }

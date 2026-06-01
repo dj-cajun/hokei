@@ -8,20 +8,26 @@ import { HomeVideoHighlight } from "@/components/home/home-video-highlight";
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { QuickStats } from "@/components/home/quick-stats";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import {
   getAutomatedNewsPosts,
   getCommunityNotices,
   getLatestCommunityPosts,
   getPopularCommunityPosts,
 } from "@/lib/posts";
+import type { FeedItem } from "@/types/feed";
+
+const emptyFeed: FeedItem[] = [];
 
 export async function HomePageContent() {
-  const [latest, popular, news, notices] = await Promise.all([
-    getLatestCommunityPosts(12),
-    getPopularCommunityPosts(12),
-    getAutomatedNewsPosts(10),
-    getCommunityNotices(8),
-  ]);
+  const [latest, popular, news, notices] = isDatabaseAvailable()
+    ? await Promise.all([
+        getLatestCommunityPosts(12),
+        getPopularCommunityPosts(12),
+        getAutomatedNewsPosts(10),
+        getCommunityNotices(8),
+      ])
+    : [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
 
   const latestItems = latest;
   const sliderSource = news.length > 0 ? news : latestItems;

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { prisma } from "@/lib/prisma";
 
 function siteUrl(): string {
@@ -27,6 +28,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   let posts: { id: string; publishedAt: Date }[] = [];
+  if (!isDatabaseAvailable()) {
+    return staticRoutes;
+  }
   try {
     posts = await prisma.post.findMany({
       where: { status: "PUBLISHED" },

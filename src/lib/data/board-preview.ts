@@ -1,4 +1,5 @@
 import type { BoardPreviewItem, BoardPreviewSection } from "@/types/feed";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { getWriteHref } from "@/lib/write-sections";
 import { getSectionBoardPreview } from "@/lib/posts";
 
@@ -87,9 +88,11 @@ function emptyItem(meta: SectionMeta): BoardPreviewItem {
 export async function getBoardPreviewSections(): Promise<BoardPreviewSection[]> {
   const sections = await Promise.all(
     SECTION_META.map(async (meta) => {
-      const rows = await getSectionBoardPreview(meta.slug, 4, {
-        communityOnly: meta.communityOnly,
-      });
+      const rows = isDatabaseAvailable()
+        ? await getSectionBoardPreview(meta.slug, 4, {
+            communityOnly: meta.communityOnly,
+          })
+        : [];
 
       return {
         title: meta.title,

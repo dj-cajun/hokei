@@ -3,6 +3,8 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "관리자 - 호케이 Hokei",
   robots: { index: false, follow: false },

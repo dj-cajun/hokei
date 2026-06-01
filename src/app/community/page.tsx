@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CommunityFeed } from "@/components/community/community-feed";
 import { Pagination } from "@/components/ui/pagination";
 import { COMMUNITY_PAGE_SIZE } from "@/lib/constants";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { getSectionBySlug } from "@/lib/categories";
 import {
   countCommunityPosts,
@@ -10,6 +11,9 @@ import {
   getPopularCommunityPosts,
 } from "@/lib/posts";
 import { notFound } from "next/navigation";
+import type { FeedItem } from "@/types/feed";
+
+const emptyFeed: FeedItem[] = [];
 
 export const metadata: Metadata = {
   title: "커뮤니티 - 호케이 Hokei",
@@ -34,12 +38,14 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const section = await getSectionBySlug("community");
   if (!section) notFound();
 
-  const [latest, popular, notices, totalCount] = await Promise.all([
-    getLatestCommunityPosts(COMMUNITY_PAGE_SIZE, currentPage),
-    getPopularCommunityPosts(30),
-    getCommunityNotices(20),
-    countCommunityPosts(),
-  ]);
+  const [latest, popular, notices, totalCount] = isDatabaseAvailable()
+    ? await Promise.all([
+        getLatestCommunityPosts(COMMUNITY_PAGE_SIZE, currentPage),
+        getPopularCommunityPosts(30),
+        getCommunityNotices(20),
+        countCommunityPosts(),
+      ])
+    : [emptyFeed, emptyFeed, emptyFeed, 0];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / COMMUNITY_PAGE_SIZE));
 
