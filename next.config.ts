@@ -71,6 +71,6 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
   disableLogger: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  org: process.env.SENTRY_ORG ?? "nam-bac-technology-and-service",
+  project: process.env.SENTRY_PROJECT ?? "javascript-nextjs",
 });

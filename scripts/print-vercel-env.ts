@@ -22,8 +22,10 @@ const recommended = [
 ] as const;
 
 const optional = [
-  ["SENTRY_DSN", "Sentry"],
-  ["NEXT_PUBLIC_SENTRY_DSN", "Sentry 클라이언트"],
+  ["SENTRY_DSN", "Sentry DSN (javascript-nextjs)"],
+  ["NEXT_PUBLIC_SENTRY_DSN", "Sentry 클라이언트 DSN (동일 URL)"],
+  ["SENTRY_ORG", "nam-bac-technology-and-service"],
+  ["SENTRY_PROJECT", "javascript-nextjs"],
   ["GEMINI_API_KEY", "VnExpress 번역"],
   ["ZAI_API_KEY", "Z.AI 번역"],
 ] as const;

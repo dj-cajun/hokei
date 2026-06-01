@@ -46,7 +46,7 @@ http://localhost:3001
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3001` |
 | `CRON_SECRET` | 뉴스 Cron API 보호 (프로덕션 필수) |
 | `NAVER_CLIENT_ID/SECRET` | 뉴스 수집 (권장) |
-| `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | 에러 모니터링 (선택) |
+| `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | Sentry 에러 모니터링 ([docs/SENTRY.md](docs/SENTRY.md)) |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | 분산 Rate limit (Vercel 프로덕션 권장) |
 
 전체 목록: `.env.example`
