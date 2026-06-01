@@ -34,6 +34,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:categories": "tsx prisma/run-seed-categories.ts",
+    "db:sync:category-descriptions": "tsx scripts/sync-category-descriptions.ts",
     "db:studio": "prisma studio",
     "db:postgres": "docker compose up -d postgres",
     "db:postgres:stop": "docker compose stop postgres",

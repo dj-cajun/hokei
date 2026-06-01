@@ -8,7 +8,6 @@ import { isWritableSection } from "@/lib/write-sections";
 interface SectionPageProps {
   sectionSlug: string;
   label: string;
-  description: string | null;
   colorClass: string;
   href: string;
   subcategories: {
@@ -23,7 +22,6 @@ interface SectionPageProps {
 export function SectionPage({
   sectionSlug,
   label,
-  description,
   colorClass,
   subcategories,
 }: SectionPageProps) {
@@ -34,11 +32,6 @@ export function SectionPage({
         <div className="flex items-start justify-between gap-2 bg-white px-2 py-2 lg:rounded-xl lg:p-5">
           <div className="min-w-0">
             <h1 className="text-base font-bold leading-snug lg:text-lg">{label}</h1>
-            {description && (
-              <p className="mt-1 text-xs leading-snug text-gray-400">
-                {description}
-              </p>
-            )}
           </div>
           {isWritableSection(sectionSlug) && (
             <SectionWriteLink sectionSlug={sectionSlug} />

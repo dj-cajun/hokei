@@ -38,7 +38,6 @@ export default async function SectionRoutePage({ params }: PageProps) {
     <SectionPage
       sectionSlug={section.slug}
       label={section.label}
-      description={section.description}
       colorClass={section.colorClass}
       href={section.href}
       subcategories={section.children}
