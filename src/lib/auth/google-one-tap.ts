@@ -1,4 +1,6 @@
 import { loadExternalScript } from "@/lib/auth/load-external-script";
+import { getGoogleRedirectLoginUri } from "@/lib/auth/google-redirect-uri";
+import { canUseFedCmPrompt } from "@/lib/auth/secure-auth-context";
 import {
   clearGoogleAutoSelectDisabled,
   isGoogleAutoSelectDisabled,
@@ -21,6 +23,36 @@ export type GoogleCredentialHandler = (
 ) => void | Promise<void>;
 
 let gisInitialized = false;
+let gisLoginUri = "";
+
+function ensureGisInitialized(
+  onCredential: GoogleCredentialHandler,
+  loginUri: string
+): boolean {
+  const clientId = getGoogleClientId();
+  if (!clientId || !window.google?.accounts?.id) return false;
+
+  const loginUriChanged = gisLoginUri && gisLoginUri !== loginUri;
+
+  if (!gisInitialized || loginUriChanged) {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: (response) => {
+        void onCredential(response);
+      },
+      login_uri: loginUri,
+      auto_select: !isGoogleAutoSelectDisabled(),
+      cancel_on_tap_outside: false,
+      context: "signin",
+      itp_support: true,
+      use_fedcm_for_prompt: canUseFedCmPrompt(),
+    });
+    gisInitialized = true;
+    gisLoginUri = loginUri;
+  }
+
+  return true;
+}
 
 /**
  * GIS initialize + prompt
@@ -43,22 +75,8 @@ export async function initGoogleOneTap(
     void onCredential(response);
   };
 
-  const autoSelect = !isGoogleAutoSelectDisabled();
-
-  if (!gisInitialized) {
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response) => {
-        void onCredential(response);
-      },
-      auto_select: autoSelect,
-      cancel_on_tap_outside: false,
-      context: "signin",
-      itp_support: true,
-      use_fedcm_for_prompt: true,
-    });
-    gisInitialized = true;
-  }
+  const loginUri = getGoogleRedirectLoginUri();
+  if (!ensureGisInitialized(onCredential, loginUri)) return false;
 
   window.google.accounts.id.prompt((notification) => {
     if (notification.isNotDisplayed()) {
@@ -82,10 +100,11 @@ export function cancelGoogleOneTap(): void {
   window.google?.accounts?.id?.cancel();
 }
 
-/** 모달 내 구글 로그인 버튼 렌더 */
+/** 구글 로그인 버튼 — ux_mode: redirect (팝업 차단 회피) */
 export async function renderGoogleSignInButton(
   container: HTMLElement,
-  onCredential: GoogleCredentialHandler
+  onCredential: GoogleCredentialHandler,
+  options?: { callbackUrl?: string }
 ): Promise<boolean> {
   const clientId = getGoogleClientId();
   if (!clientId) return false;
@@ -93,22 +112,16 @@ export async function renderGoogleSignInButton(
   await loadGoogleIdentitySdk();
   if (!window.google?.accounts?.id) return false;
 
-  if (!gisInitialized) {
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response) => {
-        void onCredential(response);
-      },
-      auto_select: !isGoogleAutoSelectDisabled(),
-      cancel_on_tap_outside: false,
-      context: "signin",
-      itp_support: true,
-    });
-    gisInitialized = true;
-  }
+  const loginUri = getGoogleRedirectLoginUri();
+  if (!ensureGisInitialized(onCredential, loginUri)) return false;
 
   container.replaceChildren();
-  window.google.accounts.id.renderButton(container, {
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "w-full";
+  wrapper.dataset.callbackUrl = options?.callbackUrl ?? "/";
+
+  window.google.accounts.id.renderButton(wrapper, {
     type: "standard",
     theme: "outline",
     size: "large",
@@ -117,7 +130,11 @@ export async function renderGoogleSignInButton(
     logo_alignment: "left",
     width: Math.min(container.offsetWidth || 320, 400),
     locale: "ko",
+    ux_mode: "redirect",
+    login_uri: loginUri,
   });
+
+  container.appendChild(wrapper);
 
   return true;
 }

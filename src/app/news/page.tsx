@@ -52,14 +52,6 @@ export default async function NewsArchiveRoutePage({ searchParams }: PageProps) 
   return (
     <NewsArchivePage
       label={section.label}
-      colorClass={section.colorClass}
-      subcategories={section.children.map((c) => ({
-        id: c.id,
-        label: c.label,
-        description: c.description,
-        href: c.href,
-        icon: c.icon,
-      }))}
       dateGroups={groupNewsByIngestDate(posts)}
       totalCount={totalCount}
       currentPage={Math.min(currentPage, totalPages)}

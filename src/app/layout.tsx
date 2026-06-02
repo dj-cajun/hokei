@@ -7,6 +7,9 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { LoginModalProvider } from "@/components/auth/login-modal-context";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { LoginErrorHandler } from "@/components/auth/login-error-handler";
+import { SiteKakaoPreload } from "@/components/auth/site-kakao-preload";
+import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
 
 const siteUrl =
@@ -45,6 +48,9 @@ export default function RootLayout({
       >
         <AuthSessionProvider>
           <ToastProvider>
+          <LoginErrorHandler />
+          <SiteKakaoPreload />
+          <SiteSocialAuth />
           <LoginModalProvider>
             <a
               href="#main-content"

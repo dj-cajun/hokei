@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthSessionSync } from "@/hooks/use-auth-session-sync";
 import { postGoogleCredential } from "@/lib/auth/google-credential-client";
 import {
   cancelGoogleOneTap,
@@ -13,20 +14,21 @@ export function useGoogleOneTap(enabled: boolean) {
   const [error, setError] = useState<string | null>(null);
   const configured = Boolean(getGoogleClientId());
   const startedRef = useRef(false);
+  const { completeLogin } = useAuthSessionSync();
 
   const handleCredential = useCallback(
     async (response: GoogleCredentialResponse) => {
       if (!response.credential) return;
       try {
         await postGoogleCredential(response.credential);
-        window.location.reload();
+        await completeLogin({ refreshServer: true });
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "구글 로그인에 실패했습니다."
         );
       }
     },
-    []
+    [completeLogin]
   );
 
   useEffect(() => {

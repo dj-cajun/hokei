@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useAuthSessionSync } from "@/hooks/use-auth-session-sync";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { SocialLoginSection } from "@/components/auth/social-login-section";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
+import { isSocialPlaceholderEmail } from "@/lib/auth/oauth-email";
+import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -28,11 +31,12 @@ export function AuthForm({
   onSuccess,
   embedded = false,
 }: AuthFormProps) {
-  const router = useRouter();
+  const { completeLogin } = useAuthSessionSync();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
-  const callbackUrl =
-    callbackUrlProp ?? searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = safeCallbackPath(
+    callbackUrlProp ?? searchParams.get("callbackUrl")
+  );
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -57,7 +61,9 @@ export function AuthForm({
           setError(parseApiError(data) ?? "회원가입에 실패했습니다.");
           return;
         }
-        showToast("회원가입이 완료되었습니다.");
+        showToast(
+          "회원가입이 완료되었습니다. 같은 이메일의 카카오 계정으로도 로그인할 수 있어요."
+        );
       }
 
       const result = await signIn("credentials", {
@@ -67,20 +73,28 @@ export function AuthForm({
       });
 
       if (result?.error) {
-        setError(
-          mode === "signup"
-            ? "가입은 완료됐지만 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해 주세요."
-            : "이메일 또는 비밀번호가 올바르지 않습니다."
-        );
+        if (mode === "login" && isSocialPlaceholderEmail(email)) {
+          setError(
+            "이 계정은 카카오 간편 로그인으로 가입되었습니다. 카카오 또는 구글 버튼을 이용해 주세요."
+          );
+        } else {
+          setError(
+            mode === "signup"
+              ? "가입은 완료됐지만 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해 주세요."
+              : "이메일 또는 비밀번호가 올바르지 않습니다."
+          );
+        }
         return;
       }
 
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push(callbackUrl);
+      if (mode === "login") {
+        showToast("로그인이 완료되었습니다.");
       }
-      router.refresh();
+      await completeLogin({
+        callbackUrl,
+        onSuccess,
+        refreshServer: true,
+      });
     } catch {
       setError("요청 처리 중 오류가 발생했습니다.");
     } finally {
@@ -91,7 +105,9 @@ export function AuthForm({
   return (
     <div className="space-y-4">
       {mode === "login" && !embedded && <GoogleOneTap enabled />}
-      {!embedded && <SocialLoginSection mode={mode} />}
+      {!embedded && (
+        <SocialLoginSection mode={mode} callbackUrl={callbackUrl} />
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
       {mode === "signup" && (
         <div className="space-y-2">

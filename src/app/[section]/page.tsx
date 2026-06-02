@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { SectionPage } from "@/components/category/section-page";
+import { notFound, redirect } from "next/navigation";
+import { SectionArchivePage } from "@/components/category/section-archive-page";
+import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { getSectionBySlug, getSectionSlugs } from "@/lib/categories";
+import { isDatabaseAvailable } from "@/lib/database-available";
+import {
+  countPostsBySectionSlug,
+  getPostsBySectionSlug,
+} from "@/lib/posts";
 
 interface PageProps {
   params: Promise<{ section: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateStaticParams() {
   const slugs = await getSectionSlugs();
-  return slugs;
+  return slugs.filter((s) => s.section !== "news");
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -28,19 +35,52 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function SectionRoutePage({ params }: PageProps) {
+export default async function SectionRoutePage({
+  params,
+  searchParams,
+}: PageProps) {
   const { section: sectionSlug } = await params;
-  const section = await getSectionBySlug(sectionSlug);
 
+  if (sectionSlug === "news") {
+    redirect("/news");
+  }
+
+  const section = await getSectionBySlug(sectionSlug);
   if (!section) notFound();
 
+  const { page: pageParam } = await searchParams;
+  const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const communityOnly = sectionSlug === "community";
+
+  const [posts, totalCount] = isDatabaseAvailable()
+    ? await Promise.all([
+        getPostsBySectionSlug(
+          sectionSlug,
+          LIST_PAGE_SIZE,
+          currentPage,
+          communityOnly ? { communityOnly: true } : undefined
+        ),
+        countPostsBySectionSlug(
+          sectionSlug,
+          communityOnly ? { communityOnly: true } : undefined
+        ),
+      ])
+    : [[], 0];
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
+
   return (
-    <SectionPage
+    <SectionArchivePage
       sectionSlug={section.slug}
       label={section.label}
+      description={section.description}
       colorClass={section.colorClass}
-      href={section.href}
-      subcategories={section.children}
+      icon={section.icon}
+      basePath={section.href}
+      posts={posts}
+      totalCount={totalCount}
+      currentPage={Math.min(currentPage, totalPages)}
+      totalPages={totalPages}
     />
   );
 }

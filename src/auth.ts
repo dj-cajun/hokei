@@ -4,10 +4,8 @@ import { compare } from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { findOrCreateUserFromGoogle } from "@/lib/auth/google-user";
-import {
-  fetchKakaoProfileFromCode,
-  getKakaoRedirectUri,
-} from "@/lib/auth/kakao-oauth";
+import { fetchKakaoProfileFromCode } from "@/lib/auth/kakao-oauth";
+import { getKakaoRedirectUri } from "@/lib/auth/kakao-redirect-uri";
 import { findOrCreateUserFromKakao } from "@/lib/auth/kakao-user";
 import { verifyGoogleIdToken } from "@/lib/auth/verify-google-token";
 import { prisma } from "@/lib/prisma";

@@ -15,6 +15,7 @@ export { newsAutomatedWhere } from "@/lib/news-automated-where";
 
 const archiveInclude = {
   category: { select: { label: true, colorClass: true } },
+  _count: { select: { comments: true } },
 } as const;
 
 function toNewsArchiveItem(post: {
@@ -24,11 +25,14 @@ function toNewsArchiveItem(post: {
   ingestedAt: Date;
   views: number;
   commentCount: number;
+  _count?: { comments: number };
   thumbnail: string | null;
   sourceUrl: string;
   topic: PostTopic;
   category: { label: string; colorClass: string };
 }): FeedItem {
+  const comments =
+    post._count?.comments ?? post.commentCount ?? 0;
   return {
     id: post.id,
     category: post.category.label,
@@ -38,7 +42,7 @@ function toNewsArchiveItem(post: {
     dateLabel: formatDateLabelHoChiMinh(post.ingestedAt),
     isNew: isTodayInHoChiMinh(post.ingestedAt),
     views: post.views,
-    comments: post.commentCount,
+    comments,
     thumbnail: post.thumbnail ?? undefined,
     sourceUrl: post.sourceUrl,
     topic: post.topic,

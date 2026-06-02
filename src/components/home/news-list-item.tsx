@@ -3,7 +3,18 @@
 import Link from "next/link";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { NewBadge } from "@/components/ui/new-badge";
+import { formatViewsComments } from "@/lib/format/post-list-meta";
 import type { FeedItem } from "@/types/feed";
+
+function PostListMeta({ item }: { item: FeedItem }) {
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-400">
+      <time dateTime={item.dateLabel}>{item.dateLabel}</time>
+      <span aria-hidden>·</span>
+      <span>{formatViewsComments(item.views, item.comments)}</span>
+    </p>
+  );
+}
 
 export function NewsListItem({ item }: { item: FeedItem }) {
   const hasThumb = Boolean(item.thumbnail || item.sourceUrl);
@@ -29,11 +40,7 @@ export function NewsListItem({ item }: { item: FeedItem }) {
             {item.isNew && <NewBadge className="align-middle" />}
             {item.title}
           </h3>
-          <p className="mt-1 flex items-center gap-1.5 text-[11px] text-gray-400">
-            <time dateTime={item.dateLabel}>{item.dateLabel}</time>
-            <span aria-hidden>·</span>
-            <span>조회 {item.views.toLocaleString()}</span>
-          </p>
+          <PostListMeta item={item} />
         </div>
       </Link>
     </article>
@@ -46,17 +53,13 @@ export function TextListItem({ item }: { item: FeedItem }) {
     <article className="border-b border-gray-50 last:border-b-0">
       <Link
         href={`/posts/${item.id}`}
-        className="flex items-center justify-between gap-2 px-3 py-1.5 active:bg-gray-50"
+        className="block px-3 py-2 active:bg-gray-50"
       >
-        <span className="flex min-w-0 flex-1 items-center gap-1">
+        <h3 className="flex min-w-0 items-center gap-1 text-sm font-medium leading-snug text-foreground">
           {item.isNew && <NewBadge />}
-          <span className="truncate text-sm font-medium leading-snug text-foreground">
-            {item.title}
-          </span>
-        </span>
-        <span className="shrink-0 text-[11px] text-gray-400">
-          {item.dateLabel}
-        </span>
+          <span className="line-clamp-2">{item.title}</span>
+        </h3>
+        <PostListMeta item={item} />
       </Link>
     </article>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { NewBadge } from "@/components/ui/new-badge";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
+import { formatViewsComments } from "@/lib/format/post-list-meta";
 import { cn } from "@/lib/utils";
 import { isWritableSection } from "@/lib/write-sections";
 import type { BoardPreviewSection } from "@/types/feed";
@@ -69,8 +70,8 @@ export function BoardPreviewSectionBox({ section }: { section: BoardPreviewSecti
                 </span>
                 <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
                   {item.views != null
-                    ? `조회 ${item.views}`
-                    : item.dateLabel}
+                    ? formatViewsComments(item.views, item.commentCount ?? 0)
+                    : `${item.dateLabel} · 댓글 ${(item.commentCount ?? 0).toLocaleString()}`}
                 </span>
               </Link>
             </li>

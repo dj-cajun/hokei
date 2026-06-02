@@ -1,22 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useSession } from "next-auth/react";
 import { X } from "lucide-react";
-import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
-import { KakaoLoginButton } from "@/components/auth/kakao-login-button";
-import { SocialLoginDivider } from "@/components/auth/social-login-divider";
-import { useToast } from "@/components/providers/toast-provider";
-import { postGoogleCredential } from "@/lib/auth/google-credential-client";
-import { parseApiError } from "@/lib/api-response";
-import {
-  getGoogleClientId,
-  renderGoogleSignInButton,
-} from "@/lib/auth/google-one-tap";
+import { QuickLoginPanel } from "@/components/auth/quick-login-panel";
+import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 type LoginModalProps = {
   open: boolean;
@@ -32,6 +23,7 @@ export function LoginModal({
   onSuccess,
 }: LoginModalProps) {
   const { status } = useSession();
+  const safeCallback = safeCallbackPath(callbackUrl);
 
   useEffect(() => {
     if (status === "authenticated" && open) {
@@ -85,8 +77,8 @@ export function LoginModal({
 
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
             {open && (
-              <LoginModalPanel
-                callbackUrl={callbackUrl}
+              <QuickLoginPanel
+                callbackUrl={safeCallback}
                 onClose={() => onOpenChange(false)}
                 onSuccess={onSuccess}
               />
@@ -95,117 +87,5 @@ export function LoginModal({
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
-  );
-}
-
-function LoginModalPanel({
-  callbackUrl,
-  onClose,
-  onSuccess,
-}: {
-  callbackUrl: string;
-  onClose: () => void;
-  onSuccess?: () => void;
-}) {
-  const { showToast } = useToast();
-  const [showEmail, setShowEmail] = useState(false);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
-  const googleConfigured = Boolean(getGoogleClientId());
-
-  const handleGoogleCredential = useCallback(
-    async (response: { credential?: string }) => {
-      if (!response.credential) return;
-      try {
-        await postGoogleCredential(response.credential);
-        onClose();
-        onSuccess?.();
-        window.location.reload();
-      } catch (err) {
-        const msg =
-          err instanceof Error
-            ? err.message
-            : parseApiError(err) ?? "구글 로그인에 실패했습니다.";
-        showToast(msg, "error");
-      }
-    },
-    [onClose, onSuccess, showToast]
-  );
-
-  useEffect(() => {
-    const el = googleBtnRef.current;
-    if (!el || !googleConfigured) return;
-
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      renderGoogleSignInButton(el, handleGoogleCredential).catch(() => {
-        if (!cancelled) el.innerHTML = "";
-      });
-    }, 120);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      el.replaceChildren();
-    };
-  }, [googleConfigured, handleGoogleCredential]);
-
-  if (!showEmail) {
-    return (
-      <div className="space-y-3">
-        <KakaoLoginButton />
-        {googleConfigured ? (
-          <div
-            ref={googleBtnRef}
-            className="flex min-h-[44px] w-full justify-center [&>div]:!w-full"
-          />
-        ) : (
-          <p className="rounded-lg bg-secondary px-3 py-2 text-center text-xs text-muted-foreground">
-            구글 로그인: NEXT_PUBLIC_GOOGLE_CLIENT_ID 설정 필요
-          </p>
-        )}
-
-        <SocialLoginDivider />
-
-        <button
-          type="button"
-          onClick={() => setShowEmail(true)}
-          className="flex h-11 w-full items-center justify-center rounded-xl border border-[#e5e7eb] text-sm font-medium text-foreground hover:bg-secondary/60"
-        >
-          이메일로 로그인
-        </button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          계정이 없으신가요?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-primary"
-            onClick={onClose}
-          >
-            회원가입
-          </Link>
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <button
-        type="button"
-        onClick={() => setShowEmail(false)}
-        className="text-sm text-primary hover:underline"
-      >
-        ← 간편 로그인으로
-      </button>
-      <AuthForm
-        mode="login"
-        callbackUrl={callbackUrl}
-        onSuccess={() => {
-          onClose();
-          onSuccess?.();
-        }}
-        embedded
-      />
-    </div>
   );
 }

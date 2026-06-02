@@ -10,6 +10,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { LoginModal } from "@/components/auth/login-modal";
+import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 
 type LoginModalContextValue = {
   open: boolean;
@@ -27,7 +28,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
 
   const openLogin = useCallback(
     (url?: string) => {
-      setCallbackUrl(url ?? pathname ?? "/");
+      setCallbackUrl(safeCallbackPath(url ?? pathname));
       setOpen(true);
     },
     [pathname]

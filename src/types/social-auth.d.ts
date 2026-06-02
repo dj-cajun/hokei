@@ -32,6 +32,7 @@ declare global {
           initialize: (config: {
             client_id: string;
             callback: (response: GoogleCredentialResponse) => void;
+            login_uri?: string;
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;
             context?: "signin" | "signup" | "use";
@@ -60,6 +61,8 @@ declare global {
               logo_alignment?: string;
               width?: number;
               locale?: string;
+              ux_mode?: "popup" | "redirect";
+              login_uri?: string;
             }
           ) => void;
         };

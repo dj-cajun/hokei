@@ -35,12 +35,20 @@ function mapLatestComment(
   };
 }
 
+function resolveCommentCount(post: {
+  _count?: { comments?: number };
+  commentCount?: number;
+}): number {
+  return post._count?.comments ?? post.commentCount ?? 0;
+}
+
 function toFeedItem(post: {
   id: string;
   title: string;
   publishedAt: Date;
   views: number;
   commentCount: number;
+  _count?: { comments: number };
   thumbnail: string | null;
   sourceUrl: string;
   topic: PostTopic;
@@ -60,7 +68,7 @@ function toFeedItem(post: {
     dateLabel: formatDateLabel(post.publishedAt),
     isNew: isTodayInHoChiMinh(post.publishedAt),
     views: post.views,
-    comments: post.commentCount,
+    comments: resolveCommentCount(post),
     latestComment: mapLatestComment(post.comments),
     thumbnail: post.thumbnail ?? undefined,
     sourceUrl: post.sourceUrl,
@@ -70,6 +78,7 @@ function toFeedItem(post: {
 
 const postInclude = {
   category: { select: { label: true, colorClass: true } },
+  _count: { select: { comments: true } },
   comments: {
     orderBy: { createdAt: "desc" as const },
     take: 1,
@@ -140,20 +149,42 @@ export async function getCommunityNotices(limit = 10): Promise<FeedItem[]> {
   return posts.map(toFeedItem);
 }
 
+function publishedBySectionSlug(
+  sectionSlug: string,
+  options?: { communityOnly?: boolean }
+) {
+  return {
+    status: "PUBLISHED" as const,
+    category: { parent: { slug: sectionSlug } },
+    ...(options?.communityOnly
+      ? {
+          isAutomated: false,
+          sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
+        }
+      : {}),
+  };
+}
+
+export async function countPostsBySectionSlug(
+  sectionSlug: string,
+  options?: { communityOnly?: boolean }
+): Promise<number> {
+  return prisma.post.count({
+    where: publishedBySectionSlug(sectionSlug, options),
+  });
+}
+
 export async function getPostsBySectionSlug(
   sectionSlug: string,
-  limit = 30,
+  limit = LIST_PAGE_SIZE,
+  page = 1,
   options?: { communityOnly?: boolean }
 ): Promise<FeedItem[]> {
+  const safePage = Math.max(1, page);
   const posts = await prisma.post.findMany({
-    where: {
-      status: "PUBLISHED",
-      category: { parent: { slug: sectionSlug } },
-      ...(options?.communityOnly
-        ? { isAutomated: false, sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX } }
-        : {}),
-    },
+    where: publishedBySectionSlug(sectionSlug, options),
     orderBy: { publishedAt: "desc" },
+    skip: (safePage - 1) * limit,
     take: limit,
     include: postInclude,
   });
@@ -300,6 +331,7 @@ function toBoardPreviewRow(p: {
   publishedAt: Date;
   commentCount: number;
   views: number;
+  _count?: { comments: number };
   comments: {
     content: string;
     guestName: string | null;
@@ -312,7 +344,7 @@ function toBoardPreviewRow(p: {
     href: `/posts/${p.id}`,
     dateLabel: formatDateLabel(p.publishedAt),
     isNew: isTodayInHoChiMinh(p.publishedAt),
-    commentCount: p.commentCount,
+    commentCount: resolveCommentCount(p),
     views: p.views,
     latestComment: mapLatestComment(p.comments),
   };

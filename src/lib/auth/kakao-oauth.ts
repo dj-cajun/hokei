@@ -8,13 +8,7 @@ function getKakaoRestApiKey(): string | undefined {
   return process.env.KAKAO_REST_API_KEY?.trim();
 }
 
-export function getKakaoRedirectUri(siteUrl?: string): string {
-  const base =
-    siteUrl?.replace(/\/$/, "") ||
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "";
-  return base ? `${base}/api/auth/kakao/callback` : "";
-}
+export { getKakaoRedirectUri, buildKakaoRedirectUri, KAKAO_CALLBACK_PATH } from "@/lib/auth/kakao-redirect-uri";
 
 /** authorization code → 액세스 토큰 → 프로필 */
 export async function fetchKakaoProfileFromCode(

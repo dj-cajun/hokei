@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
-import { getKakaoRedirectUri } from "@/lib/auth/kakao-oauth";
-import { signInWithKakaoCode } from "@/lib/auth/kakao-sign-in";
+import { kakaoCallbackBridgeHtml } from "@/lib/auth/kakao-callback-bridge";
+import { getKakaoRedirectUri } from "@/lib/auth/kakao-redirect-uri";
+import { decodeKakaoOAuthState } from "@/lib/auth/kakao-state";
 
+/**
+ * 카카오 OAuth redirect (GET).
+ * App Router GET Route Handler에서는 세션 쿠키를 쓸 수 없어,
+ * POST /api/auth/kakao/complete 로 넘기는 HTML 브릿지를 반환합니다.
+ */
 export async function GET(request: Request) {
   const limited = await enforcePreset(request, "login");
   if (limited) return limited;
@@ -11,9 +17,7 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const error = searchParams.get("error");
   const origin = new URL(request.url).origin;
-  const redirectUri = getKakaoRedirectUri(
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() || origin
-  );
+  const redirectUri = getKakaoRedirectUri(origin);
 
   if (error) {
     return NextResponse.redirect(
@@ -27,14 +31,19 @@ export async function GET(request: Request) {
     );
   }
 
-  try {
-    await signInWithKakaoCode(code, redirectUri);
-    return NextResponse.redirect(new URL("/", request.url));
-  } catch (err) {
-    const msg =
-      err instanceof Error ? err.message : "kakao_login_failed";
-    return NextResponse.redirect(
-      new URL(`/?login_error=${encodeURIComponent(msg)}`, request.url)
-    );
-  }
+  const afterLogin = decodeKakaoOAuthState(searchParams.get("state"));
+
+  const html = kakaoCallbackBridgeHtml({
+    code,
+    redirectUri,
+    callbackUrl: afterLogin,
+  });
+
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
 }

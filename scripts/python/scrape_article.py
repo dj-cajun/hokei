@@ -106,8 +106,14 @@ REPORTER_LINE = re.compile(
     r"^[가-힣A-Za-z.\s]{1,24}\s*(특파원|기자)(\s*[|｜·]\s*)?(\S+@\S+)?\s*$"
 )
 
-BYLINE_BRACKET_LINE = re.compile(r"^\[[^\]=\[\]]{1,48}=[^\]]{1,96}\]\s*$", re.I)
-BYLINE_BRACKET_PREFIX = re.compile(r"^\[[^\]=\[\]]{1,48}=[^\]]{1,96}\]\s*", re.I)
+BYLINE_BRACKET_LINE = re.compile(
+    r"^[\[【(（][^\]=\[【(（\]]{1,48}[=＝][^\]】)）\]]{1,96}[\]】)）\]]\s*$",
+    re.I,
+)
+BYLINE_BRACKET_PREFIX = re.compile(
+    r"^[\[【(（][^\]=\[【(（\]]{1,48}[=＝][^\]】)）\]]{1,96}[\]】)）\]]\s*",
+    re.I,
+)
 
 
 def _strip_byline(text: str) -> str:

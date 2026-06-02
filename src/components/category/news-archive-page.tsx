@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { CategoryIcon } from "@/components/category/category-icon";
 import { NewsListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
@@ -14,14 +11,6 @@ function formatDayHeading(dateLabel: string): string {
 
 interface NewsArchivePageProps {
   label: string;
-  colorClass: string;
-  subcategories: {
-    id: string;
-    label: string;
-    description: string | null;
-    href: string;
-    icon: string;
-  }[];
   dateGroups: NewsDateGroup[];
   totalCount: number;
   currentPage: number;
@@ -30,8 +19,6 @@ interface NewsArchivePageProps {
 
 export function NewsArchivePage({
   label,
-  colorClass,
-  subcategories,
   dateGroups,
   totalCount,
   currentPage,
@@ -45,37 +32,10 @@ export function NewsArchivePage({
       <div className="min-w-0 flex-1 space-y-1">
         <div className="bg-white px-2 py-2 lg:rounded-xl lg:p-5">
           <h1 className="text-base font-bold leading-snug lg:text-lg">{label}</h1>
-          <p className="mt-1 text-xs text-gray-400">
-            자동 수집 뉴스를 날짜별로 보관합니다. 하루 최대 10건 추가·기존 글은
-            삭제하지 않습니다.
-          </p>
-          <p className="mt-0.5 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-gray-400">
             전체 {totalCount.toLocaleString()}건
           </p>
         </div>
-
-        <section className="divide-y divide-[#f3f4f6] bg-white lg:rounded-xl">
-          <header className="px-2 py-2 text-[11px] font-semibold text-gray-500">
-            주제별 보기
-          </header>
-          {subcategories.map((child) => (
-            <Link
-              key={child.id}
-              href={child.href}
-              className="flex items-center justify-between gap-2 px-2 py-2 active:bg-secondary/80"
-            >
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-sm ${colorClass}`}
-                >
-                  <CategoryIcon name={child.icon} className="h-3.5 w-3.5" />
-                </span>
-                <span className="truncate text-sm font-medium">{child.label}</span>
-              </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
-            </Link>
-          ))}
-        </section>
 
         <section className="bg-white lg:rounded-xl">
           <header className="border-b border-[#f3f4f6] px-2 py-2">

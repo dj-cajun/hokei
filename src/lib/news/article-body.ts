@@ -1,4 +1,5 @@
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
+import { extractTextWithReadability } from "@/lib/news/article-body-readability";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
@@ -28,8 +29,13 @@ function stripNoiseFromHtml(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+    .replace(/<video[\s\S]*?<\/video>/gi, "")
     .replace(/<figure[\s\S]*?<\/figure>/gi, "")
     .replace(/<figcaption[\s\S]*?<\/figcaption>/gi, "")
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, "$1")
     .replace(
       /<div[^>]+class=["'][^"']*(?:media_end_linked|relation_news|related_news|tag_group|fck_related|end_photo_org|media_end_summary|journalist|byline|art_subtit|sub_tit)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi,
       ""
@@ -110,7 +116,17 @@ async function fetchArticleBodyFromHtml(
       /<article[^>]+class=["'][^"']*fck_detail[^"']*["'][^>]*>([\s\S]*?)<\/article>/i,
     ];
 
-    const content = cleanArticleBody(extractFirst(html, bodyPatterns));
+    let extracted = extractFirst(html, bodyPatterns);
+    let content = cleanArticleBody(extracted);
+
+    if (content.length < MIN_BODY_LENGTH) {
+      const fromReadability = await extractTextWithReadability(html, url);
+      if (fromReadability.length > content.length) {
+        content = fromReadability;
+        extracted = fromReadability;
+      }
+    }
+
     if (content.length < MIN_BODY_LENGTH) return null;
 
     const title = extractTitleFromHtml(html);

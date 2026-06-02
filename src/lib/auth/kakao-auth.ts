@@ -1,22 +1,29 @@
 import { loadExternalScript } from "@/lib/auth/load-external-script";
+import { shouldPreferKakaoTalk } from "@/lib/auth/kakao-device";
+import { getKakaoRedirectUri } from "@/lib/auth/kakao-redirect-uri";
 import type { KakaoAuthAuthorizeParams } from "@/types/social-auth";
 
 const KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+
+let sdkReadyPromise: Promise<boolean> | null = null;
 
 export function getKakaoJsKey(): string | undefined {
   return process.env.NEXT_PUBLIC_KAKAO_JS_KEY?.trim() || undefined;
 }
 
-export function getKakaoRedirectUri(): string {
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/api/auth/kakao/callback`;
-  }
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  return site ? `${site}/api/auth/kakao/callback` : "";
-}
-
 export async function loadKakaoSdk(): Promise<void> {
   await loadExternalScript(KAKAO_SDK_URL, "kakao-jssdk");
+}
+
+/** 사이트 진입 시 SDK 선로드 — 「카카오 1초 로그인」 즉시 클릭 가능 */
+export function ensureKakaoSdk(): Promise<boolean> {
+  if (!getKakaoJsKey()) return Promise.resolve(false);
+  if (!sdkReadyPromise) {
+    sdkReadyPromise = loadKakaoSdk()
+      .then(() => initKakaoSdk())
+      .catch(() => false);
+  }
+  return sdkReadyPromise;
 }
 
 export function initKakaoSdk(): boolean {
@@ -41,10 +48,12 @@ export function kakaoAuthorize(
     );
   }
 
+  const throughTalk = options?.throughTalk ?? shouldPreferKakaoTalk();
+
   window.Kakao!.Auth.authorize({
+    ...options,
     redirectUri: options?.redirectUri ?? getKakaoRedirectUri(),
     scope: options?.scope ?? "profile_nickname,account_email",
-    throughTalk: options?.throughTalk ?? true,
-    ...options,
+    throughTalk,
   });
 }

@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  ensureKakaoSdk,
   getKakaoJsKey,
-  initKakaoSdk,
   kakaoAuthorize,
-  loadKakaoSdk,
 } from "@/lib/auth/kakao-auth";
+import { encodeKakaoOAuthState } from "@/lib/auth/kakao-state";
+import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 
 export function useKakaoSdk() {
   const [ready, setReady] = useState(false);
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = Boolean(getKakaoJsKey());
 
@@ -18,12 +20,11 @@ export function useKakaoSdk() {
 
     let cancelled = false;
 
-    loadKakaoSdk()
-      .then(() => {
+    ensureKakaoSdk()
+      .then((ok) => {
         if (cancelled) return;
-        if (initKakaoSdk()) {
-          setReady(true);
-        } else {
+        setReady(ok);
+        if (!ok) {
           setError("카카오 SDK 초기화에 실패했습니다.");
         }
       })
@@ -40,13 +41,28 @@ export function useKakaoSdk() {
     };
   }, [configured]);
 
-  const login = useCallback(() => {
+  const login = useCallback(async (callbackUrl?: string) => {
+    setError(null);
+    setPending(true);
     try {
-      kakaoAuthorize({ throughTalk: true });
+      const ok = await ensureKakaoSdk();
+      if (!ok) {
+        throw new Error("카카오 SDK가 준비되지 않았습니다.");
+      }
+      setReady(true);
+      const path = safeCallbackPath(callbackUrl);
+      kakaoAuthorize({
+        state: encodeKakaoOAuthState(path),
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "카카오 로그인 실패");
+      const message =
+        err instanceof Error ? err.message : "카카오 로그인 실패";
+      setError(message);
+      throw err;
+    } finally {
+      setPending(false);
     }
   }, []);
 
-  return { ready, error, configured, login };
+  return { ready, pending, error, configured, login };
 }
