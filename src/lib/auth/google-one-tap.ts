@@ -22,7 +22,10 @@ export type GoogleCredentialHandler = (
   response: GoogleCredentialResponse
 ) => void | Promise<void>;
 
+const GIS_CONFIG_VERSION = 2;
+
 let gisInitialized = false;
+let gisConfigVersion = 0;
 let gisLoginUri = "";
 
 function ensureGisInitialized(

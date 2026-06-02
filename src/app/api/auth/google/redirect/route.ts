@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
+import { readGoogleCallbackFromCookie } from "@/lib/auth/google-callback-cookie";
 import { verifyGoogleRedirectCsrf } from "@/lib/auth/google-redirect-csrf";
 import { signInWithGoogleCredential } from "@/lib/auth/google-sign-in";
-import { readGoogleCallbackFromCookie } from "@/lib/auth/google-callback-cookie";
 
 /**
  * GIS 버튼 redirect 모드 — Google이 credential을 form POST로 전달
@@ -32,10 +32,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    await signInWithGoogleCredential(credential, {
-      redirect: true,
-      redirectTo: callbackUrl,
-    });
+    await signInWithGoogleCredential(credential, { redirect: false });
+    return NextResponse.redirect(new URL(callbackUrl, request.url));
   } catch {
     return NextResponse.redirect(
       new URL("/?login_error=google_login_failed", request.url)
