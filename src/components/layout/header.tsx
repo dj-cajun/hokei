@@ -81,7 +81,7 @@ export function Header({ categoryTree }: HeaderProps) {
         </div>
       </div>
 
-      <CategoryScrollNav sections={categoryTree} />
+      {!isHome && <CategoryScrollNav sections={categoryTree} />}
     </header>
   );
 }
