@@ -39,7 +39,7 @@ export default async function PostPage({ params }: PageProps) {
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <ViewCounter postId={id} />
       <Sidebar />
-      <main className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1">
         {isCommunity ? (
           <CommunityPostArticle
             post={post}
@@ -53,7 +53,7 @@ export default async function PostPage({ params }: PageProps) {
             isAdmin={session?.user?.role === "ADMIN"}
           />
         )}
-      </main>
+      </div>
     </div>
   );
 }

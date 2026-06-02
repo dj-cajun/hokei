@@ -4,6 +4,7 @@ import "./globals.css";
 import { pretendard } from "@/lib/fonts";
 import { HeaderWrapper } from "@/components/layout/header-wrapper";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { LoginModalProvider } from "@/components/auth/login-modal-context";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
@@ -55,6 +56,9 @@ export default function RootLayout({
             <main id="main-content" className="flex flex-1 flex-col">
               {children}
             </main>
+            <div className="mx-auto hidden w-full max-w-6xl lg:block">
+              <SiteFooter />
+            </div>
             <MobileNav />
           </LoginModalProvider>
           </ToastProvider>

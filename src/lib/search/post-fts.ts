@@ -1,21 +1,17 @@
 import { getDatabaseKind, prisma } from "@/lib/prisma";
+import {
+  buildFtsMatchQuery,
+  isSafeFtsMatchQuery,
+} from "@/lib/search/fts-match-query";
+
+export { buildFtsMatchQuery, isSafeFtsMatchQuery } from "@/lib/search/fts-match-query";
 
 let ftsReady = false;
 
-function escapeFtsToken(token: string): string {
-  return token.replace(/"/g, '""').replace(/[^\w\s가-힣_-]/g, "");
-}
-
-export function buildFtsMatchQuery(query: string): string | null {
-  const terms = query
-    .trim()
-    .split(/\s+/)
-    .map(escapeFtsToken)
-    .filter((t) => t.length >= 2);
-
-  if (terms.length === 0) return null;
-
-  return terms.map((t) => `"${t}"`).join(" AND ");
+function clampFtsLimit(limit: number): number {
+  const n = Math.floor(Number(limit));
+  if (!Number.isFinite(n) || n < 1) return 20;
+  return Math.min(n, 50);
 }
 
 export async function ensurePostFtsTable(): Promise<void> {
@@ -72,14 +68,15 @@ export async function searchPostIdsByFts(
 ): Promise<string[]> {
   if (getDatabaseKind() !== "sqlite") return [];
   const match = buildFtsMatchQuery(query);
-  if (!match) return [];
+  if (!match || !isSafeFtsMatchQuery(match)) return [];
 
   await ensurePostFtsTable();
 
+  const limitClamped = clampFtsLimit(limit);
+
   try {
-    const safeMatch = match.replace(/'/g, "''");
     const rows = await prisma.$queryRawUnsafe<{ post_id: string }[]>(
-      `SELECT post_id FROM post_fts WHERE post_fts MATCH '${safeMatch}' ORDER BY bm25(post_fts) LIMIT ${Number(limit)}`
+      `SELECT post_id FROM post_fts WHERE post_fts MATCH '${match.replace(/'/g, "''")}' ORDER BY bm25(post_fts) LIMIT ${limitClamped}`
     );
     return rows.map((r) => r.post_id);
   } catch {

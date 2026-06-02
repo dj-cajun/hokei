@@ -17,7 +17,7 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 py-6">
       <Sidebar />
-      <main className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1">
         <div className="rounded-2xl bg-white p-6 md:p-8">
           <div className="flex items-center gap-4">
             <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-white">
@@ -69,7 +69,7 @@ export default async function ProfilePage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

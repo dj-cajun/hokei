@@ -43,7 +43,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
-      <main className="min-w-0 flex-1 bg-white lg:rounded-lg">
+      <div className="min-w-0 flex-1 bg-white lg:rounded-lg">
         <header className="border-b border-gray-100 px-3 py-3">
           <h1 className="text-base font-bold text-gray-900">검색</h1>
           {query ? (
@@ -90,7 +90,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             홈으로
           </Link>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

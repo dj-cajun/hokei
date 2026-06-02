@@ -42,7 +42,7 @@ export function NewsArchivePage({
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
-      <main className="min-w-0 flex-1 space-y-1">
+      <div className="min-w-0 flex-1 space-y-1">
         <div className="bg-white px-2 py-2 lg:rounded-xl lg:p-5">
           <h1 className="text-base font-bold leading-snug lg:text-lg">{label}</h1>
           <p className="mt-1 text-xs text-gray-400">
@@ -112,7 +112,7 @@ export function NewsArchivePage({
             />
           )}
         </section>
-      </main>
+      </div>
     </div>
   );
 }

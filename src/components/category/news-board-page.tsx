@@ -35,7 +35,7 @@ export function NewsBoardPage({
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
-      <main className="min-w-0 flex-1 space-y-1">
+      <div className="min-w-0 flex-1 space-y-1">
         <nav className="flex items-center gap-1 px-1 text-[11px] text-gray-400">
           <Link href="/" className="hover:text-primary">
             홈
@@ -84,7 +84,7 @@ export function NewsBoardPage({
             />
           )}
         </section>
-      </main>
+      </div>
     </div>
   );
 }
