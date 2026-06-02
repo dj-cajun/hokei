@@ -44,7 +44,8 @@ export async function POST(request: Request) {
   const uri = redirectUri || getKakaoRedirectUri(origin);
 
   try {
-    await signInWithKakaoCode(code, uri, callbackUrl);
+    await signInWithKakaoCode(code, uri, callbackUrl, { redirect: false });
+    return NextResponse.redirect(new URL(callbackUrl, request.url));
   } catch (err) {
     const code =
       err instanceof KakaoAccountLinkError
