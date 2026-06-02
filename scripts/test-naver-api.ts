@@ -12,9 +12,9 @@ if (!clientId || !clientSecret) {
   process.exit(1);
 }
 
-if (clientSecret.length < 20) {
+if (clientSecret.length < 8) {
   console.warn(
-    `[naver:test] Client Secret 길이 ${clientSecret.length}자 — 보통 20자 이상입니다. 잘림·오타 여부를 확인하세요.`
+    `[naver:test] Client Secret 길이 ${clientSecret.length}자 — 비어 있거나 잘렸을 수 있습니다.`
   );
 }
 

@@ -1,10 +1,7 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
 import type { RawNewsItem } from "@/lib/news/rss";
-import {
-  isNaverScraperAvailable,
-  scrapeNaverNewsSearch,
-} from "@/lib/news/naver-scrape";
+import { scrapeNaverNewsSearch } from "@/lib/news/naver-scrape";
 
 type NaverNewsItem = {
   title?: string;
@@ -145,8 +142,29 @@ export async function fetchNaverNewsItems(
   sourceName: string,
   maxPerQuery = 5
 ): Promise<RawNewsItem[]> {
+  const preferApi = process.env.NAVER_PREFER_API === "1";
   const clientId = process.env.NAVER_CLIENT_ID?.trim();
   const clientSecret = process.env.NAVER_CLIENT_SECRET?.trim();
+
+  const fromScraper = () =>
+    scrapeNaverNewsSearch(query, topic, sourceName, maxPerQuery);
+
+  if (preferApi && clientId && clientSecret) {
+    const { items } = await fetchNaverNewsFromApi(
+      query,
+      topic,
+      sourceName,
+      maxPerQuery,
+      clientId,
+      clientSecret
+    );
+    if (items.length > 0) return items;
+    console.warn(`[naver] API 실패/빈 결과 — 스크래퍼 폴백: ${query}`);
+    return fromScraper();
+  }
+
+  const scraped = await fromScraper();
+  if (scraped.length > 0) return scraped;
 
   if (clientId && clientSecret) {
     const { items, authFailed } = await fetchNaverNewsFromApi(
@@ -158,20 +176,14 @@ export async function fetchNaverNewsItems(
       clientSecret
     );
     if (items.length > 0) return items;
-    if (!authFailed) return [];
-    console.warn(`[naver] API 인증 실패 — Playwright 폴백 시도: ${query}`);
+    if (authFailed) {
+      console.warn(`[naver] API 024/401 (스크래퍼도 0건): ${query}`);
+    }
   } else {
     console.warn(
-      "[naver] API 키 없음 — Playwright 폴백 시도 (설정 시 NAVER_CLIENT_ID/SECRET)"
+      "[naver] API 키 없음 — pip3 install -r scripts/python/requirements.txt"
     );
   }
 
-  if (!(await isNaverScraperAvailable())) {
-    console.warn(
-      "[naver-scrape] Python Playwright 미설치. npm run news:scrape:setup"
-    );
-    return [];
-  }
-
-  return scrapeNaverNewsSearch(query, topic, sourceName, maxPerQuery);
+  return [];
 }

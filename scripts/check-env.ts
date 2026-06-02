@@ -128,12 +128,12 @@ const naverId = getValue(content, "NAVER_CLIENT_ID")?.replace(/^["']|["']$/g, ""
 const naverSecret =
   getValue(content, "NAVER_CLIENT_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
 if (naverId && naverSecret) {
-  if (naverSecret.length < 20) {
+  if (naverId.length < 8 || naverSecret.length < 8) {
     console.warn(
-      `[env:check] NAVER_CLIENT_SECRET ${naverSecret.length}자 — 잘림 가능성 (전체 Secret 재붙여넣기, docs/NAVER_API.md)`
+      `[env:check] NAVER 키 길이 이상 — ID/Secret 각각 개발자센터에서 다시 복사 (docs/NAVER_API.md)`
     );
   } else {
-    console.log("[env:check] OK NAVER 키 (길이)");
+    console.log("[env:check] OK NAVER 키 (설정됨, 동작은 npm run naver:test로 확인)");
   }
 }
 

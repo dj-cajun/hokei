@@ -5,10 +5,18 @@
 1. [네이버 개발자센터](https://developers.naver.com/apps) → 해당 애플리케이션
 2. **API 설정** → **검색** API **사용**으로 변경
 3. **Client ID** · **Client Secret** 전체 값을 `.env`에 다시 붙여넣기
-4. Secret이 10자 내외로 잘리지 않았는지 확인
+4. Client ID(긴 값)와 Client Secret(짧은 값, 10자 전후도 정상)을 **각각** 올바른 줄에 넣었는지 확인
 5. `npm run news:ingest` 재실행
 
-API가 실패해도 **Playwright 폴백**으로 일부 뉴스는 수집됩니다 (`npm run news:scrape:setup` 필요).
+Open API(024) 없이도 **requests 스크래퍼 → Playwright 폴백**으로 수집합니다.
+
+```bash
+pip3 install -r scripts/python/requirements.txt
+# Playwright 2차 폴백 (선택)
+npm run news:scrape:setup
+# 미리보기 API
+curl "http://localhost:3001/api/news?q=호치민+한인"
+```
 
 Vercel 등 서버에서는 Playwright가 없으므로, 네이버 없이 **VnExpress RSS만** 수집:
 
