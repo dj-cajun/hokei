@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
@@ -98,7 +98,7 @@ export function WriteForm({
 
   const parsedInitialTitle = useMemo(
     () => (initial?.title ? parseCascadeTitle(initial.title) : null),
-    [initial?.title]
+    [initial]
   );
 
   const fixedMain: CascadeMainCategory | "" = cascadeSection
@@ -138,27 +138,11 @@ export function WriteForm({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
+  const [prevFixedMain, setPrevFixedMain] = useState(fixedMain);
+  if (fixedMain !== prevFixedMain) {
+    setPrevFixedMain(fixedMain);
     if (fixedMain) setMainCategory(fixedMain);
-  }, [fixedMain]);
-
-  useEffect(() => {
-    if (!useCascade || !cascadeSection || !midCategory) return;
-    const resolved = resolveCategoryIdFromCascade(
-      cascadeSection,
-      midCategory,
-      categories,
-      categoryId || defaultCategoryId || categories[0]?.id || ""
-    );
-    if (resolved) setCategoryId(resolved);
-  }, [
-    useCascade,
-    cascadeSection,
-    midCategory,
-    categories,
-    categoryId,
-    defaultCategoryId,
-  ]);
+  }
 
   const sectionGroups = useMemo(
     () => groupBySection(categories),
@@ -284,6 +268,14 @@ export function WriteForm({
   function handleMidChange(mid: string) {
     setMidCategory(mid);
     setSubCategory("");
+    if (!useCascade || !cascadeSection) return;
+    const resolved = resolveCategoryIdFromCascade(
+      cascadeSection,
+      mid,
+      categories,
+      categoryId || defaultCategoryId || categories[0]?.id || ""
+    );
+    if (resolved) setCategoryId(resolved);
   }
 
   return (

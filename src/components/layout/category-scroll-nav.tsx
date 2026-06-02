@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CategoryNavPopoverTab } from "@/components/layout/category-nav-popover-tab";
 import type { CategoryPopoverItem } from "@/components/layout/category-nav-popover-tab";
 import { isNewsSectionPath, NEWS_BOARD_ITEMS } from "@/lib/news-boards-config";
@@ -46,10 +46,12 @@ function isSectionActive(
 export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
   const pathname = usePathname();
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  useEffect(() => {
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setOpenSlug(null);
-  }, [pathname]);
+  }
 
   const sectionDropdowns = useMemo(
     () =>

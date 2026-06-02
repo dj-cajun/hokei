@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,10 +57,12 @@ export function HomeVideoHighlight() {
             className="group relative block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="영상 재생"
           >
-            <img
+            <Image
               src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
               alt=""
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              fill
+              sizes="(max-width: 480px) 100vw, 480px"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
             <div className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/35" />
             <span
