@@ -31,7 +31,7 @@ declare global {
         id: {
           initialize: (config: {
             client_id: string;
-            callback: (response: GoogleCredentialResponse) => void;
+            callback?: (response: GoogleCredentialResponse) => void;
             login_uri?: string;
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;

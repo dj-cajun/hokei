@@ -43,15 +43,14 @@ function isSectionActive(
   );
 }
 
-export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
-  const pathname = usePathname();
+function CategoryScrollNavBody({
+  sections,
+  pathname,
+}: {
+  sections: CategoryNavItem[];
+  pathname: string;
+}) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
-  const [prevPathname, setPrevPathname] = useState(pathname);
-
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
-    setOpenSlug(null);
-  }
 
   const sectionDropdowns = useMemo(
     () =>
@@ -124,5 +123,16 @@ export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
         })}
       </div>
     </nav>
+  );
+}
+
+export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
+  const pathname = usePathname();
+  return (
+    <CategoryScrollNavBody
+      key={pathname}
+      sections={sections}
+      pathname={pathname}
+    />
   );
 }

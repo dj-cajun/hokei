@@ -12,6 +12,7 @@ import {
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { hashGuestPassword, isCommentOwner } from "@/lib/post-permissions";
+import { visibleCommentWhere } from "@/lib/moderation";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
@@ -32,16 +33,17 @@ export async function GET(_request: Request, context: RouteContext) {
     return apiError("글을 찾을 수 없습니다.", 404);
   }
 
-  const [session, comments] = await Promise.all([
-    auth(),
-    prisma.comment.findMany({
-      where: { postId: id },
-      orderBy: { createdAt: "asc" },
-      include: { author: { select: { id: true, name: true } } },
-    }),
-  ]);
-
+  const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      postId: id,
+      ...(isAdmin ? {} : visibleCommentWhere),
+    },
+    orderBy: { createdAt: "asc" },
+    include: { author: { select: { id: true, name: true } } },
+  });
   const userId = session?.user?.id;
 
   return NextResponse.json(

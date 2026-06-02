@@ -6,14 +6,20 @@ import {
   ArrowLeft,
   FolderTree,
   LayoutDashboard,
+  Newspaper,
+  Shield,
+  ShieldAlert,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "대시보드", icon: LayoutDashboard },
-  { href: "/admin/users", label: "회원 관리", icon: Users },
+  { href: "/admin/moderation", label: "모더레이션", icon: Shield },
   { href: "/admin/categories", label: "카테고리", icon: FolderTree },
+  { href: "/admin/ingest", label: "뉴스 수집", icon: Newspaper },
+  { href: "/admin/security", label: "보안·감사", icon: ShieldAlert },
+  { href: "/admin/users", label: "회원 관리", icon: Users },
 ];
 
 export function AdminSidebar() {

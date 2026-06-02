@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,12 +34,11 @@ export function CategoryNavPopoverTab({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<PopoverCoords | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(frame);
-  }, []);
+  const canPortal = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
 
   const updatePosition = () => {
     if (!buttonRef.current) return;
@@ -138,7 +137,7 @@ export function CategoryNavPopoverTab({
         />
       </button>
 
-      {mounted && panel ? createPortal(panel, document.body) : null}
+      {canPortal && panel ? createPortal(panel, document.body) : null}
     </div>
   );
 }

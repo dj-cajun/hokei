@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { NewsIngestPanel } from "@/components/admin/news-ingest-panel";
 import { SearchReindexPanel } from "@/components/admin/search-reindex-panel";
@@ -48,6 +49,14 @@ export default async function AdminDashboardPage() {
       <NewsIngestPanel />
 
       <SearchReindexPanel databaseKind={getDatabaseKind()} />
+
+      <p className="text-sm text-muted-foreground">
+        수집 이력·오류 로그는{" "}
+        <Link href="/admin/ingest" className="font-medium text-primary hover:underline">
+          뉴스 수집 관제
+        </Link>
+        에서 확인하세요.
+      </p>
 
       <p className="text-xs text-muted-foreground">
         오늘 자동 수집된 뉴스: {newsToday} / 10건

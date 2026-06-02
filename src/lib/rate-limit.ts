@@ -16,6 +16,7 @@ export const RATE_LIMIT_PRESETS = {
   post: { windowMs: 60_000 * 5, maxRequests: 5 },
   search: { windowMs: 60_000, maxRequests: 30 },
   general: { windowMs: 60_000, maxRequests: 60 },
+  report: { windowMs: 60_000 * 15, maxRequests: 10 },
   /** 댓글 수정·삭제 (시간당) */
   commentsPatch: { windowMs: 60_000 * 60, maxRequests: 30 },
   commentsDelete: { windowMs: 60_000 * 60, maxRequests: 20 },
@@ -89,6 +90,13 @@ export async function enforceRateLimitPreset(
   preset: RateLimitPreset
 ): Promise<NextResponse | null> {
   const ip = getClientIp(request);
+  const { isIpBlocked } = await import("@/lib/admin/ip-block");
+  if (await isIpBlocked(ip)) {
+    return NextResponse.json(
+      { ok: false, error: "접근이 제한된 IP입니다." },
+      { status: 403 }
+    );
+  }
   const key = `${preset}:${ip}`;
   if (!(await isRateLimitAllowed(key, preset))) {
     return NextResponse.json(

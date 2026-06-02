@@ -2,6 +2,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
+import { writeAdminAudit } from "@/lib/admin/audit-log";
 import { prisma } from "@/lib/prisma";
 
 const updateSchema = z.object({
@@ -42,6 +43,15 @@ export async function PATCH(
       },
     });
 
+    await writeAdminAudit({
+      actorId: session.user.id,
+      action: "USER_ROLE_CHANGE",
+      targetType: "User",
+      targetId: id,
+      metadata: { role: parsed.data.role },
+      request,
+    });
+
     return apiSuccess({ user });
   } catch (err) {
     log("error", "admin user patch failed", {
@@ -52,7 +62,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -68,6 +78,13 @@ export async function DELETE(
 
   try {
     await prisma.user.delete({ where: { id } });
+    await writeAdminAudit({
+      actorId: session.user.id,
+      action: "USER_DELETE",
+      targetType: "User",
+      targetId: id,
+      request,
+    });
     return apiSuccess({ deleted: true });
   } catch (err) {
     log("error", "admin user delete failed", {

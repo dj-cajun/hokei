@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
 import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
+import { ReportContentButton } from "@/components/posts/report-content-button";
 import { mapPostComments } from "@/lib/map-post-comments";
 import { isPostOwner } from "@/lib/post-permissions";
 import type { Post, PostAttachment, Comment, User } from "@/generated/prisma/client";
@@ -136,6 +137,12 @@ export function CommunityPostArticle({
           canEditAsUser={canEditAsUser}
           isGuestPost={isGuestPost}
         />
+
+        {!isAdmin && (
+          <div className="mt-2 border-t border-gray-100 pt-2">
+            <ReportContentButton targetType="POST" targetId={post.id} />
+          </div>
+        )}
 
         <PostComments postId={post.id} initialComments={initialComments} />
       </article>

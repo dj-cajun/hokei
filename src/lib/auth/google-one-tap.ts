@@ -22,13 +22,52 @@ export type GoogleCredentialHandler = (
   response: GoogleCredentialResponse
 ) => void | Promise<void>;
 
-const GIS_CONFIG_VERSION = 2;
+const GIS_CONFIG_VERSION = 3;
 
-let gisInitialized = false;
+type GisMode = "redirect" | "prompt";
+
+let gisMode: GisMode | null = null;
 let gisConfigVersion = 0;
 let gisLoginUri = "";
 
-function ensureGisInitialized(
+function resetGisState(): void {
+  cancelGoogleOneTap();
+  gisMode = null;
+  gisConfigVersion = 0;
+}
+
+/** redirect 버튼 — callback 없이 login_uri만 (팝업 id_token 경로 방지) */
+function ensureGisRedirectInitialized(loginUri: string): boolean {
+  const clientId = getGoogleClientId();
+  if (!clientId || !window.google?.accounts?.id) return false;
+
+  const loginUriChanged = gisLoginUri && gisLoginUri !== loginUri;
+  const needsReinit =
+    gisMode !== "redirect" ||
+    loginUriChanged ||
+    gisConfigVersion !== GIS_CONFIG_VERSION;
+
+  if (needsReinit) {
+    if (gisMode === "prompt") resetGisState();
+    cancelGoogleOneTap();
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      login_uri: loginUri,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: "signin",
+      itp_support: false,
+    });
+    gisMode = "redirect";
+    gisConfigVersion = GIS_CONFIG_VERSION;
+    gisLoginUri = loginUri;
+  }
+
+  return true;
+}
+
+/** One Tap / credential 콜백 — popup·FedCM 경로 */
+function ensureGisPromptInitialized(
   onCredential: GoogleCredentialHandler,
   loginUri: string
 ): boolean {
@@ -36,13 +75,13 @@ function ensureGisInitialized(
   if (!clientId || !window.google?.accounts?.id) return false;
 
   const loginUriChanged = gisLoginUri && gisLoginUri !== loginUri;
-
   const needsReinit =
-    !gisInitialized ||
+    gisMode !== "prompt" ||
     loginUriChanged ||
     gisConfigVersion !== GIS_CONFIG_VERSION;
 
   if (needsReinit) {
+    if (gisMode === "redirect") resetGisState();
     cancelGoogleOneTap();
     window.google.accounts.id.initialize({
       client_id: clientId,
@@ -56,7 +95,7 @@ function ensureGisInitialized(
       itp_support: false,
       use_fedcm_for_prompt: GOOGLE_FEDCM_FOR_PROMPT,
     });
-    gisInitialized = true;
+    gisMode = "prompt";
     gisConfigVersion = GIS_CONFIG_VERSION;
     gisLoginUri = loginUri;
   }
@@ -86,7 +125,7 @@ export async function initGoogleOneTap(
   };
 
   const loginUri = getGoogleRedirectLoginUri();
-  if (!ensureGisInitialized(onCredential, loginUri)) return false;
+  if (!ensureGisPromptInitialized(onCredential, loginUri)) return false;
 
   window.google.accounts.id.prompt((notification) => {
     if (notification.isNotDisplayed()) {
@@ -110,10 +149,12 @@ export function cancelGoogleOneTap(): void {
   window.google?.accounts?.id?.cancel();
 }
 
-/** 구글 로그인 버튼 — ux_mode: redirect (팝업 차단 회피) */
+/**
+ * 구글 로그인 버튼 — ux_mode: redirect (같은 탭 POST, 팝업 미사용)
+ * credential은 /api/auth/google/redirect 로 전달됩니다.
+ */
 export async function renderGoogleSignInButton(
   container: HTMLElement,
-  onCredential: GoogleCredentialHandler,
   options?: { callbackUrl?: string }
 ): Promise<boolean> {
   const clientId = getGoogleClientId();
@@ -123,7 +164,8 @@ export async function renderGoogleSignInButton(
   if (!window.google?.accounts?.id) return false;
 
   const loginUri = getGoogleRedirectLoginUri();
-  if (!ensureGisInitialized(onCredential, loginUri)) return false;
+  if (!loginUri) return false;
+  if (!ensureGisRedirectInitialized(loginUri)) return false;
 
   container.replaceChildren();
 
@@ -153,6 +195,7 @@ export async function renderGoogleSignInButton(
 export function disableGoogleAutoSelectOnLogout(): void {
   markGoogleAutoSelectDisabled();
   cancelGoogleOneTap();
+  resetGisState();
 }
 
 /** 구글 로그인 성공 후 */

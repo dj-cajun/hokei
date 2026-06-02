@@ -109,9 +109,11 @@ export function WriteForm({
     initial?.categoryId ?? defaultCategoryId ?? ""
   );
   const [mainCategory, setMainCategory] = useState<CascadeMainCategory | "">(
-    parsedInitialTitle && cascadeSection
-      ? SECTION_TO_MAIN[cascadeSection]
-      : fixedMain
+    () =>
+      fixedMain ||
+      (parsedInitialTitle && cascadeSection
+        ? SECTION_TO_MAIN[cascadeSection]
+        : "")
   );
   const [midCategory, setMidCategory] = useState(
     parsedInitialTitle?.midCategory ?? ""
@@ -138,11 +140,7 @@ export function WriteForm({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const [prevFixedMain, setPrevFixedMain] = useState(fixedMain);
-  if (fixedMain !== prevFixedMain) {
-    setPrevFixedMain(fixedMain);
-    if (fixedMain) setMainCategory(fixedMain);
-  }
+  const effectiveMain = fixedMain || mainCategory;
 
   const sectionGroups = useMemo(
     () => groupBySection(categories),
@@ -151,8 +149,7 @@ export function WriteForm({
   const showOptgroups = sectionGroups.length > 1;
 
   function validateCascadeSelection(): boolean {
-    const main = fixedMain || mainCategory;
-    if (!main || !midCategory || !subCategory) {
+    if (!effectiveMain || !midCategory || !subCategory) {
       window.alert("상세 말머리를 모두 선택해 주세요.");
       return false;
     }
@@ -297,7 +294,7 @@ export function WriteForm({
       >
         {useCascade ? (
           <WriteCascadeCategorySelects
-            mainCategory={mainCategory}
+            mainCategory={effectiveMain}
             midCategory={midCategory}
             subCategory={subCategory}
             onMainChange={handleMainChange}

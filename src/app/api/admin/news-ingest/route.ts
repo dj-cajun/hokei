@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
+import { writeAdminAudit } from "@/lib/admin/audit-log";
 import { ingestDailyNews } from "@/lib/news/ingest";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await ingestDailyNews();
+    const result = await ingestDailyNews({
+      triggeredBy: `admin:${session.user.id}`,
+    });
+    await writeAdminAudit({
+      actorId: session.user.id,
+      action: "NEWS_INGEST_MANUAL",
+      metadata: {
+        inserted: result.inserted,
+        skipped: result.skipped,
+      },
+      request,
+    });
     return apiSuccess({
       message: `뉴스 수집 완료: ${result.inserted}건 추가`,
       ...result,

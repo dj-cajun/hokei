@@ -1,7 +1,7 @@
 /**
  * DATABASE_URL에 맞는 Prisma Client 생성 (Vercel·로컬 공통)
  */
-import { loadDotenv } from "./lib/load-dotenv";
+import { loadDotenv } from "../src/lib/load-dotenv";
 import { spawnSync } from "child_process";
 
 loadDotenv();

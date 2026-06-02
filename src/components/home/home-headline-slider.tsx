@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Pause, Play } from "lucide-react";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { cn } from "@/lib/utils";
 import type { FeedItem } from "@/types/feed";
@@ -87,6 +88,20 @@ export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
       </Link>
 
       {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            className="absolute right-2 top-2 z-10 rounded-full bg-black/50 p-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-pressed={paused}
+            aria-label={paused ? "슬라이드 자동 재생" : "슬라이드 자동 재생 일시정지"}
+            onClick={() => setPaused((p) => !p)}
+          >
+            {paused ? (
+              <Play className="h-4 w-4" aria-hidden />
+            ) : (
+              <Pause className="h-4 w-4" aria-hidden />
+            )}
+          </button>
         <div
           className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-1"
           role="tablist"
@@ -107,6 +122,7 @@ export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
             />
           ))}
         </div>
+        </>
       )}
     </section>
   );

@@ -1,5 +1,9 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import { buildContentSecurityPolicy } from "./src/lib/security/content-security-policy";
+
+const isDev = process.env.NODE_ENV === "development";
+const contentSecurityPolicy = buildContentSecurityPolicy(isDev);
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["jsdom", "@mozilla/readability"],
@@ -19,6 +23,14 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: contentSecurityPolicy,
+          },
         ],
       },
     ];

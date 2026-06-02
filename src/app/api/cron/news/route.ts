@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await ingestDailyNews();
+    const result = await ingestDailyNews({ triggeredBy: "cron" });
     return apiSuccess({
       message: `뉴스 수집 완료: ${result.inserted}건 추가, ${result.skipped}건 건너뜀`,
       ...result,

@@ -6,7 +6,8 @@ import {
   isNaverRequestsScraperAvailable,
   isNaverScraperAvailable,
 } from "@/lib/news/naver-scrape";
-import { MAX_DAILY_NEWS, NEWS_TOPIC_SOURCES } from "@/lib/news/sources";
+import { loadNewsTopicSourcesFromDb } from "@/lib/news/load-sources-config";
+import { MAX_DAILY_NEWS } from "@/lib/news/sources";
 import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
 import type { RawNewsItem } from "@/lib/news/rss";
 import { passesTopicRelevanceFilter } from "@/lib/news/topic-relevance";
@@ -97,11 +98,14 @@ function pickBalanced(
 export type IngestOptions = {
   /** Google 뉴스 삭제 후 전량 재수집 등 — 호치민 기준 일일 상한 무시 */
   ignoreDailyCap?: boolean;
+  /** cron | admin:{userId} */
+  triggeredBy?: string;
 };
 
 export async function ingestDailyNews(
   options?: IngestOptions
 ): Promise<IngestResult> {
+  const startedAt = Date.now();
   const result: IngestResult = {
     inserted: 0,
     skipped: 0,
@@ -138,8 +142,9 @@ export async function ingestDailyNews(
   }
 
   const rssOnly = process.env.INGEST_RSS_ONLY === "1";
+  const topicSources = await loadNewsTopicSourcesFromDb();
 
-  for (const config of NEWS_TOPIC_SOURCES) {
+  for (const config of topicSources) {
     const feeds = rssOnly
       ? VNEXPRESS_RSS_FALLBACK_FEEDS[config.topic]
       : config.feeds;
@@ -199,7 +204,7 @@ export async function ingestDailyNews(
   }));
 
   for (const raw of toProcess) {
-    const config = NEWS_TOPIC_SOURCES.find((c) => c.topic === raw.topic);
+    const config = topicSources.find((c) => c.topic === raw.topic);
     const categoryId = categoryMap.get(config?.categorySlug ?? "");
     if (!categoryId) {
       result.skipped++;
@@ -258,12 +263,24 @@ export async function ingestDailyNews(
     }
   }
 
+  const errorSlice = result.errors.slice(0, 50);
   await prisma.newsIngestRun.create({
     data: {
       inserted: result.inserted,
       skipped: result.skipped,
       errors:
-        result.errors.length > 0 ? result.errors.slice(0, 20).join("\n") : null,
+        errorSlice.length > 0 ? errorSlice.join("\n") : null,
+      errorDetails:
+        errorSlice.length > 0
+          ? JSON.stringify(
+              errorSlice.map((message) => ({
+                message,
+                at: new Date().toISOString(),
+              }))
+            )
+          : null,
+      durationMs: Date.now() - startedAt,
+      triggeredBy: options?.triggeredBy ?? null,
     },
   });
 

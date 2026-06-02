@@ -12,9 +12,10 @@ import {
   formatRelativeTime,
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
+import { visibleCommentWhere, visiblePostWhere } from "@/lib/moderation";
 
 const communityWhere = {
-  status: "PUBLISHED" as const,
+  ...visiblePostWhere,
   isAutomated: false,
   sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
   category: { parent: { slug: "community" } },
@@ -78,8 +79,13 @@ function toFeedItem(post: {
 
 const postInclude = {
   category: { select: { label: true, colorClass: true } },
-  _count: { select: { comments: true } },
+  _count: {
+    select: {
+      comments: { where: visibleCommentWhere },
+    },
+  },
   comments: {
+    where: visibleCommentWhere,
     orderBy: { createdAt: "desc" as const },
     take: 1,
     select: {
@@ -92,7 +98,7 @@ const postInclude = {
 
 export async function getLatestPosts(limit = 20): Promise<FeedItem[]> {
   const posts = await prisma.post.findMany({
-    where: { status: "PUBLISHED" },
+    where: visiblePostWhere,
     orderBy: { publishedAt: "desc" },
     take: limit,
     include: postInclude,
@@ -102,7 +108,7 @@ export async function getLatestPosts(limit = 20): Promise<FeedItem[]> {
 
 export async function getPopularPosts(limit = 20): Promise<FeedItem[]> {
   const posts = await prisma.post.findMany({
-    where: { status: "PUBLISHED" },
+    where: visiblePostWhere,
     orderBy: [{ views: "desc" }, { publishedAt: "desc" }],
     take: limit,
     include: postInclude,
@@ -154,7 +160,7 @@ function publishedBySectionSlug(
   options?: { communityOnly?: boolean }
 ) {
   return {
-    status: "PUBLISHED" as const,
+    ...visiblePostWhere,
     category: { parent: { slug: sectionSlug } },
     ...(options?.communityOnly
       ? {
@@ -194,7 +200,7 @@ export async function getPostsBySectionSlug(
 export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
   const posts = await prisma.post.findMany({
     where: {
-      status: "PUBLISHED",
+      ...visiblePostWhere,
       isAutomated: true,
       category: {
         OR: [{ slug: "news" }, { parent: { slug: "news" } }],
@@ -207,7 +213,10 @@ export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
   return posts.map(toFeedItem);
 }
 
-export async function getPostById(id: string) {
+export async function getPostById(
+  id: string,
+  options?: { includeHiddenComments?: boolean }
+) {
   return prisma.post.findUnique({
     where: { id },
     include: {
@@ -217,6 +226,9 @@ export async function getPostById(id: string) {
       author: { select: { id: true, name: true } },
       attachments: { orderBy: { sortOrder: "asc" } },
       comments: {
+        ...(options?.includeHiddenComments
+          ? {}
+          : { where: visibleCommentWhere }),
         orderBy: { createdAt: "asc" },
         include: { author: { select: { id: true, name: true } } },
       },
@@ -262,7 +274,7 @@ export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]
 
   if (rankedIds.length > 0) {
     const posts = await prisma.post.findMany({
-      where: { id: { in: rankedIds }, status: "PUBLISHED" },
+      where: { id: { in: rankedIds }, ...visiblePostWhere },
       include: postInclude,
     });
     const order = new Map(rankedIds.map((id, i) => [id, i]));
@@ -274,7 +286,7 @@ export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]
 
   const posts = await prisma.post.findMany({
     where: {
-      status: "PUBLISHED",
+      ...visiblePostWhere,
       OR: textContainsFilter(q),
     },
     orderBy: { publishedAt: "desc" },
@@ -286,7 +298,7 @@ export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]
 }
 
 const publishedByCategorySlug = (categorySlug: string) => ({
-  status: "PUBLISHED" as const,
+  ...visiblePostWhere,
   category: { slug: categorySlug },
 });
 
@@ -357,7 +369,7 @@ export async function getSectionBoardPreview(
 ): Promise<BoardPreviewRow[]> {
   const posts = await prisma.post.findMany({
     where: {
-      status: "PUBLISHED",
+      ...visiblePostWhere,
       category: { parent: { slug: sectionSlug } },
       ...(options?.communityOnly
         ? { isAutomated: false, sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX } }

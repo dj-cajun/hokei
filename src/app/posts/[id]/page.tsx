@@ -19,8 +19,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const post = await getPostById(id);
-  if (!post) return { title: "호케이 Hokei" };
+  const post = await getPostById(id, { includeHiddenComments: false });
+  if (!post || post.moderationStatus !== "VISIBLE") return { title: "호케이 Hokei" };
   return {
     title: `${post.title} - 호케이 Hokei`,
     description: (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160),
@@ -29,9 +29,12 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function PostPage({ params }: PageProps) {
   const { id } = await params;
-  const [post, session] = await Promise.all([getPostById(id), auth()]);
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
+  const post = await getPostById(id, { includeHiddenComments: isAdmin });
 
   if (!post) notFound();
+  if (post.moderationStatus !== "VISIBLE" && !isAdmin) notFound();
 
   const isCommunity = isCommunityPost(post.sourceUrl);
 

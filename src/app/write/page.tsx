@@ -40,6 +40,7 @@ export default async function WritePage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-white">
       <WriteForm
+        key={sectionSlug ?? "write"}
         pageTitle={meta?.title ?? "글쓰기"}
         categories={categories}
         defaultCategoryId={defaultCategoryId}

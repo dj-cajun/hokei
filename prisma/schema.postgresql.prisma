@@ -27,9 +27,34 @@ enum PostStatus {
   DRAFT
 }
 
+enum ModerationStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
+}
+
 enum AttachmentKind {
   IMAGE
   FILE
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+}
+
+enum ReportReason {
+  SPAM
+  AD
+  ABUSE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
 }
 
 model User {
@@ -87,6 +112,10 @@ model Post {
   views               Int              @default(0)
   commentCount        Int              @default(0)
   status              PostStatus       @default(PUBLISHED)
+  moderationStatus    ModerationStatus @default(VISIBLE)
+  moderatedAt         DateTime?
+  moderatedById       String?
+  moderationNote      String?
   isAutomated         Boolean          @default(true)
   ingestedAt          DateTime         @default(now())
   createdAt           DateTime         @default(now())
@@ -95,6 +124,7 @@ model Post {
   comments            Comment[]
 
   @@index([categoryId])
+  @@index([moderationStatus])
   @@index([publishedAt])
   @@index([status, publishedAt])
   @@index([topic])
@@ -127,18 +157,93 @@ model Comment {
   guestName         String?
   guestPasswordHash String?
   content           String
+  isHidden          Boolean  @default(false)
+  hiddenAt          DateTime?
+  hiddenById        String?
   createdAt         DateTime @default(now())
 
   @@index([postId])
   @@index([createdAt])
   @@index([authorId])
+  @@index([isHidden])
+}
+
+model ContentReport {
+  id           String           @id @default(cuid())
+  targetType   ReportTargetType
+  targetId     String
+  reporterId   String?
+  guestContact String?
+  reason       ReportReason
+  detail       String?
+  status       ReportStatus     @default(OPEN)
+  assignedToId String?
+  resolvedAt   DateTime?
+  resolution   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+model NewsSourceConfig {
+  id         String    @id @default(cuid())
+  topic      PostTopic
+  type       String
+  query      String?
+  url        String?
+  sourceName String
+  isEnabled  Boolean   @default(true)
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([topic, isEnabled])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([action])
+}
+
+model IpBlockEntry {
+  id          String    @id @default(cuid())
+  pattern     String    @unique
+  reason      String
+  expiresAt   DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+
+  @@index([expiresAt])
+}
+
+model StorageSnapshot {
+  id                String   @id @default(cuid())
+  takenAt           DateTime @default(now())
+  attachmentBytes   Int      @default(0)
+  attachmentCount   Int      @default(0)
+  blobEstimateBytes Int?
 }
 
 model NewsIngestRun {
-  id       String   @id @default(cuid())
-  runAt    DateTime @default(now())
-  inserted Int      @default(0)
-  skipped  Int      @default(0)
-  errors   String?
-  timezone String   @default("Asia/Ho_Chi_Minh")
+  id           String   @id @default(cuid())
+  runAt        DateTime @default(now())
+  inserted     Int      @default(0)
+  skipped      Int      @default(0)
+  errors       String?
+  errorDetails String?
+  durationMs   Int?
+  triggeredBy  String?
+  timezone     String   @default("Asia/Ho_Chi_Minh")
 }

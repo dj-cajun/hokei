@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { postGoogleCredential } from "@/lib/auth/google-credential-client";
+import { useEffect, useRef } from "react";
 import {
   getGoogleClientId,
   renderGoogleSignInButton,
 } from "@/lib/auth/google-one-tap";
-import { parseApiError } from "@/lib/api-response";
 import { setGoogleCallbackCookie } from "@/lib/auth/google-callback-cookie";
 
 type GoogleSignInButtonProps = {
@@ -17,30 +15,12 @@ type GoogleSignInButtonProps = {
 };
 
 export function GoogleSignInButton({
-  onSuccess,
   onError,
   className,
   callbackUrl = "/",
 }: GoogleSignInButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const configured = Boolean(getGoogleClientId());
-
-  const handleCredential = useCallback(
-    async (response: { credential?: string }) => {
-      if (!response.credential) return;
-      try {
-        await postGoogleCredential(response.credential);
-        onSuccess?.();
-      } catch (err) {
-        const msg =
-          err instanceof Error
-            ? err.message
-            : parseApiError(err) ?? "구글 로그인에 실패했습니다.";
-        onError?.(msg);
-      }
-    },
-    [onSuccess, onError]
-  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -50,11 +30,14 @@ export function GoogleSignInButton({
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
-      renderGoogleSignInButton(el, handleCredential, { callbackUrl }).catch(
-        () => {
-          if (!cancelled) el.replaceChildren();
+      renderGoogleSignInButton(el, { callbackUrl }).catch(() => {
+        if (!cancelled) {
+          el.replaceChildren();
+          onError?.(
+            "구글 로그인 버튼을 불러오지 못했습니다. 팝업 차단을 해제하거나 새로고침해 주세요."
+          );
         }
-      );
+      });
     }, 120);
 
     return () => {
@@ -62,7 +45,7 @@ export function GoogleSignInButton({
       window.clearTimeout(timer);
       el.replaceChildren();
     };
-  }, [configured, handleCredential, callbackUrl]);
+  }, [configured, callbackUrl, onError]);
 
   if (!configured) {
     return (

@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { loadDotenv } from "@/lib/load-dotenv";
+
+loadDotenv();
+
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
