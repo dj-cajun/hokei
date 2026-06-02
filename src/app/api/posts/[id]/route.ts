@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import {
-  enforceGuestPasswordAttempts,
   enforcePreset,
+  guestPasswordBlockedResponse,
+  isGuestPasswordBlocked,
+  recordGuestPasswordFailure,
 } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import {
@@ -20,6 +22,7 @@ import {
   indexPostInSearch,
   removePostFromSearch,
 } from "@/lib/search/index-post";
+import { attachmentUrlsToDelete } from "@/lib/posts/attachment-sync";
 import { deleteUploadFile } from "@/lib/upload";
 
 const attachmentSchema = z.object({
@@ -74,15 +77,20 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const session = await auth();
-    if (!session?.user && parsed.data.guestPassword) {
-      const blocked = enforceGuestPasswordAttempts(request, id);
-      if (blocked) return blocked;
+    const guestPw = parsed.data.guestPassword;
+    if (!session?.user && guestPw) {
+      if (isGuestPasswordBlocked(request, id)) {
+        return guestPasswordBlockedResponse();
+      }
     }
 
     const allowed = await canModifyPost(post, {
-      guestPassword: parsed.data.guestPassword,
+      guestPassword: guestPw,
     });
     if (!allowed) {
+      if (!session?.user && guestPw) {
+        recordGuestPasswordFailure(request, id);
+      }
       return apiError("수정 권한이 없습니다.", 403);
     }
 
@@ -107,8 +115,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const firstImage = attachments?.find((a) => a.kind === "IMAGE");
 
     if (attachments) {
-      for (const old of post.attachments) {
-        await deleteUploadFile(old.url);
+      for (const url of attachmentUrlsToDelete(post.attachments, attachments)) {
+        await deleteUploadFile(url);
       }
       await prisma.postAttachment.deleteMany({ where: { postId: id } });
       if (attachments.length > 0) {
@@ -187,12 +195,16 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     const session = await auth();
     if (!session?.user && guestPassword) {
-      const blocked = enforceGuestPasswordAttempts(request, id);
-      if (blocked) return blocked;
+      if (isGuestPasswordBlocked(request, id)) {
+        return guestPasswordBlockedResponse();
+      }
     }
 
     const allowed = await canModifyPost(post, { guestPassword });
     if (!allowed) {
+      if (!session?.user && guestPassword) {
+        recordGuestPasswordFailure(request, id);
+      }
       return apiError("삭제 권한이 없습니다.", 403);
     }
 

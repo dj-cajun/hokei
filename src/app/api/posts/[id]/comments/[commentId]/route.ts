@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import {
-  enforceGuestCommentPasswordAttempts,
   enforcePreset,
+  guestPasswordBlockedResponse,
+  isGuestCommentPasswordBlocked,
+  recordGuestCommentPasswordFailure,
 } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import {
@@ -94,15 +96,20 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const session = await auth();
-    if (!session?.user && parsed.data.guestPassword) {
-      const blocked = enforceGuestCommentPasswordAttempts(request, commentId);
-      if (blocked) return blocked;
+    const guestPw = parsed.data.guestPassword;
+    if (!session?.user && guestPw) {
+      if (isGuestCommentPasswordBlocked(request, commentId)) {
+        return guestPasswordBlockedResponse();
+      }
     }
 
     const allowed = await canModifyComment(comment, {
-      guestPassword: parsed.data.guestPassword,
+      guestPassword: guestPw,
     });
     if (!allowed) {
+      if (!session?.user && guestPw) {
+        recordGuestCommentPasswordFailure(request, commentId);
+      }
       return apiError("수정 권한이 없습니다.", 403);
     }
 
@@ -148,12 +155,16 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     const session = await auth();
     if (!session?.user && guestPassword) {
-      const blocked = enforceGuestCommentPasswordAttempts(request, commentId);
-      if (blocked) return blocked;
+      if (isGuestCommentPasswordBlocked(request, commentId)) {
+        return guestPasswordBlockedResponse();
+      }
     }
 
     const allowed = await canModifyComment(comment, { guestPassword });
     if (!allowed) {
+      if (!session?.user && guestPassword) {
+        recordGuestCommentPasswordFailure(request, commentId);
+      }
       return apiError("삭제 권한이 없습니다.", 403);
     }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, peekRateLimit, recordRateLimitFailure } from "@/lib/rate-limit";
 
 describe("checkRateLimit", () => {
   it("allows requests within limit", () => {
@@ -14,5 +14,15 @@ describe("checkRateLimit", () => {
     expect(checkRateLimit(key, 2, 60_000)).toBe(true);
     expect(checkRateLimit(key, 2, 60_000)).toBe(true);
     expect(checkRateLimit(key, 2, 60_000)).toBe(false);
+  });
+
+  it("peek does not increment count", () => {
+    const key = `test-${Date.now()}-peek`;
+    expect(peekRateLimit(key, 2, 60_000)).toBe(true);
+    expect(peekRateLimit(key, 2, 60_000)).toBe(true);
+    recordRateLimitFailure(key, 2, 60_000);
+    expect(peekRateLimit(key, 2, 60_000)).toBe(true);
+    recordRateLimitFailure(key, 2, 60_000);
+    expect(peekRateLimit(key, 2, 60_000)).toBe(false);
   });
 });

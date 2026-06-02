@@ -42,6 +42,28 @@ export function checkRateLimit(
   return true;
 }
 
+/** 시도 허용 여부만 확인 (카운트 증가 없음) */
+export function peekRateLimit(
+  key: string,
+  limit: number,
+  _windowMs?: number
+): boolean {
+  void _windowMs;
+  const now = Date.now();
+  const bucket = buckets.get(key);
+  if (!bucket || now > bucket.resetAt) return true;
+  return bucket.count < limit;
+}
+
+/** 실패한 시도 1회 기록 */
+export function recordRateLimitFailure(
+  key: string,
+  limit: number,
+  windowMs: number
+): void {
+  checkRateLimit(key, limit, windowMs);
+}
+
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0]!.trim();
