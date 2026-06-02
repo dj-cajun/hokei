@@ -4,9 +4,17 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
 
-const connectionString =
-  process.env.DATABASE_URL?.trim() ||
-  (process.env.VERCEL === "1" ? "" : "file:./dev.db");
+function resolveConnectionString(): string {
+  const fromEnv = process.env.DATABASE_URL?.trim();
+  if (fromEnv) return fromEnv;
+  if (process.env.VERCEL === "1") return "";
+  if (PRISMA_DATASOURCE_PROVIDER === "sqlite") return "file:./dev.db";
+  throw new Error(
+    "DATABASE_URL이 비어 있습니다. .env에 postgresql://… 또는 로컬 SQLite용 file:./dev.db 를 설정하세요."
+  );
+}
+
+const connectionString = resolveConnectionString();
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;

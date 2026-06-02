@@ -45,14 +45,15 @@ export function LoginModal({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cn(
-            "fixed inset-0 z-[100] bg-black/45",
+            "fixed inset-0 z-[100] bg-black/40 backdrop-blur-md",
+            "supports-[backdrop-filter]:bg-black/25",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           )}
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[101] mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-white shadow-2xl outline-none",
+            "fixed inset-x-0 bottom-0 z-[101] mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/60 bg-white/95 shadow-2xl outline-none backdrop-blur-xl supports-[backdrop-filter]:bg-white/90",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300",
             "pb-[max(1rem,env(safe-area-inset-bottom))]"
@@ -75,7 +76,7 @@ export function LoginModal({
               </DialogPrimitive.Description>
             </div>
             <DialogPrimitive.Close
-              className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary"
+              className="focus-ring rounded-lg p-1.5 text-muted-foreground hover:bg-secondary"
               aria-label="닫기"
             >
               <X className="h-5 w-5" />

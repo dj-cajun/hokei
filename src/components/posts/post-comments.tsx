@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { CommentItem } from "@/components/posts/comment-types";
 import { CommentForm } from "@/components/posts/comment-form";
-import { CommentRow } from "@/components/posts/comment-row";
+import { CommentList } from "@/components/posts/comment-list";
 
 export type { CommentItem } from "@/components/posts/comment-types";
 
@@ -21,27 +21,18 @@ export function PostComments({ postId, initialComments }: PostCommentsProps) {
         댓글 {comments.length}
       </h2>
 
-      <ul className="mt-2 space-y-3">
-        {comments.length === 0 ? (
-          <li className="text-xs text-gray-400">첫 댓글을 남겨 보세요.</li>
-        ) : (
-          comments.map((c) => (
-            <CommentRow
-              key={c.id}
-              postId={postId}
-              comment={c}
-              onUpdate={(updated) =>
-                setComments((prev) =>
-                  prev.map((item) => (item.id === updated.id ? updated : item))
-                )
-              }
-              onDelete={() =>
-                setComments((prev) => prev.filter((item) => item.id !== c.id))
-              }
-            />
-          ))
-        )}
-      </ul>
+      <CommentList
+        postId={postId}
+        comments={comments}
+        onUpdate={(updated) =>
+          setComments((prev) =>
+            prev.map((item) => (item.id === updated.id ? updated : item))
+          )
+        }
+        onDelete={(commentId) =>
+          setComments((prev) => prev.filter((item) => item.id !== commentId))
+        }
+      />
 
       <CommentForm
         postId={postId}

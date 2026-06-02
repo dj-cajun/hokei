@@ -318,7 +318,7 @@ export function WriteForm({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full appearance-none bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-0"
+              className="w-full appearance-none bg-transparent text-sm text-gray-700 focus-ring"
               required
             >
               <option value="" disabled>
@@ -356,7 +356,7 @@ export function WriteForm({
               placeholder="이름"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
-              className="w-full text-sm text-gray-800 focus:outline-none focus:ring-0"
+              className="w-full text-sm text-gray-800 focus-ring"
               autoComplete="name"
             />
             <input
@@ -364,7 +364,7 @@ export function WriteForm({
               placeholder="비밀번호"
               value={guestPassword}
               onChange={(e) => setGuestPassword(e.target.value)}
-              className="w-full text-sm text-gray-800 focus:outline-none focus:ring-0"
+              className="w-full text-sm text-gray-800 focus-ring"
               autoComplete="new-password"
             />
           </div>
@@ -377,7 +377,7 @@ export function WriteForm({
               placeholder="글 비밀번호"
               value={editPassword}
               onChange={(e) => setEditPassword(e.target.value)}
-              className="w-full text-sm text-gray-800 focus:outline-none focus:ring-0"
+              className="w-full text-sm text-gray-800 focus-ring"
             />
           </div>
         )}
@@ -388,7 +388,7 @@ export function WriteForm({
             placeholder="제목을 입력해 주세요."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-base font-medium text-gray-900 focus:outline-none focus:ring-0"
+            className="w-full text-base font-medium text-gray-900 focus-ring"
             required
           />
         </div>
@@ -398,7 +398,7 @@ export function WriteForm({
             placeholder="내용을 입력해 주세요."
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            className="min-h-[300px] w-full resize-none py-4 px-4 text-sm text-gray-800 focus:outline-none focus:ring-0"
+            className="min-h-[300px] w-full resize-none py-4 px-4 text-sm text-gray-800 focus-ring"
             required
           />
         </div>

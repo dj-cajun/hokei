@@ -24,7 +24,7 @@ export function WriteFormTopBar({
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex h-8 w-8 items-center justify-center text-gray-700 focus:outline-none focus:ring-0"
+          className="flex h-8 w-8 items-center justify-center text-gray-700 focus-ring"
           aria-label="뒤로가기"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -38,7 +38,7 @@ export function WriteFormTopBar({
           type="button"
           onClick={onSubmit}
           disabled={submitting}
-          className="rounded-sm bg-[#0f172a] px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:ring-0 disabled:opacity-50"
+          className="rounded-sm bg-[#0f172a] px-3 py-1.5 text-xs font-semibold text-white focus-ring disabled:opacity-50"
         >
           {submitting ? "등록 중…" : submitLabel}
         </button>

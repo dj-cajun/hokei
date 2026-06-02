@@ -74,7 +74,7 @@ export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
         <Link
           href={homeTab.href}
           className={cn(
-            "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-0",
+            "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
             pathname === "/"
               ? "border-primary font-bold text-primary"
               : "border-transparent font-medium text-gray-500 hover:text-foreground"
@@ -93,7 +93,7 @@ export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
                 key={section.id}
                 href={section.href}
                 className={cn(
-                  "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-0",
+                  "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
                   active
                     ? "border-primary font-bold text-primary"
                     : "border-transparent font-medium text-gray-500 hover:text-foreground"

@@ -42,3 +42,14 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* 키보드 포커스 — outline 제거 대신 visible 링 */
+@layer utilities {
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--primary);
+  }
+}

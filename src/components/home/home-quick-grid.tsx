@@ -32,7 +32,7 @@ export function HomeQuickGrid() {
       <div className="mx-auto grid max-w-md grid-cols-3 gap-x-4 gap-y-3 text-center">
         <button
           type="button"
-          className="group flex flex-col items-center gap-1.5 focus:outline-none focus:ring-0"
+          className="group flex flex-col items-center gap-1.5 focus-ring"
           onClick={() => router.push("/board/news?type=all")}
         >
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-500 transition-transform group-active:scale-95">
@@ -45,7 +45,7 @@ export function HomeQuickGrid() {
           <Link
             key={item.label}
             href={item.href}
-            className="group flex flex-col items-center gap-1.5 focus:outline-none focus:ring-0"
+            className="group flex flex-col items-center gap-1.5 focus-ring"
           >
             <span
               className={`flex h-14 w-14 items-center justify-center rounded-full text-xl transition-transform group-active:scale-95 ${PASTELS[(i + 1) % PASTELS.length]}`}

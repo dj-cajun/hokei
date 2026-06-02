@@ -104,7 +104,7 @@ export function CategoryNavPopoverTab({
               <Link
                 href={item.href}
                 role="menuitem"
-                className="block px-4 py-2.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary focus:outline-none focus:ring-0 active:bg-gray-100"
+                className="block px-4 py-2.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary focus-ring active:bg-gray-100"
                 onClick={onClose}
               >
                 {item.label}
@@ -122,7 +122,7 @@ export function CategoryNavPopoverTab({
         type="button"
         onClick={onToggle}
         className={cn(
-          "flex items-center gap-0.5 border-b-2 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-0",
+          "flex items-center gap-0.5 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
           active || open
             ? "border-primary font-bold text-primary"
             : "border-transparent font-medium text-gray-500 hover:text-foreground"

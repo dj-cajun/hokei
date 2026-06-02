@@ -9,7 +9,7 @@ import {
 } from "@/lib/write-cascade-categories";
 
 const selectClass =
-  "w-full appearance-none bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:text-gray-300";
+  "w-full appearance-none bg-transparent text-sm text-gray-700 focus-ring disabled:cursor-not-allowed disabled:text-gray-300";
 
 type WriteCascadeCategorySelectsProps = {
   mainCategory: CascadeMainCategory | "";

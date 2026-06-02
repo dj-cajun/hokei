@@ -33,4 +33,24 @@ test.describe("게시글 상세", () => {
       page.getByRole("heading", { name: /댓글/ })
     ).toBeVisible();
   });
+
+  test("동일 세션에서 조회수 API 중복 집계를 막는다", async ({ page, request }) => {
+    await page.goto("/news/visa-residency");
+    const link = page.locator('a[href^="/posts/"]').first();
+    if ((await link.count()) === 0) test.skip();
+
+    const href = await link.getAttribute("href");
+    const id = href?.replace(/^\/posts\//, "") ?? "";
+    if (!id) test.skip();
+
+    const first = await request.post(`/api/posts/${id}/views`);
+    expect(first.ok()).toBeTruthy();
+    const body1 = (await first.json()) as { counted?: boolean };
+    expect(body1.counted).toBe(true);
+
+    const second = await request.post(`/api/posts/${id}/views`);
+    expect(second.ok()).toBeTruthy();
+    const body2 = (await second.json()) as { counted?: boolean };
+    expect(body2.counted).toBe(false);
+  });
 });

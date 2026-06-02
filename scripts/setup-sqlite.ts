@@ -14,7 +14,7 @@ const dbPath = path.isAbsolute(dbFile)
 console.log("[setup] SQLite 로컬 개발 환경 설정");
 console.log("[setup] DB:", dbPath);
 
-run("npx prisma generate");
+run("npx tsx scripts/prisma-generate-for-deploy.ts");
 
 if (!existsSync(dbPath)) {
   console.log("[setup] DB 파일 없음 → prisma db push");

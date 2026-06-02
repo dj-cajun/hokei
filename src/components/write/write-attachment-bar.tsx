@@ -120,7 +120,7 @@ export function WriteAttachmentBar({
           type="button"
           disabled={disabled}
           onClick={() => imageInputRef.current?.click()}
-          className="text-gray-500 focus:outline-none focus:ring-0 disabled:opacity-40"
+          className="text-gray-500 focus-ring disabled:opacity-40"
           aria-label="사진 첨부"
         >
           <Camera className="h-5 w-5" />
@@ -129,7 +129,7 @@ export function WriteAttachmentBar({
           type="button"
           disabled={disabled}
           onClick={() => fileInputRef.current?.click()}
-          className="text-gray-500 focus:outline-none focus:ring-0 disabled:opacity-40"
+          className="text-gray-500 focus-ring disabled:opacity-40"
           aria-label="파일 첨부"
         >
           <Paperclip className="h-5 w-5" />
