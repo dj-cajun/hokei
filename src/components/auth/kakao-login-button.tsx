@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { KakaoSymbol } from "@/components/auth/kakao-symbol";
+import { isKakaoLoginEnabled } from "@/lib/auth/kakao-feature";
 import { useKakaoSdk } from "@/hooks/use-kakao-sdk";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ type KakaoLoginButtonProps = {
 
 /**
  * 카카오 공식 가이드 — 가로형 로그인 버튼
- * 모바일: 카카오톡 앱(throughTalk) / PC·인앱: 카카오계정 웹
+ * NEXT_PUBLIC_KAKAO_LOGIN_ENABLED=true 일 때만 클릭 가능
  */
 export function KakaoLoginButton({
   variant = "login",
@@ -25,7 +26,8 @@ export function KakaoLoginButton({
   disabled,
   callbackUrl,
 }: KakaoLoginButtonProps) {
-  const { ready, pending, error, configured, login } = useKakaoSdk();
+  const featureOn = isKakaoLoginEnabled();
+  const { ready, pending, error, configured, login } = useKakaoSdk(featureOn);
   const [clickError, setClickError] = useState<string | null>(null);
 
   const label =
@@ -39,14 +41,17 @@ export function KakaoLoginButton({
     );
   }
 
-  const busy = pending || !ready;
+  const comingSoon = !featureOn;
+  const busy = featureOn && (pending || !ready);
+  const isDisabled = comingSoon || disabled || pending || (featureOn && !ready);
 
   return (
     <div className={className}>
       <button
         type="button"
-        disabled={disabled || pending}
+        disabled={isDisabled}
         onClick={() => {
+          if (!featureOn) return;
           setClickError(null);
           void login(callbackUrl).catch((err) => {
             setClickError(
@@ -55,21 +60,28 @@ export function KakaoLoginButton({
           });
         }}
         className={cn(
-          "flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-opacity",
-          "bg-[#FEE500] text-[rgba(0,0,0,0.85)] hover:opacity-90 active:opacity-80",
-          "disabled:cursor-not-allowed disabled:opacity-50"
+          "flex h-12 w-full flex-col items-center justify-center gap-0 rounded-xl px-4 transition-opacity",
+          "bg-[#FEE500] text-[rgba(0,0,0,0.85)]",
+          !comingSoon && "hover:opacity-90 active:opacity-80",
+          "disabled:cursor-not-allowed disabled:opacity-55"
         )}
-        aria-label={label}
+        aria-label={comingSoon ? `${label} (준비 중)` : label}
+        aria-disabled={isDisabled}
         aria-busy={busy}
       >
-        {busy ? (
-          <Loader2 className="h-5 w-5 animate-spin opacity-70" />
-        ) : (
-          <KakaoSymbol className="shrink-0 text-[rgba(0,0,0,0.85)]" />
+        <span className="flex items-center justify-center gap-2 text-[15px] font-semibold">
+          {busy ? (
+            <Loader2 className="h-5 w-5 animate-spin opacity-70" />
+          ) : (
+            <KakaoSymbol className="shrink-0 text-[rgba(0,0,0,0.85)]" />
+          )}
+          <span>{busy && !ready ? "카카오 연결 중…" : label}</span>
+        </span>
+        {comingSoon && (
+          <span className="text-[11px] font-normal opacity-80">준비 중</span>
         )}
-        <span>{busy && !ready ? "카카오 연결 중…" : label}</span>
       </button>
-      {(clickError || error) && (
+      {featureOn && (clickError || error) && (
         <p className="mt-1.5 text-center text-xs text-destructive">
           {clickError ?? error}
         </p>

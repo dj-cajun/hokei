@@ -5,6 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useSession } from "next-auth/react";
 import { X } from "lucide-react";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
+import { isKakaoLoginEnabled } from "@/lib/auth/kakao-feature";
 import { QuickLoginPanel } from "@/components/auth/quick-login-panel";
 import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,9 @@ export function LoginModal({
                 로그인
               </DialogPrimitive.Title>
               <DialogPrimitive.Description className="mt-0.5 text-sm text-muted-foreground">
-                카카오·구글로 1초 만에 시작하세요
+                {isKakaoLoginEnabled()
+                  ? "카카오·구글로 1초 만에 시작하세요"
+                  : "구글 또는 이메일로 로그인하세요"}
               </DialogPrimitive.Description>
             </div>
             <DialogPrimitive.Close

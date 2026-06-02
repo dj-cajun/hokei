@@ -5,6 +5,7 @@ import { useAuthSessionSync } from "@/hooks/use-auth-session-sync";
 import { KakaoLoginButton } from "@/components/auth/kakao-login-button";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { SocialLoginDivider } from "@/components/auth/social-login-divider";
+import { isKakaoLoginEnabled } from "@/lib/auth/kakao-feature";
 import { useToast } from "@/components/providers/toast-provider";
 
 type SocialLoginSectionProps = {
@@ -22,6 +23,7 @@ export function SocialLoginSection({
   const { completeLogin } = useAuthSessionSync();
   const { showToast } = useToast();
   const isSignup = mode === "signup";
+  const kakaoOn = isKakaoLoginEnabled();
 
   return (
     <div className="space-y-3">
@@ -29,9 +31,15 @@ export function SocialLoginSection({
         <>
           <KakaoLoginButton callbackUrl={callbackUrl} />
           <p className="text-center text-[11px] leading-snug text-muted-foreground">
-            이메일로 가입한 계정과 <strong className="font-medium">같은 이메일</strong>
-            의 카카오로 로그인됩니다. 모바일에서는 카카오톡 앱으로 이동할 수
-            있습니다.
+            {kakaoOn ? (
+              <>
+                이메일로 가입한 계정과{" "}
+                <strong className="font-medium">같은 이메일</strong>의 카카오로
+                로그인됩니다.
+              </>
+            ) : (
+              <>카카오 로그인은 준비 중입니다. 구글 또는 이메일을 이용해 주세요.</>
+            )}
           </p>
         </>
       )}

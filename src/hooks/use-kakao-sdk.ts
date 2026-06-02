@@ -9,14 +9,14 @@ import {
 import { encodeKakaoOAuthState } from "@/lib/auth/kakao-state";
 import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 
-export function useKakaoSdk() {
+export function useKakaoSdk(loadSdk = true) {
   const [ready, setReady] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = Boolean(getKakaoJsKey());
 
   useEffect(() => {
-    if (!configured) return;
+    if (!configured || !loadSdk) return;
 
     let cancelled = false;
 
@@ -39,7 +39,7 @@ export function useKakaoSdk() {
     return () => {
       cancelled = true;
     };
-  }, [configured]);
+  }, [configured, loadSdk]);
 
   const login = useCallback(async (callbackUrl?: string) => {
     setError(null);
