@@ -25,10 +25,17 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+type SheetContentProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> & {
+  /** 스크린 리더용 (화면에는 숨김) */
+  title?: string;
+};
+
 const SheetContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  SheetContentProps
+>(({ className, children, title = "메뉴", ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <DialogPrimitive.Content
@@ -37,8 +44,10 @@ const SheetContent = React.forwardRef<
         "fixed inset-y-0 right-0 z-50 flex h-full w-[300px] flex-col bg-white shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
         className
       )}
+      aria-describedby={undefined}
       {...props}
     >
+      <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
       {children}
       <SheetClose className="absolute right-4 top-4 rounded-lg p-1 opacity-70 transition-colors hover:bg-secondary hover:opacity-100">
         <X className="h-5 w-5" />

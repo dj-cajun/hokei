@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
+import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
 
 const connectionString =
@@ -9,17 +10,39 @@ const connectionString =
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
+  prismaConnectionKind?: "sqlite" | "postgresql";
 };
 
 function isPostgresUrl(url: string): boolean {
   return url.startsWith("postgresql://") || url.startsWith("postgres://");
 }
 
+function getRuntimeDatabaseKind(): "sqlite" | "postgresql" {
+  return isPostgresUrl(connectionString) ? "postgresql" : "sqlite";
+}
+
+function assertProviderMatchesUrl(): void {
+  const runtime = getRuntimeDatabaseKind();
+  if (PRISMA_DATASOURCE_PROVIDER !== runtime) {
+    throw new Error(
+      [
+        `Prisma Client(provider=${PRISMA_DATASOURCE_PROVIDER})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
+        `다음을 실행하세요: npx tsx scripts/prisma-generate-for-deploy.ts`,
+        `로컬 SQLite: DATABASE_URL="file:./dev.db"`,
+        `Neon/프로덕션: DATABASE_URL="postgresql://..."`,
+      ].join("\n")
+    );
+  }
+}
+
 function createPrismaClient(): PrismaClient {
+  assertProviderMatchesUrl();
+
   if (!connectionString) {
     throw new Error("DATABASE_URL is not configured");
   }
-  if (isPostgresUrl(connectionString)) {
+
+  if (getRuntimeDatabaseKind() === "postgresql") {
     return createPostgresPrisma(connectionString);
   }
 
@@ -34,13 +57,22 @@ function isValidPrismaClient(
 }
 
 function getPrisma(): PrismaClient {
+  const kind = getRuntimeDatabaseKind();
   const existing = globalForPrisma.prisma;
-  if (isValidPrismaClient(existing)) return existing;
+
+  if (
+    isValidPrismaClient(existing) &&
+    globalForPrisma.prismaConnectionKind === kind
+  ) {
+    return existing;
+  }
 
   if (existing) {
     void (existing as PrismaClient).$disconnect().catch(() => undefined);
   }
+
   globalForPrisma.prisma = createPrismaClient();
+  globalForPrisma.prismaConnectionKind = kind;
   return globalForPrisma.prisma;
 }
 
@@ -55,7 +87,7 @@ export const prisma = new Proxy({} as PrismaClient, {
 });
 
 export function getDatabaseKind(): "sqlite" | "postgresql" {
-  return isPostgresUrl(connectionString) ? "postgresql" : "sqlite";
+  return getRuntimeDatabaseKind();
 }
 
 if (process.env.NODE_ENV !== "production") {

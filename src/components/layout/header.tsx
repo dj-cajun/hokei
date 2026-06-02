@@ -69,7 +69,7 @@ export function Header({ categoryTree }: HeaderProps) {
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent className="overflow-y-auto p-3 pt-12">
+            <SheetContent title="사이트 메뉴" className="overflow-y-auto p-3 pt-12">
               <div className="flex flex-col gap-2">
                 <LoginBox />
                 <CategoryMenuClient tree={categoryTree} />

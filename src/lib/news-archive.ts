@@ -4,22 +4,14 @@ import {
   formatRelativeTime,
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
-import {
-  getNewsBoardWhere,
-  type NewsBoardSlug,
-} from "@/lib/news-boards";
+import { newsAutomatedWhere } from "@/lib/news-automated-where";
+import { getNewsBoardWhere } from "@/lib/news-boards";
+import type { NewsBoardSlug } from "@/lib/news-boards-config";
 import type { FeedItem } from "@/types/feed";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 
-/** 뉴스 섹션 자동 수집 글 (서브카테고리·본문 news 포함) */
-export const newsAutomatedWhere = {
-  status: "PUBLISHED" as const,
-  isAutomated: true,
-  category: {
-    OR: [{ slug: "news" }, { parent: { slug: "news" } }],
-  },
-};
+export { newsAutomatedWhere } from "@/lib/news-automated-where";
 
 const archiveInclude = {
   category: { select: { label: true, colorClass: true } },
