@@ -124,6 +124,19 @@ if (failed) {
   process.exit(1);
 }
 
+const naverId = getValue(content, "NAVER_CLIENT_ID")?.replace(/^["']|["']$/g, "") ?? "";
+const naverSecret =
+  getValue(content, "NAVER_CLIENT_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
+if (naverId && naverSecret) {
+  if (naverSecret.length < 20) {
+    console.warn(
+      `[env:check] NAVER_CLIENT_SECRET ${naverSecret.length}자 — 잘림 가능성 (전체 Secret 재붙여넣기, docs/NAVER_API.md)`
+    );
+  } else {
+    console.log("[env:check] OK NAVER 키 (길이)");
+  }
+}
+
 for (const key of optional) {
   if (keys.has(key)) {
     const val = getValue(content, key);

@@ -49,7 +49,7 @@
     "db:pg:studio": "tsx scripts/prisma-pg.ts studio",
     "db:pg:setup": "npm run setup:pg",
     "search:reindex": "tsx scripts/reindex-search-fts.ts",
-    "news:ingest": "tsx scripts/news-ingest.ts",
+    "news:ingest": "tsx scripts/prisma-generate-for-deploy.ts && tsx scripts/news-ingest.ts",
     "news:reset": "tsx scripts/reset-automated-news.ts",
     "news:scrape:setup": "pip3 install -r scripts/python/requirements.txt && python3 -m playwright install chromium",
     "gemini:test": "tsx scripts/test-gemini.ts",

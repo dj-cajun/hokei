@@ -1,3 +1,4 @@
+import type { PostTopic } from "@/generated/prisma/client";
 import type { NewsFeedSource } from "@/lib/news/sources";
 
 /** VnExpress — 네이버 뉴스 검색으로 한국어 기사 발견 */
@@ -39,6 +40,26 @@ export const VNEXPRESS_INTERNATIONAL_FEEDS: Record<
       type: "rss",
       url: "https://e.vnexpress.net/rss/news.rss",
       sourceName: "VnExpress International · News",
+    },
+  ],
+};
+
+/** 네이버 API 없을 때 Vercel·로컬 대체 (INGEST_RSS_ONLY=1) */
+export const VNEXPRESS_RSS_FALLBACK_FEEDS: Record<PostTopic, NewsFeedSource[]> = {
+  KOREA: VNEXPRESS_INTERNATIONAL_FEEDS.korea,
+  TRAVEL: [
+    {
+      type: "rss",
+      url: "https://e.vnexpress.net/rss/travel.rss",
+      sourceName: "VnExpress International · Travel",
+    },
+  ],
+  VIETNAM_POLICY: VNEXPRESS_INTERNATIONAL_FEEDS.policy,
+  TOURIST: [
+    {
+      type: "rss",
+      url: "https://e.vnexpress.net/rss/travel.rss",
+      sourceName: "VnExpress International · Tourist",
     },
   ],
 };

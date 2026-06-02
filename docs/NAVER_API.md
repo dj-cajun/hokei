@@ -10,6 +10,14 @@
 
 API가 실패해도 **Playwright 폴백**으로 일부 뉴스는 수집됩니다 (`npm run news:scrape:setup` 필요).
 
+Vercel 등 서버에서는 Playwright가 없으므로, 네이버 없이 **VnExpress RSS만** 수집:
+
+```bash
+INGEST_RSS_ONLY=1 npm run news:ingest
+```
+
+프로덕션 Cron에도 `INGEST_RSS_ONLY=1` 환경 변수를 Vercel에 추가하면 동일하게 동작합니다.
+
 ## 키 동작 확인
 
 ```bash

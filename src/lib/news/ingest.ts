@@ -3,6 +3,7 @@ import { buildPostFromArticlePage } from "@/lib/news/ingest-article";
 import { fetchNewsFromSource } from "@/lib/news/fetch-sources";
 import { isNaverNewsConfigured } from "@/lib/news/naver-news";
 import { MAX_DAILY_NEWS, NEWS_TOPIC_SOURCES } from "@/lib/news/sources";
+import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
 import type { RawNewsItem } from "@/lib/news/rss";
 import { passesTopicRelevanceFilter } from "@/lib/news/topic-relevance";
 import { isMostlyKorean } from "@/lib/news/language";
@@ -129,8 +130,13 @@ export async function ingestDailyNews(
     );
   }
 
+  const rssOnly = process.env.INGEST_RSS_ONLY === "1";
+
   for (const config of NEWS_TOPIC_SOURCES) {
-    for (const feed of config.feeds) {
+    const feeds = rssOnly
+      ? VNEXPRESS_RSS_FALLBACK_FEEDS[config.topic]
+      : config.feeds;
+    for (const feed of feeds) {
       const items = await fetchNewsFromSource(feed, config.topic, 4);
       const filtered = items.filter((item) =>
         passesTopicRelevanceFilter(item.topic, item.title, item.description, {

@@ -16,7 +16,6 @@ spawnSync("npx", ["prisma", "generate"], {
   env: { ...process.env, PRISMA_SCHEMA: "prisma/schema.prisma", DATABASE_URL: sqliteUrl },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PrismaClient } = require("../src/generated/prisma/client");
 const sqlite = new PrismaClient({
   adapter: new PrismaBetterSqlite3({ url: sqliteUrl }),
