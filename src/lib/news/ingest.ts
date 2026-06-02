@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { buildPostFromArticlePage } from "@/lib/news/ingest-article";
 import { fetchNewsFromSource } from "@/lib/news/fetch-sources";
 import { isNaverNewsConfigured } from "@/lib/news/naver-news";
+import {
+  isNaverRequestsScraperAvailable,
+  isNaverScraperAvailable,
+} from "@/lib/news/naver-scrape";
 import { MAX_DAILY_NEWS, NEWS_TOPIC_SOURCES } from "@/lib/news/sources";
 import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
 import type { RawNewsItem } from "@/lib/news/rss";
@@ -124,9 +128,12 @@ export async function ingestDailyNews(
 
   const pool: RawNewsItem[] = [];
 
-  if (!isNaverNewsConfigured()) {
+  const naverScraperOk =
+    (await isNaverRequestsScraperAvailable()) ||
+    (await isNaverScraperAvailable());
+  if (!isNaverNewsConfigured() && !naverScraperOk) {
     result.errors.push(
-      "NAVER_CLIENT_ID / NAVER_CLIENT_SECRET이 없습니다. 네이버 개발자센터에서 발급 후 .env에 설정하세요."
+      "네이버 API·스크래퍼 없음 — pip3 install -r scripts/python/requirements.txt 또는 NAVER_CLIENT_ID/SECRET 설정"
     );
   }
 

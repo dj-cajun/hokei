@@ -160,10 +160,15 @@ export async function getPostsBySectionSlug(
   return posts.map(toFeedItem);
 }
 
-export async function getAutomatedNewsPosts(limit = 10): Promise<FeedItem[]> {
+export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const posts = await prisma.post.findMany({
-    where: { status: "PUBLISHED", isAutomated: true },
-    orderBy: { ingestedAt: "desc" },
+    where: {
+      status: "PUBLISHED",
+      isAutomated: true,
+      ingestedAt: { gte: since },
+    },
+    orderBy: { publishedAt: "desc" },
     take: limit,
     include: postInclude,
   });

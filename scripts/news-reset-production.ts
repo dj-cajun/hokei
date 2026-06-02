@@ -1,11 +1,15 @@
 /**
- * Neon(프로덕션) DB — 자동 뉴스 삭제 후 필터·규칙대로 재수집
- * npx tsx scripts/news-reset-production.ts
+ * Neon(프로덕션) DB — 뉴스 수집
+ *
+ * npm run news:reset:neon           — 기존 글 유지, 추가 수집
+ * npm run news:reset:neon -- --purge — 전량 삭제 후 재수집 (주의)
  */
 import { config } from "dotenv";
 
 config({ path: ".env" });
 config({ path: ".env.production.pg", override: true });
+
+const purge = process.argv.includes("--purge");
 
 async function main() {
   const url = process.env.DATABASE_URL?.trim() ?? "";
@@ -27,28 +31,31 @@ async function main() {
   const { ingestDailyNews } = await import("../src/lib/news/ingest");
   const { isNaverNewsConfigured } = await import("../src/lib/news/naver-news");
 
-  const before = await prisma.post.findMany({
-    where: { isAutomated: true },
-    select: { id: true },
-  });
+  if (purge) {
+    const before = await prisma.post.count({ where: { isAutomated: true } });
+    const deleted = await prisma.post.deleteMany({
+      where: { isAutomated: true },
+    });
+    console.log(
+      JSON.stringify(
+        {
+          purge: true,
+          deleted: deleted.count,
+          hadAutomated: before,
+          naverConfigured: isNaverNewsConfigured(),
+        },
+        null,
+        2
+      )
+    );
+  } else {
+    const kept = await prisma.post.count({ where: { isAutomated: true } });
+    console.log(
+      JSON.stringify({ purge: false, keptAutomated: kept }, null, 2)
+    );
+  }
 
-  const deleted = await prisma.post.deleteMany({
-    where: { isAutomated: true },
-  });
-
-  console.log(
-    JSON.stringify(
-      {
-        deleted: deleted.count,
-        hadAutomated: before.length,
-        naverConfigured: isNaverNewsConfigured(),
-      },
-      null,
-      2
-    )
-  );
-
-  const result = await ingestDailyNews({ ignoreDailyCap: true });
+  const result = await ingestDailyNews({ ignoreDailyCap: purge });
   console.log(JSON.stringify(result, null, 2));
   await prisma.$disconnect();
 }
