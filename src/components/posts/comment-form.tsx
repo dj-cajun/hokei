@@ -10,8 +10,7 @@ import {
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
 
-const inputClass =
-  "rounded-sm border border-gray-200 px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1";
+import { commentInputClass as inputClass } from "@/components/posts/comment-parts/constants";
 
 type CommentFormProps = {
   postId: string;

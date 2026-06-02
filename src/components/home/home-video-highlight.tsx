@@ -59,8 +59,9 @@ export function HomeVideoHighlight() {
           >
             <Image
               src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
-              alt=""
+              alt="호치민 교민 커뮤니티 하이라이트 영상 썸네일"
               fill
+              priority
               sizes="(max-width: 480px) 100vw, 480px"
               className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
