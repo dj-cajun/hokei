@@ -13,6 +13,13 @@ function viewCookieName(postId: string): string {
   return `${VIEW_COOKIE_PREFIX}${postId}`;
 }
 
+function hasViewCookie(request: Request, name: string): boolean {
+  const header = request.headers.get("cookie");
+  if (!header) return false;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?:^|;\\s*)${escaped}=1(?:;|$)`).test(header);
+}
+
 export async function POST(request: Request, context: RouteContext) {
   const limited = await enforcePreset(request, "general");
   if (limited) return limited;
@@ -29,7 +36,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const cookieName = viewCookieName(id);
-    if (request.cookies.get(cookieName)?.value === "1") {
+    if (hasViewCookie(request, cookieName)) {
       return apiSuccess({ counted: false });
     }
 

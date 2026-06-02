@@ -13,9 +13,8 @@ import { CategoryScrollNav } from "@/components/layout/category-scroll-nav";
 import { HeaderSearch } from "@/components/layout/header-search";
 import { SiteLogo } from "@/components/layout/site-logo";
 import { CategoryMenuClient } from "@/components/sidebar/category-menu-client";
-import { ExchangeWidget } from "@/components/sidebar/exchange-widget";
 import { LoginBox } from "@/components/sidebar/login-box";
-import { WeatherWidget } from "@/components/sidebar/weather-widget";
+import { WidgetsLoader } from "@/components/widgets/widgets-loader";
 import { GuestHeaderLogin } from "@/components/layout/guest-header-login";
 import { UserMenu } from "@/components/layout/user-menu";
 import type { CategoryNavItem } from "@/lib/categories";
@@ -73,8 +72,8 @@ export function Header({ categoryTree }: HeaderProps) {
               <div className="flex flex-col gap-2">
                 <LoginBox />
                 <CategoryMenuClient tree={categoryTree} />
-                <WeatherWidget />
-                <ExchangeWidget />
+                <WidgetsLoader variant="weather" />
+                <WidgetsLoader variant="exchange" />
               </div>
             </SheetContent>
           </Sheet>

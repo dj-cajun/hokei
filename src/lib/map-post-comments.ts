@@ -1,4 +1,4 @@
-import type { CommentItem } from "@/components/posts/post-comments";
+import type { CommentItem } from "@/components/posts/comment-types";
 import { isCommentOwner } from "@/lib/post-ownership";
 
 type CommentForMap = {
