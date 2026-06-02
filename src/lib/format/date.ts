@@ -1,6 +1,15 @@
 import { TIMEZONE } from "@/lib/constants";
 
-/** 목록용 날짜 (2026-06-01) */
+function hoChiMinhDateKey(date: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/** 목록용 날짜 (2026-06-01) — 서버 로컬 */
 export function formatDateLabel(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -8,16 +17,14 @@ export function formatDateLabel(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** 호치민 기준 날짜 라벨 (수집일·아카이브 그룹용) */
+export function formatDateLabelHoChiMinh(date: Date): string {
+  return hoChiMinhDateKey(date);
+}
+
 /** 오늘 올라온 글 — N 뱃지용 */
 export function isTodayInHoChiMinh(date: Date): boolean {
-  const key = (d: Date) =>
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: TIMEZONE,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(d);
-  return key(date) === key(new Date());
+  return hoChiMinhDateKey(date) === hoChiMinhDateKey(new Date());
 }
 
 export function formatRelativeTime(date: Date): string {
@@ -27,5 +34,5 @@ export function formatRelativeTime(date: Date): string {
   if (hours < 24) return `${hours}시간 전`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
-  return formatDateLabel(date);
+  return formatDateLabelHoChiMinh(date);
 }

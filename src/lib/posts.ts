@@ -161,14 +161,15 @@ export async function getPostsBySectionSlug(
 }
 
 export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const posts = await prisma.post.findMany({
     where: {
       status: "PUBLISHED",
       isAutomated: true,
-      ingestedAt: { gte: since },
+      category: {
+        OR: [{ slug: "news" }, { parent: { slug: "news" } }],
+      },
     },
-    orderBy: { publishedAt: "desc" },
+    orderBy: { ingestedAt: "desc" },
     take: limit,
     include: postInclude,
   });
