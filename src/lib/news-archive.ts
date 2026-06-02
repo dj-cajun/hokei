@@ -4,8 +4,13 @@ import {
   formatRelativeTime,
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
+import {
+  getNewsBoardWhere,
+  type NewsBoardSlug,
+} from "@/lib/news-boards";
 import type { FeedItem } from "@/types/feed";
 import type { PostTopic } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 /** 뉴스 섹션 자동 수집 글 (서브카테고리·본문 news 포함) */
 export const newsAutomatedWhere = {
@@ -48,6 +53,22 @@ function toNewsArchiveItem(post: {
   };
 }
 
+async function fetchNewsPosts(
+  where: Prisma.PostWhereInput,
+  limit: number,
+  page: number
+): Promise<FeedItem[]> {
+  const safePage = Math.max(1, page);
+  const posts = await prisma.post.findMany({
+    where,
+    orderBy: [{ ingestedAt: "desc" }, { publishedAt: "desc" }],
+    skip: (safePage - 1) * limit,
+    take: limit,
+    include: archiveInclude,
+  });
+  return posts.map(toNewsArchiveItem);
+}
+
 export async function countNewsArchivePosts(): Promise<number> {
   return prisma.post.count({ where: newsAutomatedWhere });
 }
@@ -56,15 +77,19 @@ export async function getNewsArchivePosts(
   limit: number,
   page = 1
 ): Promise<FeedItem[]> {
-  const safePage = Math.max(1, page);
-  const posts = await prisma.post.findMany({
-    where: newsAutomatedWhere,
-    orderBy: [{ ingestedAt: "desc" }, { publishedAt: "desc" }],
-    skip: (safePage - 1) * limit,
-    take: limit,
-    include: archiveInclude,
-  });
-  return posts.map(toNewsArchiveItem);
+  return fetchNewsPosts(newsAutomatedWhere, limit, page);
+}
+
+export async function countNewsBoardPosts(slug: NewsBoardSlug): Promise<number> {
+  return prisma.post.count({ where: getNewsBoardWhere(slug) });
+}
+
+export async function getNewsBoardPosts(
+  slug: NewsBoardSlug,
+  limit: number,
+  page = 1
+): Promise<FeedItem[]> {
+  return fetchNewsPosts(getNewsBoardWhere(slug), limit, page);
 }
 
 export type NewsDateGroup = {
