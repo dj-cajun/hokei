@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useGoogleOneTap } from "@/hooks/use-google-one-tap";
 import { getGoogleClientId } from "@/lib/auth/google-one-tap";
+import { shouldEnableGoogleOneTap } from "@/lib/auth/secure-auth-context";
 
 type GoogleOneTapProps = {
   /** false면 원탭 미표시 (로그인 페이지 등) */
@@ -19,11 +20,13 @@ type GoogleOneTapProps = {
 export function GoogleOneTap({ enabled = true }: GoogleOneTapProps) {
   const { status } = useSession();
   const isGuest = status === "unauthenticated";
-  const { error, configured } = useGoogleOneTap(enabled && isGuest);
+  const oneTapActive =
+    enabled && isGuest && shouldEnableGoogleOneTap();
+  const { error, configured } = useGoogleOneTap(oneTapActive);
 
   const clientId = getGoogleClientId();
 
-  if (!configured || !clientId || !enabled || !isGuest) {
+  if (!configured || !clientId || !oneTapActive) {
     return null;
   }
 

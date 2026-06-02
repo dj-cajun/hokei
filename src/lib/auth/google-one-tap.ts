@@ -1,6 +1,6 @@
 import { loadExternalScript } from "@/lib/auth/load-external-script";
 import { getGoogleRedirectLoginUri } from "@/lib/auth/google-redirect-uri";
-import { canUseFedCmPrompt } from "@/lib/auth/secure-auth-context";
+import { GOOGLE_FEDCM_FOR_PROMPT } from "@/lib/auth/secure-auth-context";
 import {
   clearGoogleAutoSelectDisabled,
   isGoogleAutoSelectDisabled,
@@ -34,7 +34,13 @@ function ensureGisInitialized(
 
   const loginUriChanged = gisLoginUri && gisLoginUri !== loginUri;
 
-  if (!gisInitialized || loginUriChanged) {
+  const needsReinit =
+    !gisInitialized ||
+    loginUriChanged ||
+    gisConfigVersion !== GIS_CONFIG_VERSION;
+
+  if (needsReinit) {
+    cancelGoogleOneTap();
     window.google.accounts.id.initialize({
       client_id: clientId,
       callback: (response) => {
@@ -44,10 +50,11 @@ function ensureGisInitialized(
       auto_select: !isGoogleAutoSelectDisabled(),
       cancel_on_tap_outside: false,
       context: "signin",
-      itp_support: true,
-      use_fedcm_for_prompt: canUseFedCmPrompt(),
+      itp_support: false,
+      use_fedcm_for_prompt: GOOGLE_FEDCM_FOR_PROMPT,
     });
     gisInitialized = true;
+    gisConfigVersion = GIS_CONFIG_VERSION;
     gisLoginUri = loginUri;
   }
 
