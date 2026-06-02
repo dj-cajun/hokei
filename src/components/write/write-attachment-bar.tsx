@@ -82,7 +82,7 @@ export function WriteAttachmentBar({
                 type="button"
                 disabled={disabled}
                 onClick={() => remove(item.id)}
-                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-800 text-white focus:outline-none"
+                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-800 text-white focus-ring"
                 aria-label="첨부 삭제"
               >
                 <X className="h-2.5 w-2.5" />

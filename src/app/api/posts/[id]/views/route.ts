@@ -3,22 +3,13 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
-
-const VIEW_COOKIE_PREFIX = "hokei_pv_";
-const VIEW_COOKIE_MAX_AGE = 60 * 60 * 24;
+import {
+  VIEW_COOKIE_MAX_AGE_SEC,
+  hasViewCookie,
+  viewCookieName,
+} from "@/lib/post-view-cookie";
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-function viewCookieName(postId: string): string {
-  return `${VIEW_COOKIE_PREFIX}${postId}`;
-}
-
-function hasViewCookie(request: Request, name: string): boolean {
-  const header = request.headers.get("cookie");
-  if (!header) return false;
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(?:^|;\\s*)${escaped}=1(?:;|$)`).test(header);
-}
 
 export async function POST(request: Request, context: RouteContext) {
   const limited = await enforcePreset(request, "general");
@@ -47,7 +38,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const res = NextResponse.json({ ok: true, counted: true });
     res.cookies.set(cookieName, "1", {
-      maxAge: VIEW_COOKIE_MAX_AGE,
+      maxAge: VIEW_COOKIE_MAX_AGE_SEC,
       path: "/",
       sameSite: "lax",
       httpOnly: true,

@@ -86,7 +86,7 @@ export function PostOwnerActions({
               placeholder="글 비밀번호"
               value={guestPassword}
               onChange={(e) => setGuestPassword(e.target.value)}
-              className="w-full rounded-sm border border-red-100 px-2 py-1.5 text-sm focus:outline-none"
+              className="w-full rounded-sm border border-red-100 px-2 py-1.5 text-sm focus-ring"
             />
           )}
           <p className="text-xs text-red-700">삭제한 글은 복구할 수 없습니다.</p>

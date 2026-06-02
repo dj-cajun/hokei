@@ -11,6 +11,10 @@ npm run search:reindex   # FTS5 (SQLite 전용)
 npm run dev
 ```
 
+`npm run dev` / `npm run build` 는 `.env`의 `DATABASE_URL`에 맞춰 Prisma Client를 자동 생성합니다.  
+provider 불일치 오류 시: `npx tsx scripts/prisma-generate-for-deploy.ts` 후 dev 서버를 재시작하세요.  
+로컬 저장소의 `prisma-datasource.ts`는 **SQLite 기본**이며, Vercel 빌드 시 PostgreSQL로 다시 생성됩니다.
+
 ## PostgreSQL (Docker 로컬)
 
 한 번에 설정:
@@ -32,8 +36,7 @@ npm run db:seed
 npm run dev
 ```
 
-> **중요:** PostgreSQL 사용 시 `npm run db:pg:generate`로 클라이언트를 다시 생성해야 합니다.  
-> SQLite로 돌아갈 때는 `npx prisma generate`(기본 schema)를 실행하세요.
+> **중요:** DB 종류를 바꿀 때마다 `npx tsx scripts/prisma-generate-for-deploy.ts`를 실행하세요.
 
 ## 검색
 

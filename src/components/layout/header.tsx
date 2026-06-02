@@ -32,7 +32,7 @@ export function Header({ categoryTree }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex h-11 max-w-[480px] items-center gap-2 px-3 lg:h-14 lg:max-w-6xl lg:gap-3 lg:px-4">
         <SiteLogo compact={!isHome} />
 
