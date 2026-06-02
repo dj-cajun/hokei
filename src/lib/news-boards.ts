@@ -15,8 +15,8 @@ export const NEWS_BOARD_ITEMS: NewsBoardConfig[] = [
   {
     slug: "news-local",
     href: "/board/news-local",
-    title: "보스턴/현지 뉴스",
-    description: "호치민·베트남 현지 정책, 여행, 생활 정보",
+    title: "호치민/현지 뉴스",
+    description: "호치민·사이공·베트남 현지 정책, 여행, 생활 정보",
   },
   {
     slug: "news-world",

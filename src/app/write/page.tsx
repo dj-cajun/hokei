@@ -43,6 +43,7 @@ export default async function WritePage({ searchParams }: PageProps) {
         pageTitle={meta?.title ?? "글쓰기"}
         categories={categories}
         defaultCategoryId={defaultCategoryId}
+        sectionSlug={sectionSlug}
       />
     </div>
   );

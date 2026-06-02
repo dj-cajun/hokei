@@ -184,7 +184,7 @@ def scrape_news(keyword: str, max_items: int = 5) -> str:
 
 
 def main() -> None:
-    search_term = sys.argv[1] if len(sys.argv) > 1 else "보스턴 한인"
+    search_term = sys.argv[1] if len(sys.argv) > 1 else "호치민 한인"
     max_items = int(sys.argv[2]) if len(sys.argv) > 2 else 5
     raw = scrape_news(search_term, max_items)
     parsed = json.loads(raw)

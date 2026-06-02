@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
 import type { WritableCategory } from "@/lib/categories";
 import { WriteFormTopBar } from "@/components/write/write-form-top-bar";
+import { WriteCascadeCategorySelects } from "@/components/write/write-cascade-category-selects";
 import {
   WriteAttachmentBar,
   uploadPendingAttachments,
@@ -14,6 +15,15 @@ import {
 } from "@/components/write/write-attachment-bar";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
+import {
+  SECTION_TO_MAIN,
+  buildCascadeTitle,
+  isCascadeWriteSection,
+  parseCascadeTitle,
+  resolveCategoryIdFromCascade,
+  type CascadeMainCategory,
+  type CascadeWriteSection,
+} from "@/lib/write-cascade-categories";
 
 export type WriteFormInitial = {
   categoryId: string;
@@ -26,6 +36,7 @@ type WriteFormProps = {
   categories: WritableCategory[];
   pageTitle?: string;
   defaultCategoryId?: string;
+  sectionSlug?: string;
   mode?: "create" | "edit";
   postId?: string;
   initial?: WriteFormInitial;
@@ -50,10 +61,24 @@ function groupBySection(categories: WritableCategory[]) {
   return Array.from(map.values());
 }
 
+function inferCascadeSection(
+  sectionSlug: string | undefined,
+  categoryId: string,
+  categories: WritableCategory[]
+): CascadeWriteSection | undefined {
+  if (isCascadeWriteSection(sectionSlug)) return sectionSlug;
+  const cat = categories.find((c) => c.id === categoryId);
+  if (cat && isCascadeWriteSection(cat.sectionSlug)) {
+    return cat.sectionSlug;
+  }
+  return undefined;
+}
+
 export function WriteForm({
   categories,
   pageTitle = "글쓰기",
   defaultCategoryId,
+  sectionSlug,
   mode = "create",
   postId,
   initial,
@@ -64,13 +89,42 @@ export function WriteForm({
   const isLoggedIn = Boolean(session?.user);
   const isEdit = mode === "edit" && postId;
 
+  const cascadeSection = inferCascadeSection(
+    sectionSlug,
+    initial?.categoryId ?? defaultCategoryId ?? "",
+    categories
+  );
+  const useCascade = Boolean(cascadeSection);
+
+  const parsedInitialTitle = useMemo(
+    () => (initial?.title ? parseCascadeTitle(initial.title) : null),
+    [initial?.title]
+  );
+
+  const fixedMain: CascadeMainCategory | "" = cascadeSection
+    ? SECTION_TO_MAIN[cascadeSection]
+    : "";
+
   const [categoryId, setCategoryId] = useState(
     initial?.categoryId ?? defaultCategoryId ?? ""
+  );
+  const [mainCategory, setMainCategory] = useState<CascadeMainCategory | "">(
+    parsedInitialTitle && cascadeSection
+      ? SECTION_TO_MAIN[cascadeSection]
+      : fixedMain
+  );
+  const [midCategory, setMidCategory] = useState(
+    parsedInitialTitle?.midCategory ?? ""
+  );
+  const [subCategory, setSubCategory] = useState(
+    parsedInitialTitle?.subCategory ?? ""
   );
   const [guestName, setGuestName] = useState("");
   const [guestPassword, setGuestPassword] = useState("");
   const [editPassword, setEditPassword] = useState("");
-  const [title, setTitle] = useState(initial?.title ?? "");
+  const [title, setTitle] = useState(
+    parsedInitialTitle?.rawTitle ?? initial?.title ?? ""
+  );
   const [body, setBody] = useState(initial?.body ?? "");
   const [attachments, setAttachments] = useState<PendingAttachment[]>(() =>
     (initial?.attachments ?? []).map((a, i) => ({
@@ -84,16 +138,51 @@ export function WriteForm({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (fixedMain) setMainCategory(fixedMain);
+  }, [fixedMain]);
+
+  useEffect(() => {
+    if (!useCascade || !cascadeSection || !midCategory) return;
+    const resolved = resolveCategoryIdFromCascade(
+      cascadeSection,
+      midCategory,
+      categories,
+      categoryId || defaultCategoryId || categories[0]?.id || ""
+    );
+    if (resolved) setCategoryId(resolved);
+  }, [
+    useCascade,
+    cascadeSection,
+    midCategory,
+    categories,
+    categoryId,
+    defaultCategoryId,
+  ]);
+
   const sectionGroups = useMemo(
     () => groupBySection(categories),
     [categories]
   );
   const showOptgroups = sectionGroups.length > 1;
 
+  function validateCascadeSelection(): boolean {
+    const main = fixedMain || mainCategory;
+    if (!main || !midCategory || !subCategory) {
+      window.alert("상세 말머리를 모두 선택해 주세요.");
+      return false;
+    }
+    return true;
+  }
+
   async function handleSubmit() {
     setError("");
 
-    if (!categoryId) {
+    if (useCascade && !validateCascadeSelection()) {
+      return;
+    }
+
+    if (!useCascade && !categoryId) {
       setError("분류를 선택해 주세요.");
       return;
     }
@@ -114,6 +203,20 @@ export function WriteForm({
       return;
     }
 
+    const finalTitle = useCascade
+      ? buildCascadeTitle(midCategory, subCategory, title)
+      : title.trim();
+
+    const submitCategoryId =
+      useCascade && cascadeSection
+        ? resolveCategoryIdFromCascade(
+            cascadeSection,
+            midCategory,
+            categories,
+            categoryId || defaultCategoryId || categories[0]!.id
+          )
+        : categoryId;
+
     setSubmitting(true);
     try {
       const uploaded = await uploadPendingAttachments(attachments);
@@ -123,8 +226,8 @@ export function WriteForm({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            categoryId,
-            title: title.trim(),
+            categoryId: submitCategoryId,
+            title: finalTitle,
             content: body.trim(),
             guestPassword: !isLoggedIn ? editPassword : undefined,
             attachments: uploaded,
@@ -145,8 +248,8 @@ export function WriteForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          categoryId,
-          title: title.trim(),
+          categoryId: submitCategoryId,
+          title: finalTitle,
           content: body.trim(),
           guestName: isLoggedIn ? undefined : guestName.trim(),
           guestPassword: isLoggedIn ? undefined : guestPassword,
@@ -172,6 +275,17 @@ export function WriteForm({
     }
   }
 
+  function handleMainChange(main: CascadeMainCategory | "") {
+    setMainCategory(main);
+    setMidCategory("");
+    setSubCategory("");
+  }
+
+  function handleMidChange(mid: string) {
+    setMidCategory(mid);
+    setSubCategory("");
+  }
+
   return (
     <div className="flex min-h-[100dvh] flex-col bg-white">
       <WriteFormTopBar
@@ -185,42 +299,55 @@ export function WriteForm({
         className="flex flex-1 flex-col space-y-0"
         onSubmit={(e: FormEvent) => {
           e.preventDefault();
+          if (useCascade && !validateCascadeSelection()) return;
           void handleSubmit();
         }}
       >
-        <div className="relative border-b border-gray-100 py-3 px-4">
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full appearance-none bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-0"
-            required
-          >
-            <option value="" disabled>
-              분류를 선택하세요
-            </option>
-            {showOptgroups
-              ? sectionGroups.map((group) => (
-                  <optgroup key={group.sectionLabel} label={group.sectionLabel}>
-                    {group.items.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.label.replace(`${group.sectionLabel} · `, "")}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))
-              : categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {categories.length > 1 && c.sectionLabel
-                      ? c.label.replace(`${c.sectionLabel} · `, "")
-                      : c.label}
-                  </option>
-                ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-            aria-hidden
+        {useCascade ? (
+          <WriteCascadeCategorySelects
+            mainCategory={mainCategory}
+            midCategory={midCategory}
+            subCategory={subCategory}
+            onMainChange={handleMainChange}
+            onMidChange={handleMidChange}
+            onSubChange={setSubCategory}
+            hideMain={Boolean(fixedMain)}
           />
-        </div>
+        ) : (
+          <div className="relative border-b border-gray-100 py-3 px-4">
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full appearance-none bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-0"
+              required
+            >
+              <option value="" disabled>
+                분류를 선택하세요
+              </option>
+              {showOptgroups
+                ? sectionGroups.map((group) => (
+                    <optgroup key={group.sectionLabel} label={group.sectionLabel}>
+                      {group.items.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label.replace(`${group.sectionLabel} · `, "")}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                : categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {categories.length > 1 && c.sectionLabel
+                        ? c.label.replace(`${c.sectionLabel} · `, "")
+                        : c.label}
+                    </option>
+                  ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              aria-hidden
+            />
+          </div>
+        )}
 
         {!isLoggedIn && !isEdit && (
           <div className="grid grid-cols-2 gap-4 border-b border-gray-100 py-3 px-4">

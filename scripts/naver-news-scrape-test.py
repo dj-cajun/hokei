@@ -71,4 +71,4 @@ def crawl_naver_news(search_keyword: str) -> None:
 
 
 if __name__ == "__main__":
-    crawl_naver_news("보스턴 한인")
+    crawl_naver_news("호치민 한인")
