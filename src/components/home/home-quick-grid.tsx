@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Newspaper } from "lucide-react";
 
 const PASTELS = [
   "bg-amber-100",
@@ -25,38 +26,38 @@ export function HomeQuickGrid() {
 
   return (
     <section
-      className="grid grid-cols-3 gap-x-4 gap-y-3 bg-white p-4"
+      className="border-b border-gray-100 bg-white px-4 py-6"
       aria-label="퀵 메뉴"
     >
-      <button
-        type="button"
-        className="flex flex-col items-center gap-1.5 active:opacity-80"
-        onClick={() => router.push("/news")}
-      >
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-xl">
-          📰
-        </span>
-        <span className="text-center text-[11px] font-medium text-gray-700">
-          뉴스
-        </span>
-      </button>
-
-      {linkItems.map((item, i) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className="flex flex-col items-center gap-1.5 active:opacity-80"
+      <div className="mx-auto grid max-w-md grid-cols-3 gap-x-4 gap-y-3 text-center">
+        <button
+          type="button"
+          className="group flex flex-col items-center gap-1.5 focus:outline-none focus:ring-0"
+          onClick={() => router.push("/board/news?type=all")}
         >
-          <span
-            className={`flex h-14 w-14 items-center justify-center rounded-full text-xl ${PASTELS[(i + 1) % PASTELS.length]}`}
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-500 transition-transform group-active:scale-95">
+            <Newspaper className="h-6 w-6" strokeWidth={2} aria-hidden />
+          </span>
+          <span className="text-[11px] font-medium text-gray-700">전체뉴스</span>
+        </button>
+
+        {linkItems.map((item, i) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="group flex flex-col items-center gap-1.5 focus:outline-none focus:ring-0"
           >
-            {item.emoji}
-          </span>
-          <span className="text-center text-[11px] font-medium text-gray-700">
-            {item.label}
-          </span>
-        </Link>
-      ))}
+            <span
+              className={`flex h-14 w-14 items-center justify-center rounded-full text-xl transition-transform group-active:scale-95 ${PASTELS[(i + 1) % PASTELS.length]}`}
+            >
+              {item.emoji}
+            </span>
+            <span className="text-[11px] font-medium text-gray-700">
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }

@@ -49,13 +49,13 @@ export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    setIsNewsModalOpen(true);
+                    setIsNewsModalOpen((open) => !open);
                   }}
                   className={cn(
-                    "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors",
-                    active
+                    "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-0",
+                    active || isNewsModalOpen
                       ? "border-primary font-bold text-primary"
-                      : "border-transparent font-medium text-gray-500"
+                      : "border-transparent font-medium text-gray-500 hover:text-foreground"
                   )}
                 >
                   {tab.label}

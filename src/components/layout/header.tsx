@@ -81,8 +81,7 @@ export function Header({ categoryTree }: HeaderProps) {
         </div>
       </div>
 
-      {/* 홈 모바일은 퀵그리드만 — 카테고리 탭은 서브페이지 */}
-      {!isHome && <CategoryScrollNav sections={categoryTree} />}
+      <CategoryScrollNav sections={categoryTree} />
     </header>
   );
 }
