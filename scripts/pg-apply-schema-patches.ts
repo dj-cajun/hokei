@@ -1,5 +1,5 @@
 /**
- * Postgres 프로덕션 — migrate deploy 실패·누락 시 idempotent 컬럼/테이블 보완
+ * Postgres 프로덕션 — migrate deploy 실패·누락 시 idempotent 스키마 보완
  * Vercel 빌드에서 prisma-generate-for-deploy 이후 호출
  */
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
@@ -12,30 +12,71 @@ if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) {
 
 const prisma = createPostgresPrisma(url);
 
-const statements = [
-  `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderationStatus" TEXT NOT NULL DEFAULT 'VISIBLE'`,
-  `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderatedAt" TIMESTAMP(3)`,
-  `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderatedById" TEXT`,
-  `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderationNote" TEXT`,
-  `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "isHidden" BOOLEAN NOT NULL DEFAULT false`,
-  `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "hiddenAt" TIMESTAMP(3)`,
-  `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "hiddenById" TEXT`,
-  `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "errorDetails" TEXT`,
-  `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "durationMs" INTEGER`,
-  `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "triggeredBy" TEXT`,
-  `CREATE INDEX IF NOT EXISTS "Post_moderationStatus_idx" ON "Post"("moderationStatus")`,
-  `CREATE INDEX IF NOT EXISTS "Comment_isHidden_idx" ON "Comment"("isHidden")`,
-];
+async function exec(sql: string) {
+  try {
+    await prisma.$executeRawUnsafe(sql);
+  } catch (err) {
+    console.warn("[pg-patch] skip:", sql.slice(0, 72).replace(/\s+/g, " "), err);
+  }
+}
 
 async function main() {
   console.log("[pg-patch] Postgres 스키마 보완 …");
-  for (const sql of statements) {
-    try {
-      await prisma.$executeRawUnsafe(sql);
-    } catch (err) {
-      console.warn("[pg-patch] skip:", sql.slice(0, 60), err);
-    }
-  }
+
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "ModerationStatus" AS ENUM ('VISIBLE', 'HIDDEN', 'REMOVED');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+
+  await exec(
+    `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderatedAt" TIMESTAMP(3)`
+  );
+  await exec(
+    `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderatedById" TEXT`
+  );
+  await exec(
+    `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "moderationNote" TEXT`
+  );
+
+  await exec(`
+    DO $$ BEGIN
+      ALTER TABLE "Post" ADD COLUMN "moderationStatus" "ModerationStatus" NOT NULL DEFAULT 'VISIBLE';
+    EXCEPTION WHEN duplicate_column THEN NULL; END $$`);
+
+  await exec(`
+    DO $$ BEGIN
+      ALTER TABLE "Post"
+        ALTER COLUMN "moderationStatus" TYPE "ModerationStatus"
+        USING ("moderationStatus"::text)::"ModerationStatus";
+    EXCEPTION WHEN others THEN NULL; END $$`);
+
+  await exec(
+    `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "isHidden" BOOLEAN NOT NULL DEFAULT false`
+  );
+  await exec(
+    `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "hiddenAt" TIMESTAMP(3)`
+  );
+  await exec(
+    `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "hiddenById" TEXT`
+  );
+
+  await exec(
+    `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "errorDetails" TEXT`
+  );
+  await exec(
+    `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "durationMs" INTEGER`
+  );
+  await exec(
+    `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "triggeredBy" TEXT`
+  );
+
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Post_moderationStatus_idx" ON "Post"("moderationStatus")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Comment_isHidden_idx" ON "Comment"("isHidden")`
+  );
+
   await prisma.$disconnect();
   console.log("[pg-patch] 완료");
 }
