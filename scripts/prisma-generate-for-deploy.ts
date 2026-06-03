@@ -29,9 +29,9 @@ if (r.status !== 0) {
 
 const markerPath = join(process.cwd(), "src/lib/prisma-datasource.ts");
 const marker = `/** 자동 생성 — scripts/prisma-generate-for-deploy.ts (직접 수정하지 마세요) */
-export const PRISMA_DATASOURCE_PROVIDER = "${provider}" as const;
+export type PrismaDatasourceProvider = "sqlite" | "postgresql";
 
-export type PrismaDatasourceProvider = typeof PRISMA_DATASOURCE_PROVIDER;
+export const PRISMA_DATASOURCE_PROVIDER: PrismaDatasourceProvider = "${provider}";
 `;
 writeFileSync(markerPath, marker, "utf8");
 console.log(`[prisma-generate] wrote ${markerPath}`);
