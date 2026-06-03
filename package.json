@@ -36,6 +36,8 @@
     "naver:test": "tsx scripts/test-naver-api.ts",
     "auth:check": "tsx scripts/check-social-auth.ts",
     "auth:check:prod": "tsx scripts/check-social-auth.ts -- --production",
+    "check:prod": "node scripts/check-prod-pages.mjs",
+    "check:prod:browser": "node scripts/check-prod-browser.mjs",
     "search:pg:setup": "tsx scripts/setup-pg-search.ts",
     "db:migrate:sqlite-to-pg": "tsx scripts/migrate-sqlite-to-pg.ts",
     "db:generate": "prisma generate",
