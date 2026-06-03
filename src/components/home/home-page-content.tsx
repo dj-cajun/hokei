@@ -64,6 +64,7 @@ export async function HomePageContent() {
       {/* 데스크톱 */}
       <div className="hidden space-y-4 lg:block">
         <WelcomeBanner />
+        <HomeVideoHighlight />
         <QuickStats />
         <div className="space-y-0">
           <div className="flex items-center border-b border-[#f3f4f6] bg-white px-2 py-1.5">

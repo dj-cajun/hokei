@@ -12,6 +12,9 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "https://vitals.vercel-insights.com",
     "https://*.vercel-scripts.com",
     "https://open.er-api.com",
+    "https://www.youtube.com",
+    "https://*.youtube.com",
+    "https://*.googlevideo.com",
   ];
 
   if (isDev) {
@@ -23,6 +26,8 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "'unsafe-inline'",
     "https://accounts.google.com",
     "https://*.vercel-scripts.com",
+    "https://www.youtube.com",
+    "https://s.ytimg.com",
   ];
   if (isDev) {
     scriptSrc.splice(2, 0, "'unsafe-eval'");
