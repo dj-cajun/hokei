@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { loadYouTubeIframeApi } from "@/lib/youtube/load-iframe-api";
 
 /** https://www.youtube.com/watch?v=d-fY16xMeT4&t=12s */
 const DEFAULT_VIDEO_ID = "d-fY16xMeT4";
@@ -20,101 +19,86 @@ const startSeconds = (() => {
   return DEFAULT_START_SECONDS;
 })();
 
+function buildEmbedSrc(id: string): string {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    mute: "1",
+    loop: "1",
+    playlist: id,
+    playsinline: "1",
+    rel: "0",
+    modestbranding: "1",
+    ...(startSeconds > 0 ? { start: String(startSeconds) } : {}),
+  });
+  return `https://www.youtube-nocookie.com/embed/${id}?${params}`;
+}
+
 const FALLBACK_TITLE =
   "호치민 한인 커뮤니티 하이라이트 — 영상 ID를 설정하면 재생됩니다";
 const FALLBACK_META = "NEXT_PUBLIC_YOUTUBE_HIGHLIGHT_ID 환경 변수";
 
-export function HomeVideoHighlight() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const playerHostRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<YT.Player | null>(null);
-  const reactId = useId();
-  const playerElementId = `yt-highlight-${reactId.replace(/:/g, "")}`;
+function useIsDesktop(): boolean | null {
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return isDesktop;
+}
 
-  const [visible, setVisible] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
-  const [failed, setFailed] = useState(false);
+type HomeVideoHighlightProps = {
+  /** mobile / desktop 레이아웃 슬롯 — 한 번에 하나만 마운트 */
+  placement: "mobile" | "desktop";
+};
+
+export function HomeVideoHighlight({ placement }: HomeVideoHighlightProps) {
+  const isDesktop = useIsDesktop();
+  const active =
+    isDesktop === null
+      ? null
+      : placement === "desktop"
+        ? isDesktop
+        : !isDesktop;
+
+  const containerRef = useRef<HTMLElement>(null);
+  const [embedSrc, setEmbedSrc] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!active || !videoId) return;
     const root = containerRef.current;
-    if (!root || !videoId) return;
+    if (!root) return;
+
+    const mountIframe = () => {
+      setEmbedSrc((prev) => prev ?? buildEmbedSrc(videoId));
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          setVisible(true);
+          mountIframe();
           observer.disconnect();
         }
       },
-      { threshold: 0.15, rootMargin: "120px 0px" }
+      { threshold: 0.12, rootMargin: "64px 0px" }
     );
     observer.observe(root);
-    return () => observer.disconnect();
-  }, []);
 
-  useEffect(() => {
-    if (!visible || !videoId || playerRef.current) return;
-    const host = playerHostRef.current;
-    if (!host) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        await loadYouTubeIframeApi();
-        if (cancelled || !playerHostRef.current) return;
-
-        const origin =
-          typeof window !== "undefined" ? window.location.origin : "";
-
-        playerRef.current = new YT.Player(playerHostRef.current, {
-          host: "https://www.youtube-nocookie.com",
-          videoId,
-          width: "100%",
-          height: "100%",
-          playerVars: {
-            autoplay: 1,
-            mute: 1,
-            loop: 1,
-            playlist: videoId,
-            playsinline: 1,
-            rel: 0,
-            modestbranding: 1,
-            ...(origin ? { origin } : {}),
-          },
-          events: {
-            onReady: (event) => {
-              if (cancelled) return;
-              event.target.mute();
-              if (startSeconds > 0) {
-                event.target.seekTo(startSeconds, true);
-              }
-              event.target.playVideo();
-              setPlayerReady(true);
-            },
-            onStateChange: (event) => {
-              if (event.data === YT.PlayerState.ENDED) {
-                event.target.seekTo(startSeconds, true);
-                event.target.playVideo();
-              }
-            },
-          },
-        });
-      } catch {
-        if (!cancelled) setFailed(true);
-      }
-    })();
+    const fallback = window.setTimeout(mountIframe, 600);
 
     return () => {
-      cancelled = true;
-      playerRef.current?.destroy();
-      playerRef.current = null;
+      observer.disconnect();
+      window.clearTimeout(fallback);
     };
-  }, [visible]);
+  }, [active, videoId]);
+
+  if (active === false) return null;
 
   if (!videoId) {
     return (
-      <section className="bg-white px-3 pb-3 pt-2" aria-label="하이라이트 영상">
+      <section className="w-full bg-white px-3 pb-3 pt-2" aria-label="하이라이트 영상">
         <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-neutral-100">
           <p className="px-4 text-center text-xs text-gray-500">{FALLBACK_META}</p>
         </div>
@@ -128,31 +112,29 @@ export function HomeVideoHighlight() {
   return (
     <section
       ref={containerRef}
-      className="bg-white px-3 pb-3 pt-2"
+      className="w-full bg-white px-3 pb-3 pt-2"
       aria-label="하이라이트 영상"
     >
       <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200 bg-black shadow-md">
-        {!playerReady && !failed && (
+        {!embedSrc && (
           <Image
             src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
             alt=""
             fill
-            priority
             sizes="(max-width: 480px) 100vw, 480px"
             className="object-cover"
             aria-hidden
           />
         )}
-        {failed && (
-          <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-gray-400">
-            영상을 불러오지 못했습니다. 새로고침해 주세요.
-          </p>
+        {embedSrc && (
+          <iframe
+            title="호치민 하이라이트 영상"
+            src={embedSrc}
+            className="absolute inset-0 z-10 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
         )}
-        <div
-          id={playerElementId}
-          ref={playerHostRef}
-          className="absolute inset-0 h-full w-full"
-        />
       </div>
       <h2 className="mt-2 line-clamp-2 text-sm font-bold leading-snug text-gray-900">
         호치민 교민 커뮤니티 하이라이트
