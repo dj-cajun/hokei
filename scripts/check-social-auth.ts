@@ -50,8 +50,7 @@ async function main() {
 
   const googleRedirect = await fetchMeta("/api/auth/google/redirect", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential: "__smoke_invalid__" }),
+    body: new FormData(),
   });
   if (googleRedirect.status === 307 || googleRedirect.status === 302) {
     ok("Google redirect POST 라우트");

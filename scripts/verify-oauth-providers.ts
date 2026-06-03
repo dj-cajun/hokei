@@ -50,6 +50,7 @@ async function main() {
 
   const g = await fetch(`${base}/api/auth/google/redirect`, {
     method: "POST",
+    body: new FormData(),
     redirect: "manual",
   });
 
