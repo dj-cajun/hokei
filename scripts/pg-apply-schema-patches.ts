@@ -43,12 +43,21 @@ async function main() {
       ALTER TABLE "Post" ADD COLUMN "moderationStatus" "ModerationStatus" NOT NULL DEFAULT 'VISIBLE';
     EXCEPTION WHEN duplicate_column THEN NULL; END $$`);
 
+  await exec(`ALTER TABLE "Post" ALTER COLUMN "moderationStatus" DROP DEFAULT`);
   await exec(`
-    DO $$ BEGIN
-      ALTER TABLE "Post"
-        ALTER COLUMN "moderationStatus" TYPE "ModerationStatus"
-        USING ("moderationStatus"::text)::"ModerationStatus";
-    EXCEPTION WHEN others THEN NULL; END $$`);
+    ALTER TABLE "Post"
+      ALTER COLUMN "moderationStatus" TYPE "ModerationStatus"
+      USING (
+        CASE
+          WHEN "moderationStatus"::text IN ('VISIBLE', 'HIDDEN', 'REMOVED')
+          THEN ("moderationStatus"::text)::"ModerationStatus"
+          ELSE 'VISIBLE'::"ModerationStatus"
+        END
+      )`);
+  await exec(`
+    ALTER TABLE "Post"
+      ALTER COLUMN "moderationStatus" SET DEFAULT 'VISIBLE'::"ModerationStatus",
+      ALTER COLUMN "moderationStatus" SET NOT NULL`);
 
   await exec(
     `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "isHidden" BOOLEAN NOT NULL DEFAULT false`
