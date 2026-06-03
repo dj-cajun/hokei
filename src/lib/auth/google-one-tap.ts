@@ -30,17 +30,24 @@ let gisMode: GisMode | null = null;
 let gisConfigVersion = 0;
 let gisLoginUri = "";
 let activeCredentialHandler: GoogleCredentialHandler | null = null;
+let redirectSdkPrimed = false;
 
 function resetGisState(): void {
   cancelGoogleOneTap();
   gisMode = null;
   gisConfigVersion = 0;
+  redirectSdkPrimed = false;
 }
 
-/** redirect 버튼 렌더 전 — prompt·auto_select 잔여 상태 제거 */
+function clearGoogleCredentialCallback(): void {
+  delete window.handleCredentialResponse;
+}
+
+/** redirect 버튼 렌더 전 — prompt·callback 잔여 상태 제거 (callback 있으면 popup 강제) */
 export function prepareGoogleRedirectSignIn(): void {
   resetGisState();
   cancelGoogleOneTap();
+  clearGoogleCredentialCallback();
   window.google?.accounts?.id?.disableAutoSelect();
 }
 
@@ -58,9 +65,11 @@ function ensureGisRedirectInitialized(loginUri: string): boolean {
   if (needsReinit) {
     if (gisMode === "prompt") resetGisState();
     cancelGoogleOneTap();
+    clearGoogleCredentialCallback();
     window.google.accounts.id.initialize({
       client_id: clientId,
       login_uri: loginUri,
+      ux_mode: "redirect",
       auto_select: false,
       cancel_on_tap_outside: true,
       context: "signin",
@@ -71,6 +80,7 @@ function ensureGisRedirectInitialized(loginUri: string): boolean {
     gisLoginUri = loginUri;
   }
 
+  if (gisMode === "redirect") redirectSdkPrimed = true;
   return true;
 }
 
@@ -93,6 +103,7 @@ function ensureGisPromptInitialized(
   if (needsReinit) {
     if (gisMode === "redirect") resetGisState();
     cancelGoogleOneTap();
+    clearGoogleCredentialCallback();
     window.google.accounts.id.initialize({
       client_id: clientId,
       callback: (response) => {
@@ -203,6 +214,59 @@ export async function renderGoogleSignInButton(
   container.appendChild(wrapper);
 
   return true;
+}
+
+/** 로컬 http — SDK·redirect 초기화만 미리 수행 (클릭 시 동기 redirect 트리거용) */
+export async function preloadGoogleRedirectSdk(): Promise<boolean> {
+  const clientId = getGoogleClientId();
+  if (!clientId) return false;
+
+  prepareGoogleRedirectSignIn();
+  await loadGoogleIdentitySdk();
+  if (!window.google?.accounts?.id) return false;
+
+  const loginUri = getGoogleRedirectLoginUri();
+  if (!loginUri) return false;
+
+  return ensureGisRedirectInitialized(loginUri);
+}
+
+/**
+ * redirect GIS 버튼을 한 번 렌더한 뒤 즉시 클릭 (같은 사용자 제스처 스택 유지)
+ * initialize에 callback이 남아 있으면 popup으로 떨어지므로 prepareGoogleRedirectSignIn 필수.
+ */
+export function triggerGoogleRedirectClick(): boolean {
+  if (!redirectSdkPrimed || !window.google?.accounts?.id) return false;
+
+  const loginUri = getGoogleRedirectLoginUri();
+  if (!loginUri) return false;
+
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.cssText =
+    "position:fixed;left:-9999px;top:0;width:320px;height:48px;opacity:0;pointer-events:none;";
+  document.body.appendChild(host);
+
+  try {
+    window.google.accounts.id.renderButton(host, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "pill",
+      width: 320,
+      locale: "ko",
+      ux_mode: "redirect",
+      login_uri: loginUri,
+    });
+
+    const clickable = host.querySelector('[role="button"]') as HTMLElement | null;
+    if (!clickable) return false;
+    clickable.click();
+    return true;
+  } finally {
+    window.setTimeout(() => host.remove(), 10_000);
+  }
 }
 
 /** 로그아웃 시 — Disable Auto-select (GIS 권장) */

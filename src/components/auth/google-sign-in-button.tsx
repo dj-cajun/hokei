@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getGoogleClientId,
+  preloadGoogleRedirectSdk,
   renderGoogleSignInButton,
+  triggerGoogleRedirectClick,
 } from "@/lib/auth/google-one-tap";
 import { setGoogleCallbackCookie } from "@/lib/auth/google-callback-cookie";
+import { isInsecureLocalDev } from "@/lib/auth/insecure-local-dev";
 import { isLocalDevHost } from "@/lib/auth/local-dev-host";
 import { cn } from "@/lib/utils";
 
@@ -17,8 +20,8 @@ type GoogleSignInButtonProps = {
 };
 
 /**
- * GIS redirect 버튼을 투명 오버레이로 올려 실제 클릭이 팝업이 아닌 redirect로 가게 함
- * (React 버튼 위임 클릭 시 브라우저가 팝업으로 막는 경우 방지)
+ * GIS redirect 버튼.
+ * 로컬 http는 팝업·iframe 차단을 피하기 위해 네이티브 버튼 + 같은 제스처에서 redirect 트리거.
  */
 export function GoogleSignInButton({
   onError,
@@ -27,12 +30,38 @@ export function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const gisHostRef = useRef<HTMLDivElement>(null);
   const [gisReady, setGisReady] = useState(false);
+  const [redirectPrimed, setRedirectPrimed] = useState(false);
+  const [insecureLocal] = useState(() => isInsecureLocalDev());
   const [localDev] = useState(() => isLocalDevHost());
   const configured = Boolean(getGoogleClientId());
 
+  const primeRedirect = useCallback(async () => {
+    setGoogleCallbackCookie(callbackUrl);
+    const ok = await preloadGoogleRedirectSdk();
+    setRedirectPrimed(ok);
+    return ok;
+  }, [callbackUrl]);
+
   useEffect(() => {
+    if (!configured) return;
+
+    if (insecureLocal) {
+      let cancelled = false;
+      primeRedirect().then((ok) => {
+        if (!cancelled && !ok) {
+          onError?.(
+            "구글 로그인을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요."
+          );
+        }
+      });
+      return () => {
+        cancelled = true;
+        setRedirectPrimed(false);
+      };
+    }
+
     const host = gisHostRef.current;
-    if (!host || !configured) return;
+    if (!host) return;
 
     setGoogleCallbackCookie(callbackUrl);
     setGisReady(false);
@@ -66,13 +95,56 @@ export function GoogleSignInButton({
       host.replaceChildren();
       setGisReady(false);
     };
-  }, [configured, callbackUrl, onError]);
+  }, [configured, callbackUrl, onError, insecureLocal, primeRedirect]);
+
+  const handleInsecureLocalClick = () => {
+    if (!redirectPrimed) {
+      onError?.("구글 로그인을 준비 중입니다. 잠시 후 다시 눌러 주세요.");
+      return;
+    }
+    const started = triggerGoogleRedirectClick();
+    if (!started) {
+      onError?.(
+        "구글 로그인을 시작하지 못했습니다. 새로고침 후 다시 시도해 주세요."
+      );
+    }
+  };
 
   if (!configured) {
     return (
       <p className="rounded-lg bg-secondary px-3 py-2 text-center text-xs text-muted-foreground">
         구글 로그인: NEXT_PUBLIC_GOOGLE_CLIENT_ID 설정 필요
       </p>
+    );
+  }
+
+  if (insecureLocal) {
+    return (
+      <div className={cn("w-full", className)}>
+        <button
+          type="button"
+          onClick={handleInsecureLocalClick}
+          disabled={!redirectPrimed}
+          className={cn(
+            "flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-4 text-[15px] font-semibold text-foreground",
+            "hover:bg-secondary/40 disabled:cursor-wait disabled:opacity-70"
+          )}
+        >
+          <GoogleMark />
+          <span>Google로 계속하기</span>
+        </button>
+        {localDev && (
+          <p className="mt-1.5 text-center text-[11px] leading-snug text-muted-foreground">
+            로컬 개발: Google Cloud Console → OAuth 클라이언트에{" "}
+            <span className="font-mono">http://localhost:3001</span> (JavaScript
+            원본) 및{" "}
+            <span className="font-mono">
+              http://localhost:3001/api/auth/google/redirect
+            </span>{" "}
+            (리다이렉트 URI) 등록
+          </p>
+        )}
+      </div>
     );
   }
 

@@ -1,5 +1,5 @@
 /**
- * 로컬 SQLite(dev.db)에 Admin P0~P7 스키마 반영 (db push 없이 SQL만)
+ * 로컬 SQLite(dev.db)에 User.kakaoId·Admin P0~P7 스키마 반영 (db push 없이 SQL만)
  * DATABASE_URL=file:./dev.db npm run db:sqlite:admin-schema
  */
 import { spawnSync } from "child_process";
@@ -17,6 +17,7 @@ if (!existsSync(dbPath)) {
 }
 
 const files = [
+  "prisma/migrations/20260601203000_user_kakao_id/migration.sql",
   "prisma/migrations/20260602180000_admin_p012/migration.sql",
   "prisma/migrations/20260602200000_admin_p34567/migration.sql",
 ];

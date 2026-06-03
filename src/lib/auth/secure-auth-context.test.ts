@@ -21,7 +21,14 @@ describe("secure-auth-context", () => {
     expect(shouldEnableGoogleOneTap()).toBe(false);
   });
 
-  it("enables One Tap on https", () => {
+  it("disables One Tap on https localhost", () => {
+    vi.stubGlobal("window", {
+      location: { protocol: "https:", hostname: "localhost" },
+    } as Window & typeof globalThis);
+    expect(shouldEnableGoogleOneTap()).toBe(false);
+  });
+
+  it("enables One Tap on https production", () => {
     vi.stubGlobal("window", {
       location: { protocol: "https:", hostname: "hokei-peach.vercel.app" },
     } as Window & typeof globalThis);
