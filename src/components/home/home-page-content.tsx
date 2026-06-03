@@ -8,7 +8,6 @@ import {
   SafeWeatherQuickGrid,
 } from "@/components/home/safe-home-sections";
 import { FeedListClient } from "@/components/home/feed-list-client";
-import { QuickStats } from "@/components/home/quick-stats";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import {
@@ -53,7 +52,6 @@ export async function HomePageContent() {
         <SafeWeatherQuickGrid />
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
-        <HomeVideoHighlight />
         <SafeBoardPreviewList />
         <HomeMobileFeed
           latest={latestItems}
@@ -67,7 +65,6 @@ export async function HomePageContent() {
       <div className="hidden space-y-4 lg:block">
         <WelcomeBanner />
         <HomeVideoHighlight />
-        <QuickStats />
         <div className="space-y-0">
           <div className="flex items-center border-b border-[#f3f4f6] bg-white px-2 py-1.5">
             <h2 className="border-l-4 border-l-red-500 pl-2 text-sm font-bold text-red-600">
