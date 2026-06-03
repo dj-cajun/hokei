@@ -94,7 +94,7 @@ export function HomeVideoHighlight({ placement }: HomeVideoHighlightProps) {
     };
   }, [active, videoId]);
 
-  if (active === false) return null;
+  if (active !== true) return null;
 
   if (!videoId) {
     return (
