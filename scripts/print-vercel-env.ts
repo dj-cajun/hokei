@@ -16,9 +16,7 @@ const recommended = [
   ["BLOB_READ_WRITE_TOKEN", "Vercel Storage → Blob (첨부 필수)"],
   ["UPSTASH_REDIS_REST_URL", "Upstash Redis (rate limit)"],
   ["UPSTASH_REDIS_REST_TOKEN", "Upstash Redis"],
-  ["NEXT_PUBLIC_GOOGLE_CLIENT_ID", "Google OAuth"],
-  ["KAKAO_REST_API_KEY", "카카오 로그인"],
-  ["NEXT_PUBLIC_KAKAO_JS_KEY", "카카오 JS SDK"],
+  ["NEXT_PUBLIC_GOOGLE_CLIENT_ID", "Google OAuth (간편 로그인)"],
 ] as const;
 
 const optional = [

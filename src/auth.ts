@@ -4,9 +4,6 @@ import { compare } from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { findOrCreateUserFromGoogle } from "@/lib/auth/google-user";
-import { fetchKakaoProfileFromCode } from "@/lib/auth/kakao-oauth";
-import { getKakaoRedirectUri } from "@/lib/auth/kakao-redirect-uri";
-import { findOrCreateUserFromKakao } from "@/lib/auth/kakao-user";
 import { verifyGoogleIdToken } from "@/lib/auth/verify-google-token";
 import { prisma } from "@/lib/prisma";
 
@@ -60,27 +57,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!profile) return null;
 
         return findOrCreateUserFromGoogle(profile);
-      },
-    }),
-    Credentials({
-      id: "kakao-code",
-      credentials: {
-        code: { label: "Kakao auth code", type: "text" },
-        redirectUri: { label: "Redirect URI", type: "text" },
-      },
-      async authorize(credentials) {
-        const code =
-          typeof credentials?.code === "string" ? credentials.code : null;
-        const redirectUri =
-          typeof credentials?.redirectUri === "string"
-            ? credentials.redirectUri
-            : getKakaoRedirectUri();
-        if (!code || !redirectUri) return null;
-
-        const profile = await fetchKakaoProfileFromCode(code, redirectUri);
-        if (!profile) return null;
-
-        return findOrCreateUserFromKakao(profile);
       },
     }),
   ],

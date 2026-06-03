@@ -7,7 +7,7 @@
 | 영역 | 기술 |
 |------|------|
 | 프론트 | Next.js 16, React 19, Tailwind 4 |
-| 인증 | NextAuth v5 (이메일, Google, Kakao) |
+| 인증 | NextAuth v5 (이메일, Google) |
 | DB | SQLite (기본) / PostgreSQL (선택) |
 | ORM | Prisma 7 |
 | 검색 | SQLite FTS5 (+ LIKE 폴백) |

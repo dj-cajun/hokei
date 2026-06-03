@@ -1,5 +1,5 @@
 /**
- * 프로덕션 CSP — Next.js 런타임·GIS·카카오·Sentry·외부 이미지 허용
+ * 프로덕션 CSP — Next.js 런타임·Google GIS·Sentry·외부 이미지 허용
  * 개발 모드는 HMR 때문에 완화 정책 사용
  */
 export function buildContentSecurityPolicy(isDev: boolean): string {
@@ -7,8 +7,6 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "'self'",
     "https://accounts.google.com",
     "https://*.google.com",
-    "https://kauth.kakao.com",
-    "https://*.kakao.com",
     "https://*.sentry.io",
     "https://*.ingest.sentry.io",
     "https://vitals.vercel-insights.com",
@@ -25,8 +23,6 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "'unsafe-inline'",
     "https://accounts.google.com",
     "https://*.vercel-scripts.com",
-    "https://t1.kakaocdn.net",
-    "https://*.kakaocdn.net",
   ];
   if (isDev) {
     scriptSrc.splice(2, 0, "'unsafe-eval'");
@@ -46,7 +42,7 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://accounts.google.com",
     `connect-src ${connectSrc.join(" ")}`,
-    "frame-src https://accounts.google.com https://*.google.com https://kauth.kakao.com https://*.kakao.com",
+    "frame-src https://accounts.google.com https://*.google.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",

@@ -62,7 +62,7 @@ export function AuthForm({
           return;
         }
         showToast(
-          "회원가입이 완료되었습니다. 같은 이메일의 카카오 계정으로도 로그인할 수 있어요."
+          "회원가입이 완료되었습니다. 같은 이메일의 구글 계정으로도 로그인할 수 있어요."
         );
       }
 
@@ -75,7 +75,7 @@ export function AuthForm({
       if (result?.error) {
         if (mode === "login" && isSocialPlaceholderEmail(email)) {
           setError(
-            "이 계정은 카카오 간편 로그인으로 가입되었습니다. 카카오 또는 구글 버튼을 이용해 주세요."
+            "이 계정은 구글 간편 로그인으로 가입되었습니다. 구글 버튼을 이용해 주세요."
           );
         } else {
           setError(

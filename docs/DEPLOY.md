@@ -51,10 +51,10 @@ Authorization: Bearer <CRON_SECRET>
 
 ## 6. 소셜 로그인
 
-Google/Kakao 콘솔에 **프로덕션 도메인**과 redirect URI 등록:
+Google Cloud 콘솔에 **프로덕션 도메인**과 redirect URI 등록:
 
-- `https://<도메인>/api/auth/callback/google` (NextAuth)
-- 카카오: `/api/auth/kakao/callback`
+- `https://<도메인>/api/auth/google/redirect` (GIS redirect)
+- Authorized JavaScript origins: `https://<도메인>`, `http://localhost:3001`
 
 ## 7. 배포 후 확인
 

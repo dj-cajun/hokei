@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
-import { KakaoLoginButton } from "@/components/auth/kakao-login-button";
 import { SocialLoginDivider } from "@/components/auth/social-login-divider";
 import { useAuthSessionSync } from "@/hooks/use-auth-session-sync";
 import { useToast } from "@/components/providers/toast-provider";
@@ -37,7 +36,6 @@ export function QuickLoginPanel({
   if (!showEmail) {
     return (
       <div className="space-y-3">
-        <KakaoLoginButton callbackUrl={callbackUrl} />
         <GoogleSignInButton
           callbackUrl={callbackUrl}
           onSuccess={finish}
