@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildYouTubeEmbedSrc,
+  convertYoutubeLinks,
   parseYouTubeFromUrl,
-  splitContentWithYouTubeEmbeds,
 } from "@/lib/youtube/video-id";
 
 describe("parseYouTubeFromUrl", () => {
@@ -14,6 +14,12 @@ describe("parseYouTubeFromUrl", () => {
 
   it("parses youtu.be", () => {
     expect(parseYouTubeFromUrl("https://youtu.be/dQw4w9WgXcQ")).toEqual({
+      videoId: "dQw4w9WgXcQ",
+    });
+  });
+
+  it("parses URL without protocol", () => {
+    expect(parseYouTubeFromUrl("www.youtube.com/watch?v=dQw4w9WgXcQ")).toEqual({
       videoId: "dQw4w9WgXcQ",
     });
   });
@@ -38,9 +44,9 @@ describe("buildYouTubeEmbedSrc", () => {
   });
 });
 
-describe("splitContentWithYouTubeEmbeds", () => {
+describe("convertYoutubeLinks", () => {
   it("splits text around youtube link", () => {
-    const parts = splitContentWithYouTubeEmbeds(
+    const parts = convertYoutubeLinks(
       "안녕하세요\nhttps://www.youtube.com/watch?v=d-fY16xMeT4\n감사합니다"
     );
     expect(parts).toHaveLength(3);

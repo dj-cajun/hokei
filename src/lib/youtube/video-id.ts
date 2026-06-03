@@ -1,7 +1,14 @@
 /** YouTube watch / share / embed URL → 영상 ID (임베드용) */
 
+/**
+ * 게시판 본문 등에서 잡아내는 표준 패턴 (프로토콜·www 생략, youtu.be, /v/, /embed/ 등)
+ * @see convertYoutubeLinks
+ */
+export const YOUTUBE_URL_IN_TEXT =
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?(?:[^\s#&]*&)*v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})[^\s]*/gi;
+
 const WATCH_OR_SHARE =
-  /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?(?:[^&\s#]*&)*v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?(?:[^&\s#]*&)*v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
 
 const IFRAME_SRC =
   /<iframe[^>]+src=["'](https?:\/\/[^"']+)["']/i;
@@ -50,7 +57,7 @@ export type YouTubeEmbedOptions = {
   modestbranding?: boolean;
 };
 
-/** 퍼가기(Embed)용 nocookie URL — watch URL을 그대로 src에 넣으면 재생되지 않음 */
+/** 퍼가기(Embed)용 URL — watch 주소를 iframe src에 넣으면 재생되지 않음 */
 export function buildYouTubeEmbedSrc(
   videoId: string,
   options: YouTubeEmbedOptions = {}
@@ -73,16 +80,13 @@ export type ContentPart =
   | { type: "text"; value: string }
   | { type: "youtube"; videoId: string; startSeconds?: number };
 
-const URL_IN_TEXT =
-  /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?(?:[^\s#]*&)*v=|embed\/|shorts\/|live\/)|youtu\.be\/)[a-zA-Z0-9_-]{11}[^\s]*/gi;
-
-/** 게시글 본문: 유튜브 URL만 임베드로 치환 (일반 watch 링크 → iframe) */
+/** 게시글 본문: 유튜브 URL → 임베드 파트 목록 (React에서 iframe 렌더) */
 export function splitContentWithYouTubeEmbeds(content: string): ContentPart[] {
   const parts: ContentPart[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  const re = new RegExp(URL_IN_TEXT.source, URL_IN_TEXT.flags);
+  const re = new RegExp(YOUTUBE_URL_IN_TEXT.source, YOUTUBE_URL_IN_TEXT.flags);
   while ((match = re.exec(content)) !== null) {
     const raw = match[0];
     const index = match.index;
@@ -113,7 +117,15 @@ export function splitContentWithYouTubeEmbeds(content: string): ContentPart[] {
   return parts;
 }
 
-/** 사용자가 붙여넣은 iframe HTML → watch 링크로 바꿔 split 단계에서 임베드 처리 */
+/**
+ * 게시판 Auto-Embed: 일반 주소·공유 링크만 있어도 임베드로 표시할 수 있게 본문을 정규화.
+ * (HTML 문자열 치환 대신 React 컴포넌트 렌더 — XSS 안전)
+ */
+export function convertYoutubeLinks(text: string): ContentPart[] {
+  return splitContentWithYouTubeEmbeds(stripRawIframeHtml(text));
+}
+
+/** 사용자가 붙여넣은 iframe HTML → watch 링크로 바꿔 convert 단계에서 처리 */
 export function stripRawIframeHtml(content: string): string {
   return content.replace(/<iframe[\s\S]*?<\/iframe>/gi, (block) => {
     const parsed = parseYouTubeFromIframeHtml(block);

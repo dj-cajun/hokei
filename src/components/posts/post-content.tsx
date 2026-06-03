@@ -1,8 +1,5 @@
 import { YouTubeEmbed } from "@/components/youtube/youtube-embed";
-import {
-  splitContentWithYouTubeEmbeds,
-  stripRawIframeHtml,
-} from "@/lib/youtube/video-id";
+import { convertYoutubeLinks } from "@/lib/youtube/video-id";
 
 type PostContentProps = {
   content: string;
@@ -14,8 +11,7 @@ type PostContentProps = {
  * 주소창 URL을 iframe src에 넣으면 재생되지 않으므로 embed URL로 변환합니다.
  */
 export function PostContent({ content, className }: PostContentProps) {
-  const normalized = stripRawIframeHtml(content);
-  const parts = splitContentWithYouTubeEmbeds(normalized);
+  const parts = convertYoutubeLinks(content);
 
   return (
     <div className={className}>

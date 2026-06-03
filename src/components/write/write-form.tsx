@@ -384,7 +384,7 @@ export function WriteForm({
 
         <div className="flex flex-1 flex-col border-b border-gray-100">
           <textarea
-            placeholder="내용을 입력해 주세요. 유튜브 링크(https://youtube.com/watch?v=...)를 붙이면 글에서 영상으로 표시됩니다."
+            placeholder="내용을 입력해 주세요. 유튜브 주소(youtube.com/watch, youtu.be 등)만 붙여도 글에서 영상으로 표시됩니다."
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="min-h-[300px] w-full resize-none py-4 px-4 text-sm text-gray-800 focus-ring"

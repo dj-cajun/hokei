@@ -11,11 +11,14 @@ type YouTubeEmbedProps = {
   loop?: boolean;
 };
 
-/** 반응형 16:9 — 유튜브 [공유]→[퍼가기] embed URL 사용 */
+/**
+ * 반응형 16:9 임베드 — 고정 width/height 없음, `.video-container` + aspect-ratio
+ * @see src/app/globals.css
+ */
 export function YouTubeEmbed({
   videoId,
   startSeconds,
-  title = "YouTube 영상",
+  title = "YouTube video player",
   className,
   autoplay = false,
   mute = false,
@@ -31,15 +34,15 @@ export function YouTubeEmbed({
   return (
     <div
       className={cn(
-        "relative my-3 aspect-video w-full overflow-hidden rounded-lg border border-gray-200 bg-black",
+        "video-container my-3 border border-gray-200 shadow-sm",
         className
       )}
     >
       <iframe
         title={title}
         src={src}
-        className="absolute inset-0 h-full w-full"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       />
     </div>
