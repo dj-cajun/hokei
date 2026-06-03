@@ -1,6 +1,5 @@
 import type { BoardPreviewItem, BoardPreviewSection } from "@/types/feed";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { getWriteHref } from "@/lib/write-sections";
 import { getSectionBoardPreview } from "@/lib/posts";
 
 type SectionMeta = {
@@ -28,8 +27,8 @@ const SECTION_META: SectionMeta[] = [
       { id: "qa", label: "Q&A" },
     ],
     communityOnly: true,
-    emptyTitle: "첫 커뮤니티 글을 작성해 보세요",
-    emptyHref: getWriteHref("community"),
+    emptyTitle: "등록된 글이 없습니다",
+    emptyHref: "/community",
   },
   {
     slug: "jobs",
@@ -42,8 +41,8 @@ const SECTION_META: SectionMeta[] = [
       { id: "hire", label: "구인" },
       { id: "seek", label: "구직" },
     ],
-    emptyTitle: "구인·구직 글을 등록해 보세요",
-    emptyHref: getWriteHref("jobs"),
+    emptyTitle: "등록된 글이 없습니다",
+    emptyHref: "/jobs",
   },
   {
     slug: "real-estate",
@@ -56,8 +55,8 @@ const SECTION_META: SectionMeta[] = [
       { id: "rent", label: "임대" },
       { id: "sale", label: "매매" },
     ],
-    emptyTitle: "부동산 글을 등록해 보세요",
-    emptyHref: getWriteHref("real-estate"),
+    emptyTitle: "등록된 글이 없습니다",
+    emptyHref: "/real-estate",
   },
   {
     slug: "classifieds",
@@ -70,8 +69,8 @@ const SECTION_META: SectionMeta[] = [
       { id: "sell", label: "팝니다" },
       { id: "buy", label: "삽니다" },
     ],
-    emptyTitle: "중고·홍보 글을 등록해 보세요",
-    emptyHref: getWriteHref("classifieds"),
+    emptyTitle: "등록된 글이 없습니다",
+    emptyHref: "/classifieds",
   },
 ];
 
