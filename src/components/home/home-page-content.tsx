@@ -52,6 +52,7 @@ export async function HomePageContent() {
         <SafeWeatherQuickGrid />
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
+        <HomeVideoHighlight />
         <SafeBoardPreviewList />
         <HomeMobileFeed
           latest={latestItems}

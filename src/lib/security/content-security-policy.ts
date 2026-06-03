@@ -39,6 +39,9 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "https://accounts.google.com",
   ];
 
+  const frameAndChildSrc =
+    "https://accounts.google.com https://*.google.com https://www.youtube-nocookie.com https://www.youtube.com";
+
   const directives = [
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
@@ -47,7 +50,8 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://accounts.google.com",
     `connect-src ${connectSrc.join(" ")}`,
-    "frame-src https://accounts.google.com https://*.google.com https://www.youtube-nocookie.com https://www.youtube.com",
+    `child-src ${frameAndChildSrc}`,
+    `frame-src ${frameAndChildSrc}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",

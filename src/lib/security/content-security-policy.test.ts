@@ -9,4 +9,14 @@ describe("buildContentSecurityPolicy", () => {
       expect(csp).toContain("style-src-elem 'self' 'unsafe-inline' https://accounts.google.com");
     }
   });
+
+  it("allows YouTube embed in frame-src and child-src (not legacy Kakao-only policy)", () => {
+    for (const isDev of [true, false]) {
+      const csp = buildContentSecurityPolicy(isDev);
+      expect(csp).toContain("https://www.youtube-nocookie.com");
+      expect(csp).toContain("https://www.youtube.com");
+      expect(csp).not.toContain("kauth.kakao.com");
+      expect(csp).not.toContain("kakaocdn.net");
+    }
+  });
 });
