@@ -67,6 +67,8 @@
     "news:dedupe": "tsx scripts/dedupe-posts.ts",
     "news:prune-travel": "tsx scripts/prune-travel-non-korea.ts",
     "news:prune-off-topic": "tsx scripts/prune-off-topic-posts.ts",
+    "news:prune-empty": "tsx scripts/prune-empty-content-news.ts",
+    "news:queries": "tsx -e \"import { listNaverSearchQueries } from './src/lib/news/naver-search-queries.ts'; console.log(JSON.stringify(listNaverSearchQueries(), null, 2))\"",
     "postinstall": "prisma generate"
   },
   "prisma": {

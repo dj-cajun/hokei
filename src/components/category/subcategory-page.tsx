@@ -90,7 +90,7 @@ export function SubcategoryPage({
           {posts.length === 0 ? (
             <p className="px-2 py-4 text-center text-xs text-gray-400">
               {isNewsSection
-                ? "아직 글이 없습니다. 뉴스는 매일 오전 9시(호치민)에 자동 등록됩니다."
+                ? "아직 글이 없습니다. 뉴스는 매일 오전 7시(호치민)에 자동 등록됩니다."
                 : "등록된 글이 없습니다. 첫 글을 작성해 보세요."}
             </p>
           ) : (

@@ -2,7 +2,7 @@ import type { PostTopic } from "@/generated/prisma/client";
 
 /** 호치민·베트남 현지 연관 (수집 대상 지역) */
 const VIETNAM_LOCAL_PATTERN =
-  /베트남|호치민|사이공|HCMC|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|VnExpress|vnexpress|익스프레스|Báo/i;
+  /베트남|호치민|사이공|HCMC|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|나트랑|푸꾸옥|달랏|하롱|7군|1군|VnExpress|vnexpress|익스프레스|Báo/i;
 
 /** 한국·교민 연관 */
 const KOREA_RELATED_PATTERN =
@@ -10,11 +10,15 @@ const KOREA_RELATED_PATTERN =
 
 /** 여행·관광 */
 const TRAVEL_PATTERN =
-  /여행|관광|투어|항공|airline|travel|tour|tourism|MICE|호텔|hotel|resort|크루즈|cruise/i;
+  /여행|관광|투어|항공|airline|travel|tour|tourism|MICE|호텔|hotel|resort|크루즈|cruise|여행지|입국|환승/i;
+
+/** 여행객 — 현지 관광·안전·입국 (한국인 키워드 없어도 허용) */
+const TOURIST_INFO_PATTERN =
+  /관광|여행지|명소|입국|여행주의|관광객|휴가|리조트|미슐랭|야시장|환전|eSIM|택시|grab|안전/i;
 
 /** 비자·정책·체류 */
 const POLICY_PATTERN =
-  /비자|visa|거주|이민|immigration|residency|체류|입국|영주|work permit|노동|labor|외국인|foreign|expat|amnesty|사면|정책|policy|quarantine|세관|customs|규정|법률|law|permit/i;
+  /비자|visa|거주|이민|immigration|residency|체류|입국|영주|work permit|노동|labor|외국인|foreign|expat|amnesty|사면|정책|policy|quarantine|세관|customs|규정|법률|law|permit|E-?visa|TTDH|노동허가|거주증|체류연장|임시체류/i;
 
 /** 베트남 무관 미국·기타 지역 한인 뉴스 (보스턴컵·뉴저지 등) */
 const OFF_TOPIC_DIASPORA_PATTERN =
@@ -33,13 +37,22 @@ function isVnExpressSource(sourceName?: string): boolean {
   return Boolean(sourceName && /vnexpress|익스프레스/i.test(sourceName));
 }
 
+function isTrustedKoreanVietnamSource(sourceName?: string, link?: string): boolean {
+  if (sourceName && /insidevina|인사이드비나|vietnam\.vn/i.test(sourceName)) {
+    return true;
+  }
+  if (link && /insidevina\.com|vietnam\.vn/i.test(link)) return true;
+  return false;
+}
+
 /** 호치민·베트남 현지 관련 기사인지 */
 export function isVietnamLocalRelevant(
   title: string,
   description = "",
-  meta?: { sourceName?: string }
+  meta?: { sourceName?: string; link?: string }
 ): boolean {
   if (isVnExpressSource(meta?.sourceName)) return true;
+  if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) return true;
 
   const text = normalizeTextForTopicMatch(title, description);
   if (!text) return false;
@@ -60,9 +73,22 @@ export function isKoreaRelatedNews(title: string, description = ""): boolean {
   return KOREA_RELATED_PATTERN.test(text);
 }
 
+/** 한국인·교민이 베트남을 방문·이동할 때 검색하는 뉴스 */
 function matchesTravelTopic(title: string, description: string): boolean {
   const text = normalizeTextForTopicMatch(title, description);
   return isKoreaRelatedNews(title, description) && TRAVEL_PATTERN.test(text);
+}
+
+/** 베트남 방문 여행객 — 현지 관광·안전·입국 (한국인 키워드 필수 아님) */
+function matchesTouristTopic(title: string, description: string): boolean {
+  const text = normalizeTextForTopicMatch(title, description);
+  if (isKoreaRelatedNews(title, description) && TRAVEL_PATTERN.test(text)) {
+    return true;
+  }
+  return (
+    TOURIST_INFO_PATTERN.test(text) &&
+    /호치민|사이공|다낭|나트랑|푸꾸옥|베트남/i.test(text)
+  );
 }
 
 function matchesPolicyTopic(title: string, description: string): boolean {
@@ -95,8 +121,9 @@ export function passesTopicRelevanceFilter(
     case "KOREA":
       return matchesKoreaTopic(title, description);
     case "TRAVEL":
-    case "TOURIST":
       return matchesTravelTopic(title, description);
+    case "TOURIST":
+      return matchesTouristTopic(title, description);
     case "VIETNAM_POLICY":
       return matchesPolicyTopic(title, description);
     default:

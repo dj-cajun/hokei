@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
           {
             key: "Cross-Origin-Opener-Policy",
-            value: "same-origin-allow-popups",
+            value: isDev ? "unsafe-none" : "same-origin-allow-popups",
           },
           {
             key: "Content-Security-Policy",
@@ -74,6 +74,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.vnexpress.net" },
+      { protocol: "https", hostname: "cdn.insidevina.com" },
+      { protocol: "https", hostname: "**.insidevina.com" },
+      { protocol: "https", hostname: "vphoto.vietnam.vn" },
+      { protocol: "https", hostname: "**.vietnam.vn" },
       { protocol: "https", hostname: "**.naver.com" },
       { protocol: "https", hostname: "**.naver.net" },
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },

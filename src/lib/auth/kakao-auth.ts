@@ -1,5 +1,6 @@
 import { loadExternalScript } from "@/lib/auth/load-external-script";
 import { shouldPreferKakaoTalk } from "@/lib/auth/kakao-device";
+import { isLocalDevHost } from "@/lib/auth/local-dev-host";
 import { getKakaoRedirectUri } from "@/lib/auth/kakao-redirect-uri";
 import type { KakaoAuthAuthorizeParams } from "@/types/social-auth";
 
@@ -21,7 +22,11 @@ export function ensureKakaoSdk(): Promise<boolean> {
   if (!sdkReadyPromise) {
     sdkReadyPromise = loadKakaoSdk()
       .then(() => initKakaoSdk())
-      .catch(() => false);
+      .catch((err) => {
+        console.warn("[kakao-auth] SDK load/init failed:", err);
+        sdkReadyPromise = null;
+        return false;
+      });
   }
   return sdkReadyPromise;
 }
@@ -35,10 +40,20 @@ export function initKakaoSdk(): boolean {
   return window.Kakao.isInitialized();
 }
 
+/** PC·일반 브라우저 — REST API 키로 서버 redirect (Redirect URI는 REST 키에 등록) */
+
 /**
- * 카카오 로그인 — 모바일에서 카카오톡 앱으로 authorize
- * throughTalk: true → 카카오톡 설치 시 앱에서 [동의하고 계속하기] 화면
+ * 카카오톡 앱 로그인 — JS SDK authorize, throughTalk (Redirect URI·웹 도메인은 JavaScript 키)
  */
+export function startKakaoLoginViaServer(callbackPath: string = "/"): void {
+  const params = new URLSearchParams();
+  if (callbackPath && callbackPath !== "/") {
+    params.set("callbackUrl", callbackPath);
+  }
+  const qs = params.toString();
+  window.location.assign(`/api/auth/kakao/start${qs ? `?${qs}` : ""}`);
+}
+
 export function kakaoAuthorize(
   options?: Partial<KakaoAuthAuthorizeParams>
 ): void {
@@ -48,12 +63,25 @@ export function kakaoAuthorize(
     );
   }
 
-  const throughTalk = options?.throughTalk ?? shouldPreferKakaoTalk();
+  const throughTalk =
+    options?.throughTalk ??
+    (!isLocalDevHost() && shouldPreferKakaoTalk());
 
-  window.Kakao!.Auth.authorize({
-    ...options,
+  const params: KakaoAuthAuthorizeParams = {
     redirectUri: options?.redirectUri ?? getKakaoRedirectUri(),
     scope: options?.scope ?? "profile_nickname,account_email",
     throughTalk,
-  });
+  };
+
+  const state = options?.state;
+  if (typeof state === "string" && state.length > 0) {
+    params.state = state;
+  }
+
+  if (options?.scope) params.scope = options.scope;
+  if (options?.redirectUri) params.redirectUri = options.redirectUri;
+  if (options?.throughTalk !== undefined) params.throughTalk = options.throughTalk;
+  if (options?.prompts) params.prompts = options.prompts;
+
+  window.Kakao!.Auth.authorize(params);
 }

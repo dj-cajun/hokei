@@ -53,7 +53,15 @@ export async function initKakaoLogin({ jsKey, buttonId, redirectUri }) {
   const uri =
     redirectUri ?? `${window.location.origin}/api/auth/kakao/callback`;
 
+  const local =
+    location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
   document.getElementById(buttonId)?.addEventListener("click", () => {
+    if (local) {
+      const q = new URLSearchParams();
+      window.location.assign(`/api/auth/kakao/start${q.toString() ? `?${q}` : ""}`);
+      return;
+    }
     window.Kakao.Auth.authorize({
       redirectUri: uri,
       scope: "profile_nickname,account_email",

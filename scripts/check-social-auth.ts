@@ -125,8 +125,11 @@ else if (production) {
 
 console.log(`
 [auth:check] 콘솔 Redirect URI 등록 확인:
-  Google: ${GOOGLE_REDIRECT}
-  Kakao:  ${KAKAO_CALLBACK}
+  Google redirect: ${GOOGLE_REDIRECT}
+  Google JS origins (OAuth 클라이언트): ${base} , http://localhost:3001
+  Kakao callback (REST·JS SDK 둘 다): ${KAKAO_CALLBACK}
+  Kakao 웹 도메인 (JavaScript 키): ${base} , http://localhost:3001
+  로컬 PC 로그인: /api/auth/kakao/start → REST API 키 Redirect URI 사용
 `);
 
 if (failed) process.exit(1);

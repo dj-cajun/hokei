@@ -36,6 +36,13 @@ function resetGisState(): void {
   gisConfigVersion = 0;
 }
 
+/** redirect 버튼 렌더 전 — prompt·auto_select 잔여 상태 제거 */
+export function prepareGoogleRedirectSignIn(): void {
+  resetGisState();
+  cancelGoogleOneTap();
+  window.google?.accounts?.id?.disableAutoSelect();
+}
+
 /** redirect 버튼 — callback 없이 login_uri만 (팝업 id_token 경로 방지) */
 function ensureGisRedirectInitialized(loginUri: string): boolean {
   const clientId = getGoogleClientId();
@@ -160,6 +167,8 @@ export async function renderGoogleSignInButton(
   const clientId = getGoogleClientId();
   if (!clientId) return false;
 
+  prepareGoogleRedirectSignIn();
+
   await loadGoogleIdentitySdk();
   if (!window.google?.accounts?.id) return false;
 
@@ -170,8 +179,10 @@ export async function renderGoogleSignInButton(
   container.replaceChildren();
 
   const wrapper = document.createElement("div");
-  wrapper.className = "w-full";
+  wrapper.className = "h-full w-full min-h-[44px]";
   wrapper.dataset.callbackUrl = options?.callbackUrl ?? "/";
+
+  const width = Math.min(container.offsetWidth || 320, 400);
 
   window.google.accounts.id.renderButton(wrapper, {
     type: "standard",
@@ -180,7 +191,7 @@ export async function renderGoogleSignInButton(
     text: "continue_with",
     shape: "pill",
     logo_alignment: "left",
-    width: Math.min(container.offsetWidth || 320, 400),
+    width,
     locale: "ko",
     ux_mode: "redirect",
     login_uri: loginUri,

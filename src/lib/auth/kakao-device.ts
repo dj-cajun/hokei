@@ -1,8 +1,12 @@
+import { isLocalDevHost } from "@/lib/auth/local-dev-host";
+
 /**
  * 카카오톡 앱 연동(throughTalk) — 모바일 일반 브라우저에서만 사용.
- * PC·인앱 브라우저에서는 false → 카카오계정 웹 로그인(동일 버튼, 안정 동작).
+ * localhost·PC·인앱 브라우저는 false → /api/auth/kakao/start(REST) 웹 로그인.
  */
 export function shouldPreferKakaoTalk(userAgent?: string): boolean {
+  if (isLocalDevHost()) return false;
+
   const ua = userAgent ?? (typeof navigator !== "undefined" ? navigator.userAgent : "");
   if (!ua) return false;
 

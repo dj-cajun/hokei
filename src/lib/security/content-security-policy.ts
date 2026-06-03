@@ -20,16 +20,33 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     connectSrc.push("http://localhost:*", "ws://localhost:*", "ws://127.0.0.1:*");
   }
 
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    "https://accounts.google.com",
+    "https://*.vercel-scripts.com",
+    "https://t1.kakaocdn.net",
+    "https://*.kakaocdn.net",
+  ];
+  if (isDev) {
+    scriptSrc.splice(2, 0, "'unsafe-eval'");
+  }
+
+  const styleSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    "https://accounts.google.com",
+  ];
+
   const directives = [
     "default-src 'self'",
-    isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.vercel-scripts.com"
-      : "script-src 'self' 'unsafe-inline' https://accounts.google.com https://*.vercel-scripts.com",
-    "style-src 'self' 'unsafe-inline'",
+    `script-src ${scriptSrc.join(" ")}`,
+    `style-src ${styleSrc.join(" ")}`,
+    `style-src-elem ${styleSrc.join(" ")}`,
     "img-src 'self' data: blob: https:",
-    "font-src 'self' data:",
+    "font-src 'self' data: https://accounts.google.com",
     `connect-src ${connectSrc.join(" ")}`,
-    "frame-src https://accounts.google.com https://*.google.com",
+    "frame-src https://accounts.google.com https://*.google.com https://kauth.kakao.com https://*.kakao.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",

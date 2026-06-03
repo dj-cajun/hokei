@@ -18,6 +18,21 @@ describe("shouldPreferKakaoTalk", () => {
     ).toBe(true);
   });
 
+  it("returns false on localhost even with mobile UA", () => {
+    const prev = globalThis.window;
+    // @ts-expect-error test stub
+    globalThis.window = { location: { hostname: "localhost" } };
+    try {
+      expect(
+        shouldPreferKakaoTalk(
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148"
+        )
+      ).toBe(false);
+    } finally {
+      globalThis.window = prev;
+    }
+  });
+
   it("returns false in KakaoTalk in-app browser", () => {
     expect(
       shouldPreferKakaoTalk(

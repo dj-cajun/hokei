@@ -7,7 +7,7 @@ const SECTION_CUTOFF =
 
 /** 사진 바로 아래·단독 매체명 줄 (네이버.VnExpress 등 붙어 있는 경우 포함) */
 const MEDIA_LINE =
-  /^(네이버|naver|뉴스\s*1|news1|연합뉴스|뉴시스|이데일리|파이낸셜리뷰|파이낸셜|아시아경제|오센|조선일보|중앙일보|한겨레|경향신문|매일경제|한국경제|서울신문|스포츠조선|스포츠동아|YTN|SBS|KBS|MBC|JTBC|VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스|vietnam\s*express)(\s*뉴스)?(\s*[·\/|.]\s*)?(\s*(VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스))?\.?\s*$/i;
+  /^(네이버|naver|뉴스\s*1|news1|연합뉴스|뉴시스|이데일리|파이낸셜리뷰|파이낸셜|아시아경제|오센|조선일보|중앙일보|한겨레|경향신문|매일경제|한국경제|서울신문|스포츠조선|스포츠동아|YTN|SBS|KBS|MBC|JTBC|VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스|vietnam\s*express|인사이드비나|insidevina|Vietnam\.vn)(\s*뉴스)?(\s*[·\/|.]\s*)?(\s*(VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스))?\.?\s*$/i;
 
 const MEDIA_GLUED_LINE =
   /^네이버\s*\.?\s*(VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스)\s*\.?\s*$/i;

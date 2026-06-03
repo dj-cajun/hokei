@@ -18,12 +18,17 @@ import {
 } from "@/lib/news/dedupe";
 import { sanitizeStoredSourceName } from "@/lib/news/source-display";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
+import { isVietnamKoreanMediaArticle } from "@/lib/news/vietnam-korean-media";
 import type { PostTopic } from "@/generated/prisma/client";
+import { hasSubstantialNewsBody } from "@/lib/news/news-body-quality";
+import { pruneEmptyContentAutomatedNews } from "@/lib/news/prune-empty-content-news";
 import { indexPostInSearch } from "@/lib/search/index-post";
 
 export type IngestResult = {
   inserted: number;
   skipped: number;
+  /** 본문 없음(썸네일만) 기존 자동 뉴스 삭제 건수 */
+  prunedEmpty: number;
   errors: string[];
   items: { id: string; title: string; topic: PostTopic }[];
 };
@@ -109,6 +114,7 @@ export async function ingestDailyNews(
   const result: IngestResult = {
     inserted: 0,
     skipped: 0,
+    prunedEmpty: 0,
     errors: [],
     items: [],
   };
@@ -185,13 +191,21 @@ export async function ingestDailyNews(
         )
     )
     .sort((a, b) => {
-      const aVne = isVnExpressArticle(a.link, a.title, a.sourceName) ? 2 : 0;
-      const bVne = isVnExpressArticle(b.link, b.title, b.sourceName) ? 2 : 0;
-      const aKo = isMostlyKorean(a.title) ? 1 : 0;
-      const bKo = isMostlyKorean(b.title) ? 1 : 0;
+      const score = (item: RawNewsItem) => {
+        if (isVnExpressArticle(item.link, item.title, item.sourceName)) return 3;
+        if (
+          isVietnamKoreanMediaArticle(
+            item.link,
+            item.title,
+            item.sourceName
+          )
+        ) {
+          return 2;
+        }
+        return isMostlyKorean(item.title) ? 1 : 0;
+      };
       return (
-        bVne - aVne ||
-        bKo - aKo ||
+        score(b) - score(a) ||
         b.publishedAt.getTime() - a.publishedAt.getTime()
       );
     });
@@ -215,6 +229,12 @@ export async function ingestDailyNews(
     try {
       const { title, content, thumbnail } =
         await buildPostFromArticlePage(raw);
+
+      if (!hasSubstantialNewsBody(content)) {
+        result.skipped++;
+        result.errors.push(`${raw.link}: 본문 없음(80자 미만) — 저장 안 함`);
+        continue;
+      }
 
       if (
         knownNews.some((p) =>
@@ -262,6 +282,9 @@ export async function ingestDailyNews(
       result.errors.push(`${raw.link}: ${msg}`);
     }
   }
+
+  const prune = await pruneEmptyContentAutomatedNews();
+  result.prunedEmpty = prune.removed;
 
   const errorSlice = result.errors.slice(0, 50);
   await prisma.newsIngestRun.create({

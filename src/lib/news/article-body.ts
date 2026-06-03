@@ -107,6 +107,8 @@ async function fetchArticleBodyFromHtml(
     const html = (await res.text()).slice(0, 500_000);
 
     const bodyPatterns = [
+      /<div[^>]+id=["']articleViewCon["'][^>]*>([\s\S]*?)<\/div>/i,
+      /<div[^>]+class=["'][^"']*article-view-content[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
       /<div[^>]+id=["']dic_area["'][^>]*>([\s\S]*?)<\/div>/i,
       /<article[^>]+id=["']dic_area["'][^>]*>([\s\S]*?)<\/article>/i,
       /<div[^>]+id=["']article-view-content-div["'][^>]*>([\s\S]*?)<\/div>/i,

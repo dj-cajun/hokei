@@ -10,9 +10,8 @@ import {
 } from "@/lib/news/image";
 import { isMostlyKorean } from "@/lib/news/language";
 import { processNewsArticle } from "@/lib/news/translate";
+import { NEWS_MIN_BODY_LENGTH } from "@/lib/news/news-body-quality";
 import type { RawNewsItem } from "@/lib/news/rss";
-
-const MIN_BODY_LENGTH = 80;
 
 /** 검색 요약이 아닌 원문 페이지 본문·제목으로 게시글 필드 결정 */
 export async function buildPostFromArticlePage(
@@ -30,7 +29,7 @@ export async function buildPostFromArticlePage(
     content = cleanArticleBody(article.content);
   }
 
-  if (content.length >= MIN_BODY_LENGTH && article) {
+  if (content.length >= NEWS_MIN_BODY_LENGTH && article) {
     const scrapedTitle = article.title?.trim();
     if (
       scrapedTitle &&
@@ -67,7 +66,7 @@ export async function buildPostFromArticlePage(
   const thumbnail = resolvedThumb ?? getFallbackThumbnail(raw.topic);
 
   const body =
-    content.length >= MIN_BODY_LENGTH ? content.slice(0, 15_000) : null;
+    content.length >= NEWS_MIN_BODY_LENGTH ? content.slice(0, 15_000) : null;
 
   return { title: title.trim(), content: body, thumbnail };
 }

@@ -16,7 +16,7 @@ function isAuthorized(request: Request): boolean {
   return header === secret;
 }
 
-/** 매일 09:00 (호치민) — Vercel Cron 또는 수동 호출 */
+/** 매일 07:00 (호치민) — Vercel Cron `0 0 * * *` UTC 또는 수동 호출 */
 export async function GET(request: Request) {
   if (!isAuthorized(request)) {
     return apiError("Unauthorized", 401);
@@ -29,8 +29,8 @@ export async function GET(request: Request) {
       ...result,
       runAt: new Date().toISOString(),
       timezone: "Asia/Ho_Chi_Minh",
-      schedule: "매일 09:00",
-      maxPerDay: 10,
+      schedule: "매일 07:00",
+      maxPerDay: 15,
     });
   } catch (error) {
     log("error", "cron news ingest failed", {

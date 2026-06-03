@@ -56,7 +56,7 @@ export function NewsIngestPanel() {
           <p className="mt-1 text-sm text-muted-foreground">
             네이버 뉴스 API + VnExpress(Int&apos;l RSS→Gemini) · 하루 최대 10건
             <br />
-            스케줄: 매일 09:00 (Asia/Ho_Chi_Minh)
+            스케줄: 매일 07:00 (Asia/Ho_Chi_Minh) · 일 15건
           </p>
         </div>
         <Button onClick={() => void runIngest()} disabled={loading} size="sm">

@@ -1,4 +1,9 @@
 import type { PostTopic } from "@/generated/prisma/client";
+import { naverFeedsForTopic } from "@/lib/news/naver-search-queries";
+import {
+  INSIDEVINA_RSS_FEEDS,
+  VIETNAM_VN_RSS_FEEDS,
+} from "@/lib/news/vietnam-korean-feeds";
 import {
   VNEXPRESS_INTERNATIONAL_FEEDS,
   VNEXPRESS_NAVER_FEEDS,
@@ -22,11 +27,11 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
     label: "한국",
     categorySlug: "news",
     feeds: [
-      { type: "naver", query: "호치민 한인", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "사이공 한국 교민", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "베트남 한국 기업", sourceName: "네이버 뉴스" },
+      ...naverFeedsForTopic("KOREA"),
       ...VNEXPRESS_NAVER_FEEDS.korea,
       ...VNEXPRESS_INTERNATIONAL_FEEDS.korea,
+      ...INSIDEVINA_RSS_FEEDS.korea,
+      ...VIETNAM_VN_RSS_FEEDS.korea,
     ],
   },
   {
@@ -34,11 +39,10 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
     label: "여행",
     categorySlug: "news",
     feeds: [
-      { type: "naver", query: "호치민 여행", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "한국인 호치민 여행", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "사이공 여행 한국인", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "대한항공 호치민", sourceName: "네이버 뉴스" },
+      ...naverFeedsForTopic("TRAVEL"),
       ...VNEXPRESS_NAVER_FEEDS.travel,
+      ...INSIDEVINA_RSS_FEEDS.travel,
+      ...VIETNAM_VN_RSS_FEEDS.travel,
     ],
   },
   {
@@ -46,11 +50,11 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
     label: "베트남 정책",
     categorySlug: "news-visa-residency",
     feeds: [
-      { type: "naver", query: "베트남 비자 정책", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "호치민 거주증", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "호치민 외국인 입국", sourceName: "네이버 뉴스" },
+      ...naverFeedsForTopic("VIETNAM_POLICY"),
       ...VNEXPRESS_NAVER_FEEDS.policy,
       ...VNEXPRESS_INTERNATIONAL_FEEDS.policy,
+      ...INSIDEVINA_RSS_FEEDS.policy,
+      ...VIETNAM_VN_RSS_FEEDS.policy,
     ],
   },
   {
@@ -58,14 +62,14 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
     label: "여행객 정보",
     categorySlug: "news",
     feeds: [
-      { type: "naver", query: "호치민 관광", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "한국인 베트남 여행객", sourceName: "네이버 뉴스" },
-      { type: "naver", query: "사이공 한인", sourceName: "네이버 뉴스" },
+      ...naverFeedsForTopic("TOURIST"),
+      ...INSIDEVINA_RSS_FEEDS.tourist,
+      ...VIETNAM_VN_RSS_FEEDS.tourist,
     ],
   },
 ];
 
-export const MAX_DAILY_NEWS = 10;
+export const MAX_DAILY_NEWS = 15;
 
 export const TOPIC_LABELS: Record<PostTopic, string> = {
   KOREA: "한국",
