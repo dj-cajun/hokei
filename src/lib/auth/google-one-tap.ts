@@ -29,6 +29,7 @@ type GisMode = "redirect" | "prompt";
 let gisMode: GisMode | null = null;
 let gisConfigVersion = 0;
 let gisLoginUri = "";
+let activeCredentialHandler: GoogleCredentialHandler | null = null;
 
 function resetGisState(): void {
   cancelGoogleOneTap();
@@ -87,13 +88,15 @@ function ensureGisPromptInitialized(
     loginUriChanged ||
     gisConfigVersion !== GIS_CONFIG_VERSION;
 
+  activeCredentialHandler = onCredential;
+
   if (needsReinit) {
     if (gisMode === "redirect") resetGisState();
     cancelGoogleOneTap();
     window.google.accounts.id.initialize({
       client_id: clientId,
       callback: (response) => {
-        void onCredential(response);
+        void activeCredentialHandler?.(response);
       },
       login_uri: loginUri,
       auto_select: !isGoogleAutoSelectDisabled(),

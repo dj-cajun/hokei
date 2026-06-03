@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useSession } from "next-auth/react";
 import { X } from "lucide-react";
-import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { QuickLoginPanel } from "@/components/auth/quick-login-panel";
 import { safeCallbackPath } from "@/lib/auth/safe-callback-url";
 import { cn } from "@/lib/utils";
@@ -52,8 +51,6 @@ export function LoginModal({
           )}
           aria-describedby={undefined}
         >
-          {open && <GoogleOneTap enabled />}
-
           <div className="flex shrink-0 justify-center pt-2.5">
             <span className="h-1 w-10 rounded-full bg-[#e5e7eb]" aria-hidden />
           </div>

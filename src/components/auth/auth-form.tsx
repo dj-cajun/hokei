@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { SocialLoginSection } from "@/components/auth/social-login-section";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
@@ -104,7 +103,6 @@ export function AuthForm({
 
   return (
     <div className="space-y-4">
-      {mode === "login" && !embedded && <GoogleOneTap enabled />}
       {!embedded && (
         <SocialLoginSection mode={mode} callbackUrl={callbackUrl} />
       )}
