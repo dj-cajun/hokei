@@ -19,15 +19,26 @@ import type { FeedItem } from "@/types/feed";
 
 const emptyFeed: FeedItem[] = [];
 
+async function loadHomeFeeds(): Promise<
+  [FeedItem[], FeedItem[], FeedItem[], FeedItem[]]
+> {
+  if (!isDatabaseAvailable()) {
+    return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
+  }
+  try {
+    return await Promise.all([
+      getLatestCommunityPosts(12),
+      getPopularCommunityPosts(12),
+      getAutomatedNewsPosts(10),
+      getCommunityNotices(8),
+    ]);
+  } catch {
+    return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
+  }
+}
+
 export async function HomePageContent() {
-  const [latest, popular, news, notices] = isDatabaseAvailable()
-    ? await Promise.all([
-        getLatestCommunityPosts(12),
-        getPopularCommunityPosts(12),
-        getAutomatedNewsPosts(10),
-        getCommunityNotices(8),
-      ])
-    : [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
+  const [latest, popular, news, notices] = await loadHomeFeeds();
 
   const latestItems = latest;
   const sliderSource = news.length > 0 ? news : latestItems;
