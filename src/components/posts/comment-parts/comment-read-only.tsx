@@ -1,5 +1,6 @@
 import type { CommentItem } from "@/components/posts/comment-types";
 import { formatCommentTime } from "@/components/posts/comment-parts/format-comment-time";
+import { PostContent } from "@/components/posts/post-content";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 
 type CommentReadOnlyProps = {
@@ -17,9 +18,10 @@ export function CommentReadOnly({ comment }: CommentReadOnlyProps) {
           {formatCommentTime(comment.createdAt)}
         </time>
       </div>
-      <p className="mt-1 whitespace-pre-wrap text-sm text-gray-800">
-        {comment.content}
-      </p>
+      <PostContent
+        content={comment.content}
+        className="mt-1 text-sm text-gray-800"
+      />
       <ReportContentButton
         targetType="COMMENT"
         targetId={comment.id}

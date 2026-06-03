@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
 import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
+import { PostContent } from "@/components/posts/post-content";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 import { mapPostComments } from "@/lib/map-post-comments";
 import { isPostOwner } from "@/lib/post-permissions";
@@ -111,9 +112,10 @@ export function CommunityPostArticle({
         )}
 
         {post.content && (
-          <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
-            {post.content}
-          </div>
+          <PostContent
+            content={post.content}
+            className="mt-3 text-sm leading-relaxed text-gray-800"
+          />
         )}
 
         {files.length > 0 && (
