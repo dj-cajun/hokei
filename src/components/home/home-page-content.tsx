@@ -1,10 +1,12 @@
 import { SiteFooter } from "@/components/layout/site-footer";
-import { BoardPreviewList } from "@/components/home/board-preview-list";
 import { HomeCompactNewsList } from "@/components/home/home-compact-news-list";
 import { HomeHeadlineSlider } from "@/components/home/home-headline-slider";
 import { HomeMobileFeed } from "@/components/home/home-mobile-feed";
-import { HomeQuickGrid } from "@/components/home/home-quick-grid";
 import { HomeVideoHighlight } from "@/components/home/home-video-highlight";
+import {
+  SafeBoardPreviewList,
+  SafeWeatherQuickGrid,
+} from "@/components/home/safe-home-sections";
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { QuickStats } from "@/components/home/quick-stats";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
@@ -48,11 +50,11 @@ export async function HomePageContent() {
     <>
       {/* 모바일 — 보스턴코리아형 밀도 */}
       <div className="block lg:hidden">
-        <HomeQuickGrid />
+        <SafeWeatherQuickGrid />
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
         <HomeVideoHighlight />
-        <BoardPreviewList />
+        <SafeBoardPreviewList />
         <HomeMobileFeed
           latest={latestItems}
           popular={popular.length > 0 ? popular : latestItems}
@@ -78,7 +80,7 @@ export async function HomePageContent() {
             notices={notices}
           />
         </div>
-        <BoardPreviewList />
+        <SafeBoardPreviewList />
       </div>
     </>
   );
