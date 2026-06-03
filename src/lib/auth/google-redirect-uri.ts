@@ -1,3 +1,5 @@
+import { resolveSiteUrl } from "@/lib/site-url";
+
 export const GOOGLE_REDIRECT_LOGIN_PATH = "/api/auth/google/redirect";
 
 export function getGoogleRedirectLoginUri(origin?: string): string {
@@ -5,7 +7,6 @@ export function getGoogleRedirectLoginUri(origin?: string): string {
     origin?.replace(/\/$/, "") ||
     (typeof window !== "undefined"
       ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")) ||
-    "";
-  return base ? `${base}${GOOGLE_REDIRECT_LOGIN_PATH}` : "";
+      : resolveSiteUrl());
+  return `${base}${GOOGLE_REDIRECT_LOGIN_PATH}`;
 }

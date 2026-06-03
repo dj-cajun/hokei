@@ -1,3 +1,5 @@
+import { resolveSiteUrl } from "@/lib/site-url";
+
 const LOCAL_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:3001",
@@ -15,9 +17,9 @@ function originFromUrl(url: string): string | null {
 
 /** 비회원 업로드: 사이트 출처(Referer/Origin) 확인 */
 export function isAllowedUploadOrigin(request: Request): boolean {
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  const site = resolveSiteUrl();
   const allowed = new Set<string>(LOCAL_ORIGINS);
-  if (site) allowed.add(site);
+  allowed.add(site);
 
   const referer = request.headers.get("referer");
   const origin = request.headers.get("origin");

@@ -1,15 +1,10 @@
 import type { MetadataRoute } from "next";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { prisma } from "@/lib/prisma";
-
-function siteUrl(): string {
-  const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (url) return url.replace(/\/$/, "");
-  return "http://localhost:3001";
-}
+import { resolveSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = siteUrl();
+  const base = resolveSiteUrl();
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [

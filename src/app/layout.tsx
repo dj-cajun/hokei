@@ -10,10 +10,9 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { LoginErrorHandler } from "@/components/auth/login-error-handler";
 import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { resolveSiteUrl } from "@/lib/site-url";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "http://localhost:3001";
+const siteUrl = resolveSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
