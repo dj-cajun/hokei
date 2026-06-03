@@ -42,7 +42,7 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://accounts.google.com",
     `connect-src ${connectSrc.join(" ")}`,
-    "frame-src https://accounts.google.com https://*.google.com",
+    "frame-src https://accounts.google.com https://*.google.com https://www.youtube-nocookie.com https://www.youtube.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",

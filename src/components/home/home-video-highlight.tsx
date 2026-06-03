@@ -5,9 +5,30 @@ import Image from "next/image";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_VIDEO_ID = "";
+/** https://www.youtube.com/watch?v=d-fY16xMeT4&t=12s */
+const DEFAULT_VIDEO_ID = "d-fY16xMeT4";
+const DEFAULT_START_SECONDS = 12;
+
 const videoId =
   process.env.NEXT_PUBLIC_YOUTUBE_HIGHLIGHT_ID?.trim() || DEFAULT_VIDEO_ID;
+
+const startSeconds = (() => {
+  const raw = process.env.NEXT_PUBLIC_YOUTUBE_HIGHLIGHT_START?.trim();
+  if (raw) {
+    const n = Number.parseInt(raw, 10);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return DEFAULT_START_SECONDS;
+})();
+
+function embedSrc(id: string, autoplay: boolean) {
+  const params = new URLSearchParams({
+    rel: "0",
+    ...(startSeconds > 0 ? { start: String(startSeconds) } : {}),
+    ...(autoplay ? { autoplay: "1" } : {}),
+  });
+  return `https://www.youtube-nocookie.com/embed/${id}?${params}`;
+}
 
 const FALLBACK_TITLE =
   "호치민 한인 커뮤니티 하이라이트 — 영상 ID를 설정하면 재생됩니다";
@@ -36,7 +57,7 @@ export function HomeVideoHighlight() {
           <>
             <iframe
               title="호치민 하이라이트 영상"
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`}
+              src={embedSrc(videoId, true)}
               className="absolute inset-0 h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
