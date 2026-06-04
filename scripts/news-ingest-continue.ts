@@ -2,7 +2,10 @@
  * 일일 상한 무시 없이 수집 (오늘 10건 찼을 때) — 로컬 SQLite 권장
  * DATABASE_URL=file:./dev.db npx tsx scripts/news-ingest-continue.ts
  */
-import "dotenv/config";
+import { loadDotenv } from "../src/lib/load-dotenv";
+
+loadDotenv();
+
 import { prisma } from "../src/lib/prisma";
 import { ingestDailyNews } from "../src/lib/news/ingest";
 

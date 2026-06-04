@@ -2,7 +2,10 @@
  * 로컬/CI에서 뉴스 수집 수동 실행
  * npm run news:ingest
  */
-import "dotenv/config";
+import { loadDotenv } from "../src/lib/load-dotenv";
+
+loadDotenv();
+
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
