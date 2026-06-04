@@ -13,7 +13,7 @@ import type { RawNewsItem } from "@/lib/news/rss";
 export async function buildPostFromArticlePage(
   raw: Pick<
     RawNewsItem,
-    "title" | "link" | "topic" | "sourceName" | "thumbnail"
+    "title" | "link" | "topic" | "sourceName" | "thumbnail" | "description"
   >
 ): Promise<{ title: string; content: string | null; thumbnail: string }> {
   const article = await fetchArticleBody(raw.link);
