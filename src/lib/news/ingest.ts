@@ -10,6 +10,7 @@ import { loadNewsTopicSourcesFromDb } from "@/lib/news/load-sources-config";
 import { MAX_DAILY_NEWS } from "@/lib/news/sources";
 import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
 import type { RawNewsItem } from "@/lib/news/rss";
+import { pickByIngestMix } from "@/lib/news/ingest-mix";
 import { passesTopicRelevanceFilter } from "@/lib/news/topic-relevance";
 import { isMostlyKorean } from "@/lib/news/language";
 import {
@@ -67,37 +68,6 @@ async function loadCategoryMap(): Promise<Map<string, string>> {
     select: { slug: true, id: true },
   });
   return new Map(categories.map((c) => [c.slug, c.id]));
-}
-
-function pickBalanced(
-  pool: RawNewsItem[],
-  limit: number
-): RawNewsItem[] {
-  const byTopic = new Map<PostTopic, RawNewsItem[]>();
-  for (const item of pool) {
-    const list = byTopic.get(item.topic) ?? [];
-    list.push(item);
-    byTopic.set(item.topic, list);
-  }
-
-  for (const [, list] of byTopic) {
-    list.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
-  }
-
-  const picked: RawNewsItem[] = [];
-  const topics = [...byTopic.keys()];
-  let round = 0;
-
-  while (picked.length < limit && topics.some((t) => (byTopic.get(t)?.length ?? 0) > round)) {
-    for (const topic of topics) {
-      if (picked.length >= limit) break;
-      const list = byTopic.get(topic);
-      if (list && list[round]) picked.push(list[round]);
-    }
-    round++;
-  }
-
-  return picked.slice(0, limit);
 }
 
 export type IngestOptions = {
@@ -210,7 +180,7 @@ export async function ingestDailyNews(
       );
     });
 
-  const toProcess = pickBalanced(candidates, remaining);
+  const toProcess = pickByIngestMix(candidates, remaining);
 
   const knownNews = existingPosts.map((p) => ({
     title: p.title,

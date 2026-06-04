@@ -73,7 +73,7 @@ export async function HomePageContent() {
             </h2>
           </div>
           <FeedListClient
-            latest={latestItems}
+            latest={news.length > 0 ? news : latestItems}
             popular={popular.length > 0 ? popular : latestItems}
             notices={notices}
           />

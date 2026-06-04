@@ -1,49 +1,45 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import type { NewsFeedSource } from "@/lib/news/sources";
+import type { NewsIngestTier } from "@/lib/news/news-ingest-tier";
+
+type NaverRow = { query: string; sourceName?: string; tier?: NewsIngestTier };
 
 /**
- * 네이버 뉴스 검색어 — 베트남 거주 한국 교민·베트남 방문 한국인 여행객 관심사
+ * 한국어 네이버 검색 — 베트남+교민/진출/안전 중심
  *
- * - KOREA: 한인 사회·생활·사업·커뮤니티 (호치민·사이공·하노이)
- * - TRAVEL: 한국 출발·항공·한국인 맞춤 여행
- * - VIETNAM_POLICY: 비자·체류·입국·노동·규정
- * - TOURIST: 현지 관광·입국·안전·여행지 (한국인 키워드 없어도 허용)
+ * - OFFICIAL: 대사관·KOTRA·한인회 (별도 official-notice-feeds와 병행)
+ * - SAFETY_VISA: 안전·비자·체류
+ * - LIVING: 물가·생활·관광 실용 정보
+ * - GENERAL: 교민·진출 일반
  */
-const NAVER_QUERY_ROWS: Record<
-  PostTopic,
-  { query: string; sourceName?: string }[]
-> = {
+const NAVER_QUERY_ROWS: Record<PostTopic, NaverRow[]> = {
   KOREA: [
-    { query: "호치민 한인" },
-    { query: "사이공 한국 교민" },
-    { query: "호치민 한인회" },
-    { query: "베트남 거주 한국인" },
-    { query: "호치민 한국 기업" },
-    { query: "하노이 한국인" },
+    { query: "베트남 교민", tier: "GENERAL" },
+    { query: "베트남 진출", tier: "GENERAL" },
+    { query: "베트남 안전", tier: "SAFETY_VISA" },
+    { query: "호치민 한인", tier: "GENERAL" },
+    { query: "베트남 거주 한국인", tier: "LIVING" },
+    { query: "호치민 한국 기업", tier: "GENERAL" },
   ],
   TRAVEL: [
-    { query: "한국인 호치민 여행" },
-    { query: "한국인 다낭 여행" },
-    { query: "베트남 여행 항공" },
-    { query: "대한항공 호치민" },
-    { query: "아시아나 호치민" },
-    { query: "진에어 베트남" },
+    { query: "베트남 여행 한국인", tier: "GENERAL" },
+    { query: "한국인 호치민 여행", tier: "GENERAL" },
+    { query: "베트남 항공", tier: "GENERAL" },
   ],
   VIETNAM_POLICY: [
-    { query: "베트남 비자 한국인" },
-    { query: "베트남 E-visa" },
-    { query: "호치민 거주증" },
-    { query: "베트남 체류 연장" },
-    { query: "호치민 외국인 입국" },
-    { query: "베트남 노동허가" },
+    { query: "베트남 비자 한국인", tier: "SAFETY_VISA" },
+    { query: "베트남 E-visa", tier: "SAFETY_VISA" },
+    { query: "호치민 거주증", tier: "SAFETY_VISA" },
+    { query: "베트남 체류 연장", tier: "SAFETY_VISA" },
+    { query: "베트남 노동허가", tier: "SAFETY_VISA" },
+    { query: "베트남 안전 한국인", tier: "SAFETY_VISA" },
   ],
   TOURIST: [
-    { query: "호치민 관광" },
-    { query: "호치민 여행지" },
-    { query: "다낭 관광 한국인" },
-    { query: "베트남 입국 한국인" },
-    { query: "호치민 여행 안전" },
-    { query: "나트랑 여행" },
+    { query: "호치민 관광", tier: "LIVING" },
+    { query: "베트남 물가", tier: "LIVING" },
+    { query: "호치민 생활", tier: "LIVING" },
+    { query: "호치민 여행 안전", tier: "SAFETY_VISA" },
+    { query: "다낭 관광 한국인", tier: "LIVING" },
   ],
 };
 
@@ -52,10 +48,10 @@ export function naverFeedsForTopic(topic: PostTopic): NewsFeedSource[] {
     type: "naver" as const,
     query: row.query,
     sourceName: row.sourceName ?? "네이버 뉴스",
+    tier: row.tier,
   }));
 }
 
-/** 관리·문서용 — 토픽별 검색어 목록 */
 export function listNaverSearchQueries(): Record<PostTopic, string[]> {
   return {
     KOREA: NAVER_QUERY_ROWS.KOREA.map((r) => r.query),

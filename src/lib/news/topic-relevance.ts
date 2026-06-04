@@ -1,8 +1,14 @@
 import type { PostTopic } from "@/generated/prisma/client";
+import { isKoreanPublisherArticleLink } from "@/lib/news/korean-news-publishers";
+import { isVnExpressArticle } from "@/lib/news/vnexpress";
 
 /** 호치민·베트남 현지 연관 (수집 대상 지역) */
 const VIETNAM_LOCAL_PATTERN =
-  /베트남|호치민|사이공|HCMC|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|나트랑|푸꾸옥|달랏|하롱|7군|1군|VnExpress|vnexpress|익스프레스|Báo/i;
+  /베트남|호치민|사이공|HCMC|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|나트랑|푸꾸옥|달랏|하롱|7군|1군|VnExpress|vnexpress|익스프레스|Báo|Tuổi Trẻ|tuoitre|Việt Nam|Việt nam/i;
+
+/** 현지어 제목·요약 (한국인·투자·안전) */
+const VIETNAMESE_TOPIC_PATTERN =
+  /Người Hàn|người Hàn|Hàn Quốc|Đầu tư|đầu tư|An ninh|an ninh|an toàn|đầu tư nước ngoài/i;
 
 /** 한국·교민 연관 */
 const KOREA_RELATED_PATTERN =
@@ -33,10 +39,6 @@ export function normalizeTextForTopicMatch(title: string, description = ""): str
   return `${stripped} ${description}`.trim();
 }
 
-function isVnExpressSource(sourceName?: string): boolean {
-  return Boolean(sourceName && /vnexpress|익스프레스/i.test(sourceName));
-}
-
 function isTrustedKoreanVietnamSource(sourceName?: string, link?: string): boolean {
   if (sourceName && /insidevina|인사이드비나|vietnam\.vn/i.test(sourceName)) {
     return true;
@@ -51,8 +53,12 @@ export function isVietnamLocalRelevant(
   description = "",
   meta?: { sourceName?: string; link?: string }
 ): boolean {
-  if (isVnExpressSource(meta?.sourceName)) return true;
-  if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) return true;
+  const link = meta?.link ?? "";
+  const sourceName = meta?.sourceName ?? "";
+
+  // 피드 설정 sourceName(VnExpress)만으로 우회하지 않음 — 실제 URL·제목 기준
+  if (isVnExpressArticle(link, title, sourceName)) return true;
+  if (isTrustedKoreanVietnamSource(sourceName, link)) return true;
 
   const text = normalizeTextForTopicMatch(title, description);
   if (!text) return false;
@@ -64,7 +70,18 @@ export function isVietnamLocalRelevant(
     return false;
   }
 
-  return VIETNAM_LOCAL_PATTERN.test(text);
+  if (VIETNAM_LOCAL_PATTERN.test(text) || VIETNAMESE_TOPIC_PATTERN.test(text)) {
+    return true;
+  }
+
+  // 네이버·국내 매체 원문 링크 — 검색어가 베트남 맥락이어도 제목에 지역·한인 힌트 필요
+  if (isKoreanPublisherArticleLink(link)) {
+    return /한인|교민|교포|한국인|호치민|사이공|베트남|하노이|다낭|나트랑|푸미흥|비자|체류|여행|관광/i.test(
+      text
+    );
+  }
+
+  return false;
 }
 
 export function isKoreaRelatedNews(title: string, description = ""): boolean {
@@ -93,6 +110,9 @@ function matchesTouristTopic(title: string, description: string): boolean {
 
 function matchesPolicyTopic(title: string, description: string): boolean {
   const text = normalizeTextForTopicMatch(title, description);
+  if (VIETNAMESE_TOPIC_PATTERN.test(text) && /An ninh|an ninh|visa|nhập cảnh/i.test(text)) {
+    return true;
+  }
   if (!POLICY_PATTERN.test(text)) return false;
   return (
     isKoreaRelatedNews(title, description) ||
@@ -103,7 +123,12 @@ function matchesPolicyTopic(title: string, description: string): boolean {
 }
 
 function matchesKoreaTopic(title: string, description: string): boolean {
-  return isKoreaRelatedNews(title, description);
+  if (isKoreaRelatedNews(title, description)) return true;
+  const text = normalizeTextForTopicMatch(title, description);
+  return (
+    /한인|교민|교포|한국인|한인회|한국\s*기업/i.test(text) &&
+    /호치민|사이공|베트남|하노이|다낭|나트랑|푸미흥|7군|1군/i.test(text)
+  );
 }
 
 /** 토픽·VnExpress 공통 — 제목·요약이 해당 주제와 맞는지 */

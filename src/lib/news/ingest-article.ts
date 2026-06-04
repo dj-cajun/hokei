@@ -3,11 +3,7 @@ import {
   fetchArticleBody,
   isBodyLikelyMatchingTitle,
 } from "@/lib/news/article-body";
-import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
-import {
-  normalizeStoredThumbnailUrl,
-  resolveNewsThumbnailWithRetry,
-} from "@/lib/news/image";
+import { resolveAutomatedNewsThumbnail } from "@/lib/news/resolve-post-thumbnail";
 import { isMostlyKorean } from "@/lib/news/language";
 import { processNewsArticle } from "@/lib/news/translate";
 import { NEWS_MIN_BODY_LENGTH } from "@/lib/news/news-body-quality";
@@ -55,15 +51,13 @@ export async function buildPostFromArticlePage(
     title = processed.title;
   }
 
-  let resolvedThumb =
-    article?.img ??
-    raw.thumbnail ??
-    (await resolveNewsThumbnailWithRetry(raw.link, []));
-  if (resolvedThumb) {
-    resolvedThumb =
-      (await normalizeStoredThumbnailUrl(resolvedThumb, raw.link)) ?? undefined;
-  }
-  const thumbnail = resolvedThumb ?? getFallbackThumbnail(raw.topic);
+  const thumbnail = await resolveAutomatedNewsThumbnail({
+    topic: raw.topic,
+    link: raw.link,
+    rssDescription: raw.description,
+    rssThumbnail: raw.thumbnail,
+    scrapedImg: article?.img,
+  });
 
   const body =
     content.length >= NEWS_MIN_BODY_LENGTH ? content.slice(0, 15_000) : null;

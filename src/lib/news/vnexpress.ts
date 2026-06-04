@@ -17,9 +17,17 @@ export function isVnExpressArticle(
   title: string,
   sourceName: string
 ): boolean {
-  if (isVnExpressSource(url, sourceName)) return true;
+  if (url && /vnexpress\.net/i.test(url)) return true;
   if (/vnexpress|베트남\s*익스프레스|VnExpress/i.test(title)) return true;
-  if (/vnexpress|VnExpress/i.test(sourceName)) return true;
+
+  const linkPointsElsewhere =
+    url.startsWith("http") && !/vnexpress\.net/i.test(url);
+
+  // 피드 sourceName만 VnExpress인 네이버 검색 결과(조선·연합 등)는 제외
+  if (!linkPointsElsewhere && /vnexpress|익스프레스/i.test(sourceName)) {
+    return true;
+  }
+
   return false;
 }
 

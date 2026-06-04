@@ -65,14 +65,14 @@
     "gemini:test": "tsx scripts/test-gemini.ts",
     "gemini:retranslate": "tsx scripts/retranslate-gemini.ts",
     "news:backfill-thumbnails": "tsx scripts/backfill-thumbnails.ts",
+    "news:pipeline": "tsx scripts/prisma-generate-for-deploy.ts && tsx scripts/run-news-pipeline.ts",
     "news:refresh-bodies": "tsx scripts/refresh-article-bodies.ts",
     "news:clean-content": "tsx scripts/clean-post-content.ts",
     "news:dedupe": "tsx scripts/dedupe-posts.ts",
     "news:prune-travel": "tsx scripts/prune-travel-non-korea.ts",
     "news:prune-off-topic": "tsx scripts/prune-off-topic-posts.ts",
     "news:prune-empty": "tsx scripts/prune-empty-content-news.ts",
-    "news:queries": "tsx -e \"import { listNaverSearchQueries } from './src/lib/news/naver-search-queries.ts'; console.log(JSON.stringify(listNaverSearchQueries(), null, 2))\"",
-    "postinstall": "prisma generate"
+    "news:queries": "tsx -e \"import { listNaverSearchQueries } from './src/lib/news/naver-search-queries.ts'; console.log(JSON.stringify(listNaverSearchQueries(), null, 2))\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

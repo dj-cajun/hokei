@@ -8,8 +8,21 @@ export async function fetchNewsFromSource(
   topic: PostTopic,
   maxPerFeed = 4
 ): Promise<RawNewsItem[]> {
+  const tier = feed.tier;
   if (feed.type === "naver") {
-    return fetchNaverNewsItems(feed.query, topic, feed.sourceName, maxPerFeed);
+    const items = await fetchNaverNewsItems(
+      feed.query,
+      topic,
+      feed.sourceName,
+      maxPerFeed
+    );
+    return items.map((item) => ({ ...item, ingestTier: tier ?? item.ingestTier }));
   }
-  return fetchFeedItems(feed.url, topic, feed.sourceName, maxPerFeed);
+  return fetchFeedItems(
+    feed.url,
+    topic,
+    feed.sourceName,
+    maxPerFeed,
+    tier
+  );
 }

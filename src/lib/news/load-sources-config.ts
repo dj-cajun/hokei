@@ -4,6 +4,7 @@ import {
   type NewsTopicConfig,
   TOPIC_LABELS,
 } from "@/lib/news/sources";
+import { resolveFeedTier } from "@/lib/news/feed-tier-catalog";
 import type { NewsFeedSource } from "@/lib/news/sources";
 import { ensureNewsSourcesSeeded } from "@/lib/news/seed-sources-config";
 import { prisma } from "@/lib/prisma";
@@ -36,17 +37,19 @@ export async function loadNewsTopicSourcesFromDb(): Promise<NewsTopicConfig[]> {
   for (const row of rows) {
     const list = byTopic.get(row.topic) ?? [];
     if (row.type === "naver" && row.query) {
-      list.push({
+      const feed: NewsFeedSource = {
         type: "naver",
         query: row.query,
         sourceName: row.sourceName,
-      });
+      };
+      list.push({ ...feed, tier: resolveFeedTier(feed) });
     } else if (row.type === "rss" && row.url) {
-      list.push({
+      const feed: NewsFeedSource = {
         type: "rss",
         url: row.url,
         sourceName: row.sourceName,
-      });
+      };
+      list.push({ ...feed, tier: resolveFeedTier(feed) });
     }
     byTopic.set(row.topic, list);
   }

@@ -2,6 +2,7 @@ import Parser from "rss-parser";
 import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
 import { extractImageFromHtml } from "@/lib/news/image";
+import type { NewsIngestTier } from "@/lib/news/news-ingest-tier";
 
 export type RawNewsItem = {
   topic: PostTopic;
@@ -11,6 +12,7 @@ export type RawNewsItem = {
   sourceName: string;
   publishedAt: Date;
   thumbnail?: string;
+  ingestTier?: NewsIngestTier;
 };
 
 type MediaNode = { $?: { url?: string; type?: string; medium?: string } };
@@ -93,7 +95,8 @@ export async function fetchFeedItems(
   url: string,
   topic: PostTopic,
   sourceName: string,
-  maxPerFeed = 5
+  maxPerFeed = 5,
+  ingestTier?: NewsIngestTier
 ): Promise<RawNewsItem[]> {
   const feedUrl = normalizeFeedUrl(url);
   try {
@@ -120,6 +123,7 @@ export async function fetchFeedItems(
           publishedAt,
           thumbnail:
             extractImage(item) ?? extractImageFromHtml(String(rawContent)),
+          ingestTier,
         };
       })
       .filter(
