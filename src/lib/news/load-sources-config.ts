@@ -16,12 +16,19 @@ const TOPIC_CATEGORY_SLUG: Record<PostTopic, string> = {
 };
 
 export async function loadNewsTopicSourcesFromDb(): Promise<NewsTopicConfig[]> {
-  await ensureNewsSourcesSeeded();
+  let rows: Awaited<
+    ReturnType<typeof prisma.newsSourceConfig.findMany>
+  > = [];
 
-  const rows = await prisma.newsSourceConfig.findMany({
-    where: { isEnabled: true },
-    orderBy: [{ topic: "asc" }, { sortOrder: "asc" }],
-  });
+  try {
+    await ensureNewsSourcesSeeded();
+    rows = await prisma.newsSourceConfig.findMany({
+      where: { isEnabled: true },
+      orderBy: [{ topic: "asc" }, { sortOrder: "asc" }],
+    });
+  } catch {
+    return NEWS_TOPIC_SOURCES;
+  }
 
   if (rows.length === 0) return NEWS_TOPIC_SOURCES;
 

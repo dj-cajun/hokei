@@ -86,6 +86,29 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "Comment_isHidden_idx" ON "Comment"("isHidden")`
   );
 
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PostTopic" AS ENUM ('KOREA', 'TRAVEL', 'VIETNAM_POLICY', 'TOURIST');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "NewsSourceConfig" (
+      "id" TEXT NOT NULL,
+      "topic" "PostTopic" NOT NULL,
+      "type" TEXT NOT NULL,
+      "query" TEXT,
+      "url" TEXT,
+      "sourceName" TEXT NOT NULL,
+      "isEnabled" BOOLEAN NOT NULL DEFAULT true,
+      "sortOrder" INTEGER NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "NewsSourceConfig_pkey" PRIMARY KEY ("id")
+    )`);
+  await exec(`
+    CREATE INDEX IF NOT EXISTS "NewsSourceConfig_topic_isEnabled_idx"
+      ON "NewsSourceConfig"("topic", "isEnabled")`);
+
   await prisma.$disconnect();
   console.log("[pg-patch] 완료");
 }

@@ -39,8 +39,12 @@ export async function syncNewsSourcesFromCode(): Promise<number> {
 }
 
 export async function ensureNewsSourcesSeeded(): Promise<void> {
-  const count = await prisma.newsSourceConfig.count();
-  if (count === 0) {
-    await syncNewsSourcesFromCode();
+  try {
+    const count = await prisma.newsSourceConfig.count();
+    if (count === 0) {
+      await syncNewsSourcesFromCode();
+    }
+  } catch {
+    /* NewsSourceConfig 미적용 DB — loadNewsTopicSourcesFromDb가 코드 기본 소스 사용 */
   }
 }
