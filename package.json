@@ -12,7 +12,7 @@
     "env:check": "tsx scripts/check-env.ts",
     "setup": "tsx scripts/setup-sqlite.ts",
     "setup:pg": "tsx scripts/setup-postgres.ts",
-    "dev": "tsx scripts/prisma-generate-for-deploy.ts && next dev -p 3001",
+    "dev": "tsx scripts/ensure-prisma-client.ts && next dev -p 3001",
     "dev:clean": "rm -rf .next && npm run dev",
     "postinstall": "tsx scripts/prisma-generate-for-deploy.ts",
     "build": "tsx scripts/prisma-generate-for-deploy.ts && next build",

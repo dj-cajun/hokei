@@ -5,6 +5,7 @@ loadDotenv();
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
+import { getGeneratedPrismaActiveProvider } from "@/lib/prisma-generated-provider";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
 import { resolveDatabaseUrlForPrismaGenerate } from "@/lib/read-env-file";
 
@@ -35,11 +36,23 @@ function getRuntimeDatabaseKind(): "sqlite" | "postgresql" {
 
 function assertProviderMatchesUrl(): void {
   const runtime = getRuntimeDatabaseKind();
+  const generated = getGeneratedPrismaActiveProvider();
+
+  if (generated !== runtime) {
+    throw new Error(
+      [
+        `생성된 Prisma Client(${generated})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
+        "로컬: npm run dev  또는  npm run db:generate",
+        "캐시 초기화: npm run dev:clean",
+      ].join("\n")
+    );
+  }
+
   if (PRISMA_DATASOURCE_PROVIDER !== runtime) {
     throw new Error(
       [
-        `Prisma Client(provider=${PRISMA_DATASOURCE_PROVIDER})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
-        `다음을 실행하세요: npx tsx scripts/prisma-generate-for-deploy.ts`,
+        `prisma-datasource 마커(${PRISMA_DATASOURCE_PROVIDER})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
+        "다음을 실행하세요: npm run db:generate",
         `로컬 SQLite: DATABASE_URL="file:./dev.db"`,
         `Neon/프로덕션: DATABASE_URL="postgresql://..."`,
       ].join("\n")
