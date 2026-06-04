@@ -34,4 +34,10 @@ describe("resolveDatabaseUrlForPrismaGenerate", () => {
       "postgresql://neon.example/db"
     );
   });
+
+  it("does not fall back to sqlite on Vercel when DATABASE_URL is missing", () => {
+    vi.stubEnv("DATABASE_URL", "");
+    vi.stubEnv("VERCEL", "1");
+    expect(resolveDatabaseUrlForPrismaGenerate()).toBe("");
+  });
 });

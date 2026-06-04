@@ -51,5 +51,6 @@ export function resolveDatabaseUrlForPrismaGenerate(): string {
     return url;
   }
 
-  return fromProcess || fromFile || "file:./dev.db";
+  // Vercel: process env만 사용 (배포물 .env·SQLite 폴백으로 빈 DB 연결 방지)
+  return fromProcess || "";
 }

@@ -10,6 +10,7 @@ import {
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { isDatabaseAvailable } from "@/lib/database-available";
+import { log } from "@/lib/logger";
 import {
   getAutomatedNewsPosts,
   getCommunityNotices,
@@ -33,7 +34,10 @@ async function loadHomeFeeds(): Promise<
       getAutomatedNewsPosts(10),
       getCommunityNotices(8),
     ]);
-  } catch {
+  } catch (error) {
+    log("error", "home feeds failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
   }
 }

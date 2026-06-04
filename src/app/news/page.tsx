@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NewsArchivePage } from "@/components/category/news-archive-page";
 import { isDatabaseAvailable } from "@/lib/database-available";
+import { log } from "@/lib/logger";
 import { getSectionBySlug } from "@/lib/categories";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import {
@@ -40,12 +41,25 @@ export default async function NewsArchiveRoutePage({ searchParams }: PageProps) 
   const { page: pageParam } = await searchParams;
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
-  const [posts, totalCount] = isDatabaseAvailable()
-    ? await Promise.all([
+  let posts: Awaited<ReturnType<typeof getNewsArchivePosts>> = [];
+  let totalCount = 0;
+
+  if (!isDatabaseAvailable()) {
+    log("warn", "news archive: DATABASE_URL unavailable", {
+      vercel: process.env.VERCEL === "1",
+    });
+  } else {
+    try {
+      [posts, totalCount] = await Promise.all([
         getNewsArchivePosts(LIST_PAGE_SIZE, currentPage),
         countNewsArchivePosts(),
-      ])
-    : [[], 0];
+      ]);
+    } catch (error) {
+      log("error", "news archive query failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
 
