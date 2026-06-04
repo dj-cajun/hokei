@@ -40,7 +40,7 @@
     "check:prod:browser": "node scripts/check-prod-browser.mjs",
     "search:pg:setup": "tsx scripts/setup-pg-search.ts",
     "db:migrate:sqlite-to-pg": "tsx scripts/migrate-sqlite-to-pg.ts",
-    "db:generate": "prisma generate",
+    "db:generate": "tsx scripts/prisma-generate-for-deploy.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:sqlite:admin-schema": "tsx scripts/apply-sqlite-admin-schema.ts",

@@ -12,7 +12,7 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 
 | 변수 | 설명 |
 |------|------|
-| `DATABASE_URL` | **PostgreSQL** (Neon/Supabase). `file:./dev.db`는 Vercel에서 동작하지 않음 |
+| `DATABASE_URL` | **PostgreSQL** (Neon/Supabase). `file:./dev.db`는 Vercel에서 동작하지 않음. **Production·Preview·Development(빌드) 모두** 체크 — 빌드에 없으면 SQLite Client가 생성되어 `google_login_failed` / `google_db_config` 발생 |
 | `AUTH_SECRET` | 32자+ 랜덤 (`npm run env:auth-secret`) |
 | `CRON_SECRET` | Cron API 보호 (`npm run env:cron-secret`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://실제도메인` (localhost 금지) |

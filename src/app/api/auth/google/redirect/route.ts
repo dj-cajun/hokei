@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { readGoogleCallbackFromCookie } from "@/lib/auth/google-callback-cookie";
+import { googleLoginErrorCodeFromUnknown } from "@/lib/auth/google-login-error-code";
+import { findOrCreateUserFromGoogle } from "@/lib/auth/google-user";
 import { verifyGoogleRedirectCsrf } from "@/lib/auth/google-redirect-csrf";
 import { signInWithGoogleCredential } from "@/lib/auth/google-sign-in";
+import { verifyGoogleIdToken } from "@/lib/auth/verify-google-token";
 
 /**
  * GIS 버튼 redirect 모드 — Google이 credential을 form POST로 전달
@@ -32,11 +35,30 @@ export async function POST(request: Request) {
   }
 
   try {
-    await signInWithGoogleCredential(credential, { redirect: false });
+    const profile = await verifyGoogleIdToken(credential);
+    if (!profile) {
+      return NextResponse.redirect(
+        new URL("/?login_error=google_token_invalid", request.url)
+      );
+    }
+
+    await findOrCreateUserFromGoogle(profile);
+
+    const signInResult = await signInWithGoogleCredential(credential, {
+      redirect: false,
+    });
+    if (!signInResult) {
+      return NextResponse.redirect(
+        new URL("/?login_error=google_session_failed", request.url)
+      );
+    }
+
     return NextResponse.redirect(new URL(callbackUrl, request.url));
-  } catch {
+  } catch (err) {
+    const code = googleLoginErrorCodeFromUnknown(err);
+    console.error("[google redirect]", code, err);
     return NextResponse.redirect(
-      new URL("/?login_error=google_login_failed", request.url)
+      new URL(`/?login_error=${code}`, request.url)
     );
   }
 }

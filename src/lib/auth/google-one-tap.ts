@@ -148,20 +148,8 @@ export async function initGoogleOneTap(
   const loginUri = getGoogleRedirectLoginUri();
   if (!ensureGisPromptInitialized(onCredential, loginUri)) return false;
 
-  window.google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed()) {
-      console.debug(
-        "[google-one-tap] not displayed:",
-        notification.getNotDisplayedReason()
-      );
-    }
-    if (notification.isSkippedMoment()) {
-      console.debug(
-        "[google-one-tap] skipped:",
-        notification.getSkippedReason()
-      );
-    }
-  });
+  // moment 리스너(isNotDisplayed/isSkippedMoment)는 FedCM 필수화 경고 유발 — 생략
+  window.google.accounts.id.prompt();
 
   return true;
 }

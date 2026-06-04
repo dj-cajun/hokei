@@ -59,6 +59,11 @@ async function main() {
       ALTER COLUMN "moderationStatus" SET DEFAULT 'VISIBLE'::"ModerationStatus",
       ALTER COLUMN "moderationStatus" SET NOT NULL`);
 
+  await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "kakaoId" TEXT`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "User_kakaoId_key" ON "User"("kakaoId")`
+  );
+
   await exec(
     `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "isHidden" BOOLEAN NOT NULL DEFAULT false`
   );

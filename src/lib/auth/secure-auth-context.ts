@@ -5,10 +5,15 @@ export const GOOGLE_FEDCM_FOR_PROMPT = false as const;
 
 /**
  * Google One Tap 표시 여부.
- * localhost·HTTP에서는 원탭(팝업 credential) 없이 redirect 버튼만 사용.
+ * 기본 OFF — FedCM 전환·AbortError·401을 피하고 redirect 버튼만 사용.
+ * 켜려면 NEXT_PUBLIC_GOOGLE_ONE_TAP=true (HTTPS·비-localhost).
  */
 export function shouldEnableGoogleOneTap(): boolean {
   if (process.env.NEXT_PUBLIC_GOOGLE_DISABLE_ONE_TAP === "true") {
+    return false;
+  }
+
+  if (process.env.NEXT_PUBLIC_GOOGLE_ONE_TAP !== "true") {
     return false;
   }
 

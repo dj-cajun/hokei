@@ -6,10 +6,11 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
+import { resolveDatabaseUrlForPrismaGenerate } from "@/lib/read-env-file";
 
 function resolveConnectionString(): string {
-  const fromEnv = process.env.DATABASE_URL?.trim();
-  if (fromEnv) return fromEnv;
+  const url = resolveDatabaseUrlForPrismaGenerate();
+  if (url) return url;
   if (process.env.VERCEL === "1") return "";
   if (PRISMA_DATASOURCE_PROVIDER === "sqlite") return "file:./dev.db";
   throw new Error(
