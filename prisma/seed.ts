@@ -30,6 +30,7 @@ async function main() {
       name: "호케이 관리자",
       password: adminPassword,
       role: "ADMIN",
+      emailVerified: new Date(),
     },
   });
 
@@ -43,6 +44,7 @@ async function main() {
       name: "데모 사용자",
       password: demoPassword,
       role: "USER",
+      emailVerified: new Date(),
     },
   });
 

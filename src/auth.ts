@@ -33,6 +33,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await compare(password, user.password);
         if (!valid) return null;
 
+        if (!user.emailVerified) {
+          return null;
+        }
+
         return {
           id: user.id,
           email: user.email,

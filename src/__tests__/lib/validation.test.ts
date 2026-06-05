@@ -8,8 +8,19 @@ describe("signupSchema", () => {
       name: "홍길동",
       email: "test@example.com",
       password: "pass1234",
+      confirmPassword: "pass1234",
     });
     expect(r.success).toBe(true);
+  });
+
+  it("rejects mismatched passwords", () => {
+    const r = signupSchema.safeParse({
+      name: "홍길동",
+      email: "test@example.com",
+      password: "pass1234",
+      confirmPassword: "pass9999",
+    });
+    expect(r.success).toBe(false);
   });
 
   it("rejects weak password", () => {
@@ -17,6 +28,7 @@ describe("signupSchema", () => {
       name: "홍길동",
       email: "test@example.com",
       password: "12345678",
+      confirmPassword: "12345678",
     });
     expect(r.success).toBe(false);
   });

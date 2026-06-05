@@ -54,9 +54,9 @@ export function NewsIngestPanel() {
             <h2 className="font-semibold">뉴스 자동 수집</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            네이버 뉴스 API + VnExpress(Int&apos;l RSS→Gemini) · 하루 최대 10건
+            네이버 뉴스 API + VnExpress(Int&apos;l RSS→Gemini) · 하루 최대 15건
             <br />
-            스케줄: 매일 07:00 (Asia/Ho_Chi_Minh) · 일 15건
+            스케줄: 매일 07:00 (Asia/Ho_Chi_Minh)
           </p>
         </div>
         <Button onClick={() => void runIngest()} disabled={loading} size="sm">

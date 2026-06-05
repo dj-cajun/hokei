@@ -6,7 +6,7 @@ export async function GET() {
   const data = await getHoChiMinhWeather();
   return Response.json(data, {
     headers: {
-      "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+      "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
     },
   });
 }

@@ -1,6 +1,7 @@
 import { hash } from "bcryptjs";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
+import { issueEmailVerification } from "@/lib/auth/email-verification";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { signupSchema } from "@/lib/validation/signup";
@@ -21,9 +22,31 @@ export async function POST(request: Request) {
     }
 
     const { name, email, password } = parsed.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { id: true, email: true, name: true, emailVerified: true },
+    });
+
     if (existing) {
+      if (!existing.emailVerified) {
+        const mail = await issueEmailVerification(
+          existing.id,
+          existing.email,
+          existing.name
+        );
+        return apiSuccess(
+          {
+            message:
+              "이미 가입된 이메일입니다. 인증 메일을 다시 보냈습니다. 메일함을 확인해 주세요.",
+            email: existing.email,
+            requiresVerification: true,
+            devLogged: mail.devLogged,
+          },
+          200
+        );
+      }
       return apiError("이미 사용 중인 이메일입니다.", 409);
     }
 
@@ -32,9 +55,10 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         role: "USER",
+        emailVerified: null,
       },
       select: {
         id: true,
@@ -45,7 +69,18 @@ export async function POST(request: Request) {
       },
     });
 
-    return apiSuccess({ user }, 201);
+    const mail = await issueEmailVerification(user.id, user.email, user.name);
+
+    return apiSuccess(
+      {
+        message:
+          "가입 신청이 완료되었습니다. 이메일의 인증 링크를 클릭한 뒤 로그인해 주세요.",
+        user,
+        requiresVerification: true,
+        devLogged: mail.devLogged,
+      },
+      201
+    );
   } catch (err) {
     log("error", "signup failed", {
       error: err instanceof Error ? err.message : String(err),

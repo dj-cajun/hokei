@@ -14,7 +14,7 @@ export default function SignupPage() {
     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm md:p-8">
       <h1 className="text-xl font-bold text-foreground">회원가입</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        무료로 가입하고 커뮤니티에 참여하세요
+        가입 후 이메일 인증을 완료하면 로그인할 수 있습니다
       </p>
       <div className="mt-6">
         <Suspense fallback={<div className="h-48 animate-pulse rounded-xl bg-secondary" />}>

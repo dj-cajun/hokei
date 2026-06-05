@@ -24,7 +24,11 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname();
 
-  if (pathname === "/write" || /\/posts\/[^/]+\/edit$/.test(pathname)) {
+  if (
+    pathname === "/write" ||
+    pathname.startsWith("/admin") ||
+    /\/posts\/[^/]+\/edit$/.test(pathname)
+  ) {
     return null;
   }
 

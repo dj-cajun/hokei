@@ -26,7 +26,13 @@ export async function findOrCreateUserFromGoogle(
         name: profile.name,
         password: passwordHash,
         role: "USER",
+        emailVerified: new Date(),
       },
+    });
+  } else if (!user.emailVerified) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: new Date() },
     });
   }
 

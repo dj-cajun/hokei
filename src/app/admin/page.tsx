@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { NewsIngestPanel } from "@/components/admin/news-ingest-panel";
 import { SearchReindexPanel } from "@/components/admin/search-reindex-panel";
 import { StatsCards } from "@/components/admin/stats-cards";
+import { MAX_DAILY_NEWS } from "@/lib/news/sources";
 import { getDatabaseKind, prisma } from "@/lib/prisma";
 
 export default async function AdminDashboardPage() {
@@ -59,7 +60,7 @@ export default async function AdminDashboardPage() {
       </p>
 
       <p className="text-xs text-muted-foreground">
-        오늘 자동 수집된 뉴스: {newsToday} / 10건
+        오늘 자동 수집된 뉴스: {newsToday} / {MAX_DAILY_NEWS}건
       </p>
 
       <section className="rounded-2xl bg-white">

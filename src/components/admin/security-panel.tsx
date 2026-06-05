@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2, ShieldBan, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
@@ -47,6 +47,10 @@ export function SecurityPanel() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   async function addBlock() {
     if (!pattern.trim() || !reason.trim()) return;

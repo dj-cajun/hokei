@@ -5,5 +5,5 @@ export type WeatherSnapshot = {
   windKmh: number;
   description: string;
   updatedAt: string;
-  source: "openweather" | "fallback";
+  source: "weatherapi" | "fallback";
 };

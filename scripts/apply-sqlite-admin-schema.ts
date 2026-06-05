@@ -20,6 +20,7 @@ const files = [
   "prisma/migrations/20260601203000_user_kakao_id/migration.sql",
   "prisma/migrations/20260602180000_admin_p012/migration.sql",
   "prisma/migrations/20260602200000_admin_p34567/migration.sql",
+  "prisma/migrations/20260606120000_email_verification/migration.sql",
 ];
 
 for (const rel of files) {

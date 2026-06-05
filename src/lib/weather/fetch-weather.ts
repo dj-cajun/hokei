@@ -1,5 +1,7 @@
 import type { WeatherSnapshot } from "@/lib/weather/types";
 
+const HO_CHI_MINH_QUERY = "Ho Chi Minh City";
+
 const FALLBACK: WeatherSnapshot = {
   tempC: 32,
   feelsLikeC: 36,
@@ -10,40 +12,58 @@ const FALLBACK: WeatherSnapshot = {
   source: "fallback",
 };
 
-type OpenWeatherResponse = {
-  main: { temp: number; feels_like: number; humidity: number };
-  wind?: { speed?: number };
-  weather?: { description?: string }[];
+type WeatherApiCurrentResponse = {
+  current?: {
+    last_updated?: string;
+    temp_c?: number;
+    feelslike_c?: number;
+    humidity?: number;
+    wind_kph?: number;
+    condition?: { text?: string };
+  };
+  error?: { message?: string };
 };
 
+function resolveWeatherApiKey(): string {
+  return (
+    process.env.WEATHERAPI_KEY?.trim() ??
+    process.env.OPENWEATHER_API_KEY?.trim() ??
+    ""
+  );
+}
+
 export async function getHoChiMinhWeather(): Promise<WeatherSnapshot> {
-  const apiKey = process.env.OPENWEATHER_API_KEY?.trim();
+  const apiKey = resolveWeatherApiKey();
   if (!apiKey) return FALLBACK;
 
   try {
-    const url = new URL("https://api.openweathermap.org/data/2.5/weather");
-    url.searchParams.set("q", "Ho Chi Minh City,VN");
-    url.searchParams.set("appid", apiKey);
-    url.searchParams.set("units", "metric");
-    url.searchParams.set("lang", "kr");
+    const url = new URL("https://api.weatherapi.com/v1/current.json");
+    url.searchParams.set("key", apiKey);
+    url.searchParams.set("q", HO_CHI_MINH_QUERY);
+    url.searchParams.set("lang", "ko");
 
     const res = await fetch(url.toString(), {
-      next: { revalidate: 1800 },
+      next: { revalidate: 600 },
     });
 
     if (!res.ok) return FALLBACK;
 
-    const data = (await res.json()) as OpenWeatherResponse;
-    const windMs = data.wind?.speed ?? 0;
+    const data = (await res.json()) as WeatherApiCurrentResponse;
+    const current = data.current;
+    if (!current || data.error) return FALLBACK;
+
+    const updatedAt = current.last_updated
+      ? new Date(current.last_updated).toISOString()
+      : new Date().toISOString();
 
     return {
-      tempC: Math.round(data.main.temp),
-      feelsLikeC: Math.round(data.main.feels_like),
-      humidity: data.main.humidity,
-      windKmh: Math.round(windMs * 3.6),
-      description: data.weather?.[0]?.description ?? "—",
-      updatedAt: new Date().toISOString(),
-      source: "openweather",
+      tempC: Math.round(current.temp_c ?? FALLBACK.tempC),
+      feelsLikeC: Math.round(current.feelslike_c ?? FALLBACK.feelsLikeC),
+      humidity: current.humidity ?? FALLBACK.humidity,
+      windKmh: Math.round(current.wind_kph ?? FALLBACK.windKmh),
+      description: current.condition?.text ?? "—",
+      updatedAt,
+      source: "weatherapi",
     };
   } catch {
     return FALLBACK;

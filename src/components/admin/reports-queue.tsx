@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,10 @@ export function ReportsQueue() {
       setLoading(false);
     }
   }, [status]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   async function updateReport(
     id: string,

@@ -114,6 +114,29 @@ async function main() {
     CREATE INDEX IF NOT EXISTS "NewsSourceConfig_topic_isEnabled_idx"
       ON "NewsSourceConfig"("topic", "isEnabled")`);
 
+  await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" TIMESTAMP(3)`);
+  await exec(
+    `UPDATE "User" SET "emailVerified" = "createdAt" WHERE "emailVerified" IS NULL`
+  );
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "EmailVerification" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "tokenHash" TEXT NOT NULL,
+      "expiresAt" TIMESTAMP(3) NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "EmailVerification_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "EmailVerification_userId_fkey"
+        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "EmailVerification_userId_key" ON "EmailVerification"("userId")`
+  );
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "EmailVerification_tokenHash_key" ON "EmailVerification"("tokenHash")`
+  );
+
   await prisma.$disconnect();
   console.log("[pg-patch] 완료");
 }

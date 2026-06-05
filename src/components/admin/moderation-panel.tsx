@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,10 @@ export function ModerationPanel() {
       setLoading(false);
     }
   }, [tab, q]);
+
+  useEffect(() => {
+    if (tab !== "reports") void load();
+  }, [tab, load]);
 
   function toggle(id: string) {
     setSelected((prev) => {
