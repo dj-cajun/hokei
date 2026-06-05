@@ -14,7 +14,7 @@
     "setup:pg": "tsx scripts/setup-postgres.ts",
     "dev": "tsx scripts/ensure-prisma-client.ts && next dev -p 3001",
     "dev:clean": "rm -rf .next && npm run dev",
-    "postinstall": "tsx scripts/prisma-generate-for-deploy.ts",
+    "postinstall": "tsx scripts/prisma-generate-for-deploy.ts && tsx scripts/ensure-prisma-client.ts",
     "build": "tsx scripts/prisma-generate-for-deploy.ts && next build",
     "start": "next start -p 3001",
     "lint": "eslint",

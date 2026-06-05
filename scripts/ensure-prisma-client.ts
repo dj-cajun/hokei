@@ -1,6 +1,10 @@
 /**
  * DATABASE_URL과 생성된 Prisma Client provider 불일치 시 자동 재생성 (로컬 dev)
  */
+import { loadDotenv } from "../src/lib/load-dotenv";
+
+loadDotenv();
+
 import { spawnSync } from "child_process";
 import { getGeneratedPrismaActiveProvider } from "../src/lib/prisma-generated-provider";
 import {
