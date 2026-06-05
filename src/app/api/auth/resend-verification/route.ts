@@ -25,7 +25,10 @@ export async function POST(request: Request) {
 
     return apiSuccess({
       message:
-        "등록된 미인증 계정이 있으면 인증 메일을 보냈습니다. 메일함을 확인해 주세요.",
+        result.emailSent === false
+          ? "인증 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요."
+          : "등록된 미인증 계정이 있으면 인증 메일을 보냈습니다. 메일함을 확인해 주세요.",
+      emailSent: result.emailSent ?? true,
       devLogged: result.devLogged,
     });
   } catch (err) {

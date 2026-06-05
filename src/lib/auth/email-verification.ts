@@ -16,7 +16,7 @@ export async function issueEmailVerification(
   userId: string,
   email: string,
   name: string
-): Promise<{ devLogged?: boolean }> {
+): Promise<{ emailSent: boolean; devLogged?: boolean }> {
   const token = createRawToken();
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
@@ -33,7 +33,7 @@ export async function issueEmailVerification(
     verifyUrl: buildVerifyEmailUrl(token),
   });
 
-  return { devLogged: result.devLogged };
+  return { emailSent: result.sent, devLogged: result.devLogged };
 }
 
 export async function verifyEmailToken(
@@ -77,7 +77,7 @@ export async function verifyEmailToken(
 
 export async function resendVerificationEmail(
   email: string
-): Promise<{ sent: boolean; devLogged?: boolean }> {
+): Promise<{ sent: boolean; emailSent?: boolean; devLogged?: boolean }> {
   const user = await prisma.user.findUnique({
     where: { email: email.toLowerCase().trim() },
     select: { id: true, email: true, name: true, emailVerified: true },
@@ -88,5 +88,9 @@ export async function resendVerificationEmail(
   }
 
   const result = await issueEmailVerification(user.id, user.email, user.name);
-  return { sent: true, devLogged: result.devLogged };
+  return {
+    sent: true,
+    emailSent: result.emailSent,
+    devLogged: result.devLogged,
+  };
 }

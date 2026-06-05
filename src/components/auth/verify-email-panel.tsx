@@ -33,11 +33,16 @@ export function VerifyEmailPanel() {
         showToast(parseApiError(data) ?? "재발송 실패", "error");
         return;
       }
-      showToast(
-        data.devLogged
-          ? "개발 모드: 서버 로그에 인증 링크가 출력되었습니다."
-          : "인증 메일을 보냈습니다. 메일함을 확인해 주세요."
-      );
+      if (data.devLogged) {
+        showToast("개발 모드: 서버 로그에 인증 링크가 출력되었습니다.");
+      } else if (data.emailSent === false) {
+        showToast(
+          data.message ?? "인증 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+          "error"
+        );
+      } else {
+        showToast("인증 메일을 보냈습니다. 메일함을 확인해 주세요.");
+      }
     } catch {
       showToast("요청 처리 중 오류가 발생했습니다.", "error");
     } finally {

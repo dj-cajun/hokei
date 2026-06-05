@@ -19,7 +19,7 @@ vi.mock("bcryptjs", () => ({
 }));
 
 vi.mock("@/lib/auth/email-verification", () => ({
-  issueEmailVerification: vi.fn().mockResolvedValue({}),
+  issueEmailVerification: vi.fn().mockResolvedValue({ emailSent: true }),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -136,5 +136,34 @@ describe("POST /api/auth/signup", () => {
     expect(json.requiresVerification).toBe(true);
     expect(json.user?.email).toBe("new@e.com");
     expect(issueEmailVerification).toHaveBeenCalled();
+  });
+
+  it("returns 201 when email send fails but user is created", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.user.create).mockResolvedValue({
+      id: "new",
+      email: "new@e.com",
+      name: "신규",
+      role: "USER",
+      createdAt: new Date(),
+    } as never);
+    vi.mocked(issueEmailVerification).mockResolvedValue({ emailSent: false });
+
+    const res = await POST(
+      new Request("http://localhost/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validBody),
+      })
+    );
+    expect(res.status).toBe(201);
+    const json = (await res.json()) as {
+      ok: boolean;
+      emailSent?: boolean;
+      message?: string;
+    };
+    expect(json.ok).toBe(true);
+    expect(json.emailSent).toBe(false);
+    expect(json.message).toContain("인증 메일 발송에 실패");
   });
 });

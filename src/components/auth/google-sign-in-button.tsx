@@ -9,7 +9,6 @@ import {
 } from "@/lib/auth/google-one-tap";
 import { setGoogleCallbackCookie } from "@/lib/auth/google-callback-cookie";
 import { isInsecureLocalDev } from "@/lib/auth/insecure-local-dev";
-import { isLocalDevHost } from "@/lib/auth/local-dev-host";
 import { cn } from "@/lib/utils";
 
 type GoogleSignInButtonProps = {
@@ -32,7 +31,6 @@ export function GoogleSignInButton({
   const [gisReady, setGisReady] = useState(false);
   const [redirectPrimed, setRedirectPrimed] = useState(false);
   const [insecureLocal] = useState(() => isInsecureLocalDev());
-  const [localDev] = useState(() => isLocalDevHost());
   const configured = Boolean(getGoogleClientId());
 
   const primeRedirect = useCallback(async () => {
@@ -133,17 +131,6 @@ export function GoogleSignInButton({
           <GoogleMark />
           <span>Google로 계속하기</span>
         </button>
-        {localDev && (
-          <p className="mt-1.5 text-center text-[11px] leading-snug text-muted-foreground">
-            로컬 개발: Google Cloud Console → OAuth 클라이언트에{" "}
-            <span className="font-mono">http://localhost:3001</span> (JavaScript
-            원본) 및{" "}
-            <span className="font-mono">
-              http://localhost:3001/api/auth/google/redirect
-            </span>{" "}
-            (리다이렉트 URI) 등록
-          </p>
-        )}
       </div>
     );
   }
@@ -173,12 +160,6 @@ export function GoogleSignInButton({
         )}
         aria-label="Google로 계속하기"
       />
-      {localDev && (
-        <p className="mt-1.5 text-center text-[11px] leading-snug text-muted-foreground">
-          로컬 개발: Google Cloud Console → OAuth 클라이언트 → 승인된 JavaScript
-          원본에 <span className="font-mono">http://localhost:3001</span> 등록
-        </p>
-      )}
     </div>
   );
 }

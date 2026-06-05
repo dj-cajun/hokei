@@ -67,6 +67,7 @@ export function AuthForm({
           error?: string;
           message?: string;
           devLogged?: boolean;
+          emailSent?: boolean;
           requiresVerification?: boolean;
         };
         if (!res.ok) {
@@ -76,6 +77,12 @@ export function AuthForm({
 
         if (data.devLogged) {
           showToast("개발 모드: 서버 로그에 인증 링크가 출력되었습니다.");
+        } else if (data.emailSent === false) {
+          showToast(
+            data.message ??
+              "가입은 완료되었으나 인증 메일 발송에 실패했습니다. 재발송을 시도해 주세요.",
+            "error"
+          );
         } else {
           showToast("인증 메일을 보냈습니다. 메일함을 확인해 주세요.");
         }

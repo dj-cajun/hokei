@@ -49,8 +49,10 @@ export async function sendVerificationEmail(
     log("error", "[email] Resend 실패", {
       status: res.status,
       body: errText.slice(0, 300),
+      from,
+      to: input.to,
     });
-    throw new Error("인증 메일 발송에 실패했습니다.");
+    return { sent: false };
   }
 
   return { sent: true };

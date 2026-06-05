@@ -38,10 +38,12 @@ export async function POST(request: Request) {
         );
         return apiSuccess(
           {
-            message:
-              "이미 가입된 이메일입니다. 인증 메일을 다시 보냈습니다. 메일함을 확인해 주세요.",
+            message: mail.emailSent
+              ? "이미 가입된 이메일입니다. 인증 메일을 다시 보냈습니다. 메일함을 확인해 주세요."
+              : "이미 가입된 이메일입니다. 인증 메일 발송에 실패했습니다. 잠시 후 재발송을 시도해 주세요.",
             email: existing.email,
             requiresVerification: true,
+            emailSent: mail.emailSent,
             devLogged: mail.devLogged,
           },
           200
@@ -73,10 +75,12 @@ export async function POST(request: Request) {
 
     return apiSuccess(
       {
-        message:
-          "가입 신청이 완료되었습니다. 이메일의 인증 링크를 클릭한 뒤 로그인해 주세요.",
+        message: mail.emailSent
+          ? "가입 신청이 완료되었습니다. 이메일의 인증 링크를 클릭한 뒤 로그인해 주세요."
+          : "가입은 완료되었으나 인증 메일 발송에 실패했습니다. 인증 메일 재발송 페이지에서 다시 시도해 주세요.",
         user,
         requiresVerification: true,
+        emailSent: mail.emailSent,
         devLogged: mail.devLogged,
       },
       201

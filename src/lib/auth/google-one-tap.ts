@@ -45,6 +45,12 @@ function clearGoogleCredentialCallback(): void {
 
 /** redirect 버튼 렌더 전 — prompt·callback 잔여 상태 제거 (callback 있으면 popup 강제) */
 export function prepareGoogleRedirectSignIn(): void {
+  if (gisMode === "redirect") {
+    cancelGoogleOneTap();
+    clearGoogleCredentialCallback();
+    window.google?.accounts?.id?.disableAutoSelect();
+    return;
+  }
   resetGisState();
   cancelGoogleOneTap();
   clearGoogleCredentialCallback();
