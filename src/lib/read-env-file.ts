@@ -36,6 +36,9 @@ export function resolveDatabaseUrlForPrismaGenerate(): string {
   const fromProcess = process.env.DATABASE_URL?.trim() ?? "";
   const fromFile = readEnvFileValue("DATABASE_URL");
   const onVercel = process.env.VERCEL === "1";
+  const onCi = process.env.CI === "true" || process.env.CI === "1";
+
+  if (onCi && fromProcess) return fromProcess;
 
   if (!onVercel) {
     const url = resolveLocalDevDatabaseUrl(fromProcess, fromFile);

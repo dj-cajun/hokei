@@ -40,4 +40,11 @@ describe("resolveDatabaseUrlForPrismaGenerate", () => {
     vi.stubEnv("VERCEL", "1");
     expect(resolveDatabaseUrlForPrismaGenerate()).toBe("");
   });
+
+  it("prefers process DATABASE_URL in CI over .env file", () => {
+    vi.stubEnv("DATABASE_URL", "file:./ci-e2e.db");
+    vi.stubEnv("CI", "true");
+    vi.stubEnv("VERCEL", "");
+    expect(resolveDatabaseUrlForPrismaGenerate()).toBe("file:./ci-e2e.db");
+  });
 });

@@ -9,6 +9,8 @@ import {
   getPostsByCategorySlug,
 } from "@/lib/posts";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ section: string; slug: string }>;
   searchParams: Promise<{ page?: string }>;

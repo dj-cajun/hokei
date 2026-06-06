@@ -30,7 +30,7 @@ async function main() {
     throw new Error("[seed-e2e] news-visa-residency category missing");
   }
 
-  await prisma.post.create({
+  const post = await prisma.post.create({
     data: {
       title: "E2E 테스트 — 호치민 교민 뉴스",
       summary: "Playwright smoke test sample post.",
@@ -40,12 +40,13 @@ async function main() {
       topic: "KOREA",
       categoryId: category.id,
       publishedAt: new Date(),
-      isAutomated: false,
+      ingestedAt: new Date(),
+      isAutomated: true,
       status: "PUBLISHED",
     },
   });
 
-  console.log("[seed-e2e] sample post created");
+  console.log(`[seed-e2e] sample post created id=${post.id}`);
 }
 
 main()

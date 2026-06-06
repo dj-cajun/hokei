@@ -6,7 +6,10 @@ function isPlaceholderDatabaseUrl(url: string): boolean {
 export function isDatabaseAvailable(): boolean {
   const url = process.env.DATABASE_URL?.trim() ?? "";
   if (!url || isPlaceholderDatabaseUrl(url)) return false;
-  if (url.startsWith("file:") && process.env.VERCEL === "1") return false;
+  const onCi = process.env.CI === "true" || process.env.CI === "1";
+  if (url.startsWith("file:") && process.env.VERCEL === "1" && !onCi) {
+    return false;
+  }
   return (
     url.startsWith("postgresql://") ||
     url.startsWith("postgres://") ||

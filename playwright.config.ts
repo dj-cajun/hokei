@@ -16,10 +16,16 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.CI
     ? {
-        command: "npm run start",
+        command:
+          "npx tsx scripts/prisma-generate-for-deploy.ts && npm run start",
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120_000,
+        env: {
+          ...process.env,
+          CI: "true",
+          VERCEL: "",
+        },
       }
     : undefined,
 });

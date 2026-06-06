@@ -17,6 +17,8 @@ import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { formatPostSourceLabel } from "@/lib/news/source-display";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
