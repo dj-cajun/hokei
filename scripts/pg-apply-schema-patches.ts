@@ -137,6 +137,64 @@ async function main() {
     `CREATE UNIQUE INDEX IF NOT EXISTS "EmailVerification_tokenHash_key" ON "EmailVerification"("tokenHash")`
   );
 
+  await exec(`ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "likeCount" INTEGER NOT NULL DEFAULT 0`);
+  await exec(`CREATE INDEX IF NOT EXISTS "Post_likeCount_idx" ON "Post"("likeCount")`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "PostLike" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "postId" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "PostLike_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "PostLike_userId_fkey"
+        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT "PostLike_postId_fkey"
+        FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "PostLike_userId_postId_key" ON "PostLike"("userId", "postId")`
+  );
+  await exec(`CREATE INDEX IF NOT EXISTS "PostLike_postId_idx" ON "PostLike"("postId")`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "Conversation" (
+      "id" TEXT NOT NULL,
+      "participantAId" TEXT NOT NULL,
+      "participantBId" TEXT NOT NULL,
+      "contextPostId" TEXT,
+      "lastMessageAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "Conversation_participantAId_fkey"
+        FOREIGN KEY ("participantAId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT "Conversation_participantBId_fkey"
+        FOREIGN KEY ("participantBId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "Conversation_participantAId_participantBId_key"
+      ON "Conversation"("participantAId", "participantBId")`
+  );
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "DirectMessage" (
+      "id" TEXT NOT NULL,
+      "conversationId" TEXT NOT NULL,
+      "senderId" TEXT NOT NULL,
+      "body" TEXT NOT NULL,
+      "readAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "DirectMessage_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "DirectMessage_conversationId_fkey"
+        FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT "DirectMessage_senderId_fkey"
+        FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "DirectMessage_conversationId_createdAt_idx"
+      ON "DirectMessage"("conversationId", "createdAt")`
+  );
+
   await prisma.$disconnect();
   console.log("[pg-patch] 완료");
 }

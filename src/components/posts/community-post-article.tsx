@@ -5,6 +5,8 @@ import { getAuthorDisplayName } from "@/lib/community";
 import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
+import { PostLikeButton } from "@/components/posts/post-like-button";
+import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 import { mapPostComments } from "@/lib/map-post-comments";
 import { isPostOwner } from "@/lib/post-permissions";
@@ -26,12 +28,14 @@ type CommunityPostArticleProps = {
   post: PostWithRelations;
   sessionUserId?: string;
   isAdmin?: boolean;
+  likedByMe?: boolean;
 };
 
 export function CommunityPostArticle({
   post,
   sessionUserId,
   isAdmin,
+  likedByMe = false,
 }: CommunityPostArticleProps) {
   const authorName = getAuthorDisplayName(post);
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
@@ -87,13 +91,32 @@ export function CommunityPostArticle({
           {post.title}
         </h1>
 
-        <p className="mt-1.5 text-[11px] text-gray-400">
-          {post.publishedAt.toLocaleString("ko-KR", {
-            timeZone: "Asia/Ho_Chi_Minh",
-          })}
-          {authorName && ` · ${authorName}`}
-          {` · 조회 ${post.views + 1}`}
-        </p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+          <p>
+            {post.publishedAt.toLocaleString("ko-KR", {
+              timeZone: "Asia/Ho_Chi_Minh",
+            })}
+            {authorName && ` · ${authorName}`}
+            {` · 조회 ${post.views + 1}`}
+          </p>
+          <PostLikeButton
+            postId={post.id}
+            initialCount={post.likeCount ?? 0}
+            initialLiked={likedByMe}
+          />
+        </div>
+
+        {post.authorId &&
+          post.author &&
+          sessionUserId !== post.authorId && (
+            <div className="mt-2">
+              <SendMessageButton
+                recipientId={post.authorId}
+                recipientName={post.author.name}
+                postId={post.id}
+              />
+            </div>
+          )}
 
         {images.length > 0 && (
           <div className="mt-3 space-y-2">

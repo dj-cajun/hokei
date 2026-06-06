@@ -1,0 +1,26 @@
+{
+  "name": "호케이 Hokei - 호치민 한국 교민 포털",
+  "short_name": "호케이",
+  "description": "호치민 거주 한국 교민을 위한 뉴스, 커뮤니티, 부동산, 구인, 쪽지",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#0064ff",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icons/hokei-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/hokei-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

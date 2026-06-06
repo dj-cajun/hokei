@@ -27,6 +27,7 @@ export function MobileNav() {
   if (
     pathname === "/write" ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/messages") ||
     /\/posts\/[^/]+\/edit$/.test(pathname)
   ) {
     return null;

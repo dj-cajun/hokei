@@ -21,6 +21,16 @@ export const metadata: Metadata = {
     "호케이(Hokei). 호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 퀴즈, 커뮤니티.",
   keywords:
     "호케이, Hokei, 사이공, 호치민, 한국교민, 베트남, 숙소, 구인",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "호케이",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [{ url: "/icons/hokei-icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icons/hokei-icon.svg", type: "image/svg+xml" }],
+  },
   openGraph: {
     title: "호케이 Hokei - 호치민 한국 교민 포털",
     description:
@@ -59,7 +69,7 @@ export default function RootLayout({
             <main id="main-content" className="flex flex-1 flex-col">
               {children}
             </main>
-            <div className="mx-auto hidden w-full max-w-6xl lg:block">
+            <div className="mx-auto mt-auto w-full max-w-6xl">
               <SiteFooter />
             </div>
             <MobileNav />

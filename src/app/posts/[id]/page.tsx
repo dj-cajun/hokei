@@ -5,11 +5,13 @@ import { NewsThumbnail } from "@/components/news/thumbnail";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
 import { PostComments } from "@/components/posts/post-comments";
+import { PostLikeButton } from "@/components/posts/post-like-button";
 import { ViewCounter } from "@/components/posts/view-counter";
 import { mapPostComments } from "@/lib/map-post-comments";
 import { auth } from "@/auth";
 import { isCommunityPost } from "@/lib/community";
 import { getPostById } from "@/lib/posts";
+import { prisma } from "@/lib/prisma";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { formatPostSourceLabel } from "@/lib/news/source-display";
 
@@ -38,6 +40,16 @@ export default async function PostPage({ params }: PageProps) {
 
   const isCommunity = isCommunityPost(post.sourceUrl);
 
+  let likedByMe = false;
+  if (session?.user?.id) {
+    const like = await prisma.postLike.findUnique({
+      where: {
+        userId_postId: { userId: session.user.id, postId: id },
+      },
+    });
+    likedByMe = Boolean(like);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <ViewCounter postId={id} />
@@ -48,12 +60,14 @@ export default async function PostPage({ params }: PageProps) {
             post={post}
             sessionUserId={session?.user?.id}
             isAdmin={session?.user?.role === "ADMIN"}
+            likedByMe={likedByMe}
           />
         ) : (
           <NewsPostArticle
             post={post}
             sessionUserId={session?.user?.id}
             isAdmin={session?.user?.role === "ADMIN"}
+            likedByMe={likedByMe}
           />
         )}
       </div>
@@ -65,10 +79,12 @@ function NewsPostArticle({
   post,
   sessionUserId,
   isAdmin,
+  likedByMe = false,
 }: {
   post: NonNullable<Awaited<ReturnType<typeof getPostById>>>;
   sessionUserId?: string;
   isAdmin?: boolean;
+  likedByMe?: boolean;
 }) {
   const sourceLabel = formatPostSourceLabel(post.sourceName);
   const initialComments = mapPostComments(
@@ -124,13 +140,20 @@ function NewsPostArticle({
           </div>
         )}
 
-        <p className="mt-1.5 text-[11px] text-gray-400">
-          {post.publishedAt.toLocaleString("ko-KR", {
-            timeZone: "Asia/Ho_Chi_Minh",
-          })}{" "}
-          · 조회 {post.views}
-          {sourceLabel && ` · ${sourceLabel}`}
-        </p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+          <p>
+            {post.publishedAt.toLocaleString("ko-KR", {
+              timeZone: "Asia/Ho_Chi_Minh",
+            })}{" "}
+            · 조회 {post.views}
+            {sourceLabel && ` · ${sourceLabel}`}
+          </p>
+          <PostLikeButton
+            postId={post.id}
+            initialCount={post.likeCount ?? 0}
+            initialLiked={likedByMe}
+          />
+        </div>
 
         {post.content ? (
           <div className="mt-3 whitespace-pre-wrap text-sm leading-snug text-foreground">

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "내 프로필 - 호케이 Hokei",
   robots: { index: false, follow: false },
 };
-import { LayoutDashboard, Shield } from "lucide-react";
+import { LayoutDashboard, Mail, Shield } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -43,6 +43,15 @@ export default async function ProfilePage() {
                 )}
               </span>
             </div>
+          </div>
+
+          <div className="mt-6">
+            <Button asChild variant="outline">
+              <Link href="/messages">
+                <Mail className="mr-2 h-4 w-4" />
+                쪽지함
+              </Link>
+            </Button>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
