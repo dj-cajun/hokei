@@ -16,6 +16,7 @@ export interface FeedItem {
   dateLabel: string;
   isNew: boolean;
   views: number;
+  likes?: number;
   comments: number;
   latestComment?: ListCommentPreview;
   thumbnail?: string;

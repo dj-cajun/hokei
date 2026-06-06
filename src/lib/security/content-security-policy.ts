@@ -15,6 +15,9 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "https://www.youtube.com",
     "https://*.youtube.com",
     "https://*.googlevideo.com",
+    "https://pagead2.googlesyndication.com",
+    "https://googleads.g.doubleclick.net",
+    "https://*.adtrafficquality.google",
   ];
 
   if (isDev) {
@@ -28,6 +31,9 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "https://*.vercel-scripts.com",
     "https://www.youtube.com",
     "https://s.ytimg.com",
+    "https://pagead2.googlesyndication.com",
+    "https://www.googletagservices.com",
+    "https://*.adtrafficquality.google",
   ];
   if (isDev) {
     scriptSrc.splice(2, 0, "'unsafe-eval'");
@@ -39,8 +45,15 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "https://accounts.google.com",
   ];
 
-  const frameAndChildSrc =
-    "https://accounts.google.com https://*.google.com https://www.youtube-nocookie.com https://www.youtube.com";
+  const frameAndChildSrc = [
+    "https://accounts.google.com",
+    "https://*.google.com",
+    "https://www.youtube-nocookie.com",
+    "https://www.youtube.com",
+    "https://googleads.g.doubleclick.net",
+    "https://tpc.googlesyndication.com",
+    "https://pagead2.googlesyndication.com",
+  ].join(" ");
 
   const directives = [
     "default-src 'self'",

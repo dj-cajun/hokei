@@ -8,6 +8,8 @@ import {
   SafeWeatherQuickGrid,
 } from "@/components/home/safe-home-sections";
 import { FeedListClient } from "@/components/home/feed-list-client";
+import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { log } from "@/lib/logger";
@@ -15,7 +17,7 @@ import {
   getAutomatedNewsPosts,
   getCommunityNotices,
   getLatestCommunityPosts,
-  getPopularCommunityPosts,
+  getPopularUserPosts,
 } from "@/lib/posts";
 import type { FeedItem } from "@/types/feed";
 
@@ -30,7 +32,7 @@ async function loadHomeFeeds(): Promise<
   try {
     return await Promise.all([
       getLatestCommunityPosts(12),
-      getPopularCommunityPosts(12),
+      getPopularUserPosts(12),
       getAutomatedNewsPosts(10),
       getCommunityNotices(8),
     ]);
@@ -57,6 +59,8 @@ export async function HomePageContent() {
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
         <HomeVideoHighlight />
+        <PopularPostsStrip items={popular} />
+        <AdSenseUnit slotKind="home" className="px-3" />
         <SafeBoardPreviewList />
         <HomeMobileFeed
           latest={latestItems}

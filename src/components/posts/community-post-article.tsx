@@ -5,6 +5,7 @@ import { getAuthorDisplayName } from "@/lib/community";
 import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostLikeButton } from "@/components/posts/post-like-button";
 import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
@@ -140,6 +141,8 @@ export function CommunityPostArticle({
             className="mt-3 text-sm leading-relaxed text-gray-800"
           />
         )}
+
+        <AdSenseUnit slotKind="article" />
 
         {files.length > 0 && (
           <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3">

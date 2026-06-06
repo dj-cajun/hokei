@@ -55,7 +55,11 @@ export function HomeMobileFeed({
       </div>
       <div>
         {items.length === 0 ? (
-          <p className="px-3 py-3 text-center text-xs text-gray-400">글이 없습니다.</p>
+          <p className="px-3 py-3 text-center text-xs text-gray-400">
+            {activeTab === "popular"
+              ? "추천이 많은 글이 아직 없습니다."
+              : "글이 없습니다."}
+          </p>
         ) : (
           items.slice(0, 8).map((item) =>
             activeTab === "notice" || !item.thumbnail ? (

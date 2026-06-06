@@ -10,6 +10,8 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { LoginErrorHandler } from "@/components/auth/login-error-handler";
 import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { AdSenseScript } from "@/components/ads/adsense-script";
+import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 const siteUrl = resolveSiteUrl();
@@ -76,6 +78,8 @@ export default function RootLayout({
           </LoginModalProvider>
           </ToastProvider>
         </AuthSessionProvider>
+        <AdSenseScript />
+        <RegisterServiceWorker />
         <Analytics />
       </body>
     </html>

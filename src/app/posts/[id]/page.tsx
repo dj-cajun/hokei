@@ -5,6 +5,7 @@ import { NewsThumbnail } from "@/components/news/thumbnail";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
 import { PostComments } from "@/components/posts/post-comments";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostLikeButton } from "@/components/posts/post-like-button";
 import { ViewCounter } from "@/components/posts/view-counter";
 import { mapPostComments } from "@/lib/map-post-comments";
@@ -165,6 +166,8 @@ function NewsPostArticle({
             주세요.
           </p>
         ) : null}
+
+        <AdSenseUnit slotKind="article" />
 
         {!isCommunityPost(post.sourceUrl) && (
           <a

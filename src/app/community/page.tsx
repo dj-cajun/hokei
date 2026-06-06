@@ -4,8 +4,10 @@ import { SectionArchivePage } from "@/components/category/section-archive-page";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getSectionBySlug } from "@/lib/categories";
+import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
 import {
   countPostsBySectionSlug,
+  getPopularUserPosts,
   getPostsBySectionSlug,
 } from "@/lib/posts";
 
@@ -32,18 +34,23 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const { page: pageParam } = await searchParams;
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
-  const [posts, totalCount] = isDatabaseAvailable()
+  const [posts, totalCount, popular] = isDatabaseAvailable()
     ? await Promise.all([
         getPostsBySectionSlug("community", LIST_PAGE_SIZE, currentPage, {
           communityOnly: true,
         }),
         countPostsBySectionSlug("community", { communityOnly: true }),
+        getPopularUserPosts(8),
       ])
-    : [[], 0];
+    : [[], 0, []];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
 
   return (
+    <>
+    <div className="mx-auto w-full max-w-[480px] lg:max-w-6xl">
+      <PopularPostsStrip items={popular} title="커뮤니티 인기글" />
+    </div>
     <SectionArchivePage
       sectionSlug={section.slug}
       label={section.label}
@@ -56,5 +63,6 @@ export default async function CommunityPage({ searchParams }: PageProps) {
       currentPage={Math.min(currentPage, totalPages)}
       totalPages={totalPages}
     />
+    </>
   );
 }

@@ -20,6 +20,9 @@ const recommended = [
 ] as const;
 
 const optional = [
+  ["NEXT_PUBLIC_ADSENSE_CLIENT", "Google AdSense ca-pub-xxx"],
+  ["NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE", "AdSense 글 상세 슬롯 ID"],
+  ["NEXT_PUBLIC_ADSENSE_SLOT_HOME", "AdSense 홈 슬롯 ID"],
   ["SENTRY_DSN", "Sentry DSN (javascript-nextjs)"],
   ["NEXT_PUBLIC_SENTRY_DSN", "Sentry 클라이언트 DSN (동일 URL)"],
   ["SENTRY_ORG", "nam-bac-technology-and-service"],

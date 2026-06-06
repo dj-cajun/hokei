@@ -11,7 +11,7 @@ function PostListMeta({ item }: { item: FeedItem }) {
     <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-400">
       <time dateTime={item.dateLabel}>{item.dateLabel}</time>
       <span aria-hidden>·</span>
-      <span>{formatViewsComments(item.views, item.comments)}</span>
+      <span>{formatViewsComments(item.views, item.comments, item.likes)}</span>
     </p>
   );
 }

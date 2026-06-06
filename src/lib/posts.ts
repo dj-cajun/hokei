@@ -48,6 +48,7 @@ function toFeedItem(post: {
   title: string;
   publishedAt: Date;
   views: number;
+  likeCount?: number;
   commentCount: number;
   _count?: { comments: number };
   thumbnail: string | null;
@@ -69,6 +70,7 @@ function toFeedItem(post: {
     dateLabel: formatDateLabel(post.publishedAt),
     isNew: isTodayInHoChiMinh(post.publishedAt),
     views: post.views,
+    likes: post.likeCount ?? 0,
     comments: resolveCommentCount(post),
     latestComment: mapLatestComment(post.comments),
     thumbnail: post.thumbnail ?? undefined,
@@ -138,7 +140,30 @@ export async function getLatestCommunityPosts(
 export async function getPopularCommunityPosts(limit = 20): Promise<FeedItem[]> {
   const posts = await prisma.post.findMany({
     where: communityWhere,
-    orderBy: [{ views: "desc" }, { publishedAt: "desc" }],
+    orderBy: [
+      { likeCount: "desc" },
+      { views: "desc" },
+      { publishedAt: "desc" },
+    ],
+    take: limit,
+    include: postInclude,
+  });
+  return posts.map(toFeedItem);
+}
+
+/** 전체 회원 게시(부동산·중고·구인·커뮤니티) — 좋아요 기준 인기 */
+export async function getPopularUserPosts(limit = 12): Promise<FeedItem[]> {
+  const posts = await prisma.post.findMany({
+    where: {
+      ...visiblePostWhere,
+      isAutomated: false,
+      sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
+    },
+    orderBy: [
+      { likeCount: "desc" },
+      { views: "desc" },
+      { publishedAt: "desc" },
+    ],
     take: limit,
     include: postInclude,
   });

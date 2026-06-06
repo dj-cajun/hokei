@@ -61,7 +61,9 @@ export function FeedListClient({
       <div className="space-y-0" role="tabpanel">
         {items.length === 0 ? (
           <p className="px-2 py-4 text-center text-xs text-gray-400">
-            표시할 글이 없습니다. 매일 오전 7시(호치민)에 뉴스가 자동 수집됩니다.
+            {activeTab === "popular"
+              ? "아직 추천이 많은 글이 없습니다. 마음에 드는 글에 좋아요를 눌러 보세요."
+              : "표시할 글이 없습니다. 매일 오전 7시(호치민)에 뉴스가 자동 수집됩니다."}
           </p>
         ) : (
           items.map((item) =>

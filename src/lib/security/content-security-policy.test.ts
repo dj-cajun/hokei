@@ -10,6 +10,12 @@ describe("buildContentSecurityPolicy", () => {
     }
   });
 
+  it("allows AdSense script and ad frames in production CSP", () => {
+    const csp = buildContentSecurityPolicy(false);
+    expect(csp).toContain("https://pagead2.googlesyndication.com");
+    expect(csp).toContain("https://googleads.g.doubleclick.net");
+  });
+
   it("allows YouTube embed in frame-src and child-src (not legacy Kakao-only policy)", () => {
     for (const isDev of [true, false]) {
       const csp = buildContentSecurityPolicy(isDev);

@@ -16,6 +16,16 @@ type ConversationThreadProps = {
   peerName: string;
 };
 
+function mergeMessages(prev: MessageItem[], incoming: MessageItem[]): MessageItem[] {
+  const map = new Map(prev.map((m) => [m.id, m]));
+  for (const m of incoming) {
+    map.set(m.id, m);
+  }
+  return [...map.values()].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+}
+
 export function ConversationThread({
   conversationId,
   peerName,
@@ -26,6 +36,7 @@ export function ConversationThread({
   const [sending, setSending] = useState(false);
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const lastEventAtRef = useRef<string>(new Date(0).toISOString());
 
   const load = useCallback(async () => {
     try {
@@ -35,7 +46,12 @@ export function ConversationThread({
         showToast(data.error ?? "메시지를 불러오지 못했습니다.", "error");
         return;
       }
-      setMessages(data.messages ?? []);
+      const list = (data.messages ?? []) as MessageItem[];
+      setMessages((prev) => mergeMessages(prev, list));
+      const last = list[list.length - 1];
+      if (last) {
+        lastEventAtRef.current = last.createdAt;
+      }
     } catch {
       showToast("메시지를 불러오지 못했습니다.", "error");
     } finally {
@@ -47,14 +63,57 @@ export function ConversationThread({
     const timer = window.setTimeout(() => {
       void load();
     }, 0);
-    const poll = window.setInterval(() => {
-      void load();
-    }, 15_000);
-    return () => {
-      window.clearTimeout(timer);
-      window.clearInterval(poll);
-    };
+    return () => window.clearTimeout(timer);
   }, [load]);
+
+  useEffect(() => {
+    let source: EventSource | null = null;
+    let reconnectTimer: number | null = null;
+    let stopped = false;
+
+    const connect = () => {
+      if (stopped) return;
+      const since = encodeURIComponent(lastEventAtRef.current);
+      source = new EventSource(
+        `/api/conversations/${conversationId}/stream?since=${since}`
+      );
+
+      source.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data) as {
+            type: string;
+            message?: MessageItem;
+          };
+          if (data.type === "message" && data.message) {
+            const incoming = data.message;
+            lastEventAtRef.current = incoming.createdAt;
+            setMessages((prev) => mergeMessages(prev, [incoming]));
+          }
+          if (data.type === "reconnect") {
+            source?.close();
+            connect();
+          }
+        } catch {
+          /* ignore malformed event */
+        }
+      };
+
+      source.onerror = () => {
+        source?.close();
+        if (!stopped) {
+          reconnectTimer = window.setTimeout(connect, 2_000);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      stopped = true;
+      if (reconnectTimer) window.clearTimeout(reconnectTimer);
+      source?.close();
+    };
+  }, [conversationId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,9 +137,8 @@ export function ConversationThread({
       }
       setDraft("");
       if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
-      } else {
-        await load();
+        lastEventAtRef.current = data.message.createdAt;
+        setMessages((prev) => mergeMessages(prev, [data.message]));
       }
     } catch {
       showToast("전송에 실패했습니다.", "error");
