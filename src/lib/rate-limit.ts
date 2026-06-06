@@ -17,6 +17,10 @@ export const RATE_LIMIT_PRESETS = {
   search: { windowMs: 60_000, maxRequests: 30 },
   general: { windowMs: 60_000, maxRequests: 60 },
   report: { windowMs: 60_000 * 15, maxRequests: 10 },
+  /** 쪽지 대화 시작 */
+  dmCreate: { windowMs: 60_000 * 15, maxRequests: 10 },
+  /** 쪽지 전송 */
+  dmSend: { windowMs: 60_000, maxRequests: 30 },
   /** 댓글 수정·삭제 (시간당) */
   commentsPatch: { windowMs: 60_000 * 60, maxRequests: 30 },
   commentsDelete: { windowMs: 60_000 * 60, maxRequests: 20 },

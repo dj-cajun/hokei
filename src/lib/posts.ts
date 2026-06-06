@@ -1,4 +1,5 @@
 import { getDatabaseKind, prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { FeedItem, ListCommentPreview } from "@/types/feed";
 import { COMMUNITY_SOURCE_PREFIX } from "@/lib/community";
@@ -20,6 +21,45 @@ const communityWhere = {
   sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
   category: { parent: { slug: "community" } },
 };
+
+/** 구 스키마(likeCount·isNotice 미적용 DB) 호환 */
+const postHasLikeCount = "likeCount" in Prisma.PostScalarFieldEnum;
+const postHasNotice = "isNotice" in Prisma.PostScalarFieldEnum;
+
+const viewsPopularOrderBy = [
+  { views: "desc" as const },
+  { publishedAt: "desc" as const },
+] as const;
+
+const popularPostOrderBy = postHasLikeCount
+  ? ([
+      { likeCount: "desc" as const },
+      ...viewsPopularOrderBy,
+    ] as const)
+  : viewsPopularOrderBy;
+
+function isMissingColumnError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "P2022"
+  );
+}
+
+async function findPopularPosts(
+  where: Parameters<typeof prisma.post.findMany>[0]["where"],
+  orderBy: readonly { [key: string]: "desc" }[],
+  limit: number
+): Promise<FeedItem[]> {
+  const posts = await prisma.post.findMany({
+    where,
+    orderBy: [...orderBy],
+    take: limit,
+    include: postInclude,
+  });
+  return posts.map(toFeedItem);
+}
 
 function mapLatestComment(
   comments: {
@@ -138,39 +178,36 @@ export async function getLatestCommunityPosts(
 }
 
 export async function getPopularCommunityPosts(limit = 20): Promise<FeedItem[]> {
-  const posts = await prisma.post.findMany({
-    where: communityWhere,
-    orderBy: [
-      { likeCount: "desc" },
-      { views: "desc" },
-      { publishedAt: "desc" },
-    ],
-    take: limit,
-    include: postInclude,
-  });
-  return posts.map(toFeedItem);
+  try {
+    return await findPopularPosts(communityWhere, popularPostOrderBy, limit);
+  } catch (error) {
+    if (postHasLikeCount && isMissingColumnError(error)) {
+      return findPopularPosts(communityWhere, viewsPopularOrderBy, limit);
+    }
+    throw error;
+  }
 }
 
 /** 전체 회원 게시(부동산·중고·구인·커뮤니티) — 좋아요 기준 인기 */
 export async function getPopularUserPosts(limit = 12): Promise<FeedItem[]> {
-  const posts = await prisma.post.findMany({
-    where: {
-      ...visiblePostWhere,
-      isAutomated: false,
-      sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
-    },
-    orderBy: [
-      { likeCount: "desc" },
-      { views: "desc" },
-      { publishedAt: "desc" },
-    ],
-    take: limit,
-    include: postInclude,
-  });
-  return posts.map(toFeedItem);
+  const where = {
+    ...visiblePostWhere,
+    isAutomated: false,
+    sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
+  };
+  try {
+    return await findPopularPosts(where, popularPostOrderBy, limit);
+  } catch (error) {
+    if (postHasLikeCount && isMissingColumnError(error)) {
+      return findPopularPosts(where, viewsPopularOrderBy, limit);
+    }
+    throw error;
+  }
 }
 
 export async function getCommunityNotices(limit = 10): Promise<FeedItem[]> {
+  if (!postHasNotice) return [];
+
   const posts = await prisma.post.findMany({
     where: { ...communityWhere, isNotice: true },
     orderBy: { publishedAt: "desc" },

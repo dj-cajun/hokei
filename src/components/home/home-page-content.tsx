@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/layout/site-footer";
 import { HomeCompactNewsList } from "@/components/home/home-compact-news-list";
 import { HomeHeadlineSlider } from "@/components/home/home-headline-slider";
 import { HomeMobileFeed } from "@/components/home/home-mobile-feed";
@@ -12,7 +11,7 @@ import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { log } from "@/lib/logger";
+import { formatUnknownError, log } from "@/lib/logger";
 import {
   getAutomatedNewsPosts,
   getCommunityNotices,
@@ -23,25 +22,32 @@ import type { FeedItem } from "@/types/feed";
 
 const emptyFeed: FeedItem[] = [];
 
+const homeFeedLoaders = [
+  ["latest", () => getLatestCommunityPosts(12)],
+  ["popular", () => getPopularUserPosts(12)],
+  ["news", () => getAutomatedNewsPosts(10)],
+  ["notices", () => getCommunityNotices(8)],
+] as const;
+
 async function loadHomeFeeds(): Promise<
   [FeedItem[], FeedItem[], FeedItem[], FeedItem[]]
 > {
   if (!isDatabaseAvailable()) {
     return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
   }
-  try {
-    return await Promise.all([
-      getLatestCommunityPosts(12),
-      getPopularUserPosts(12),
-      getAutomatedNewsPosts(10),
-      getCommunityNotices(8),
-    ]);
-  } catch (error) {
-    log("error", "home feeds failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
-  }
+
+  const results = await Promise.allSettled(
+    homeFeedLoaders.map(([, load]) => load())
+  );
+
+  return results.map((result, index) => {
+    if (result.status === "fulfilled") return result.value;
+    log(
+      "error",
+      `home feed ${homeFeedLoaders[index][0]} failed: ${formatUnknownError(result.reason)}`
+    );
+    return emptyFeed;
+  }) as [FeedItem[], FeedItem[], FeedItem[], FeedItem[]];
 }
 
 export async function HomePageContent() {
@@ -67,7 +73,6 @@ export async function HomePageContent() {
           popular={popular.length > 0 ? popular : latestItems}
           notices={notices}
         />
-        <SiteFooter />
       </div>
 
       {/* 데스크톱 */}

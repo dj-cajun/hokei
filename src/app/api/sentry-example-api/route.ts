@@ -2,8 +2,12 @@ import * as Sentry from "@sentry/nextjs";
 
 export const dynamic = "force-dynamic";
 
-/** Sentry 서버 측 에러 전송 테스트 */
+/** Sentry 서버 측 에러 전송 테스트 (개발 전용) */
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return new Response("Not Found", { status: 404 });
+  }
+
   if (!process.env.SENTRY_DSN) {
     return Response.json(
       { ok: false, error: "SENTRY_DSN이 설정되지 않았습니다." },

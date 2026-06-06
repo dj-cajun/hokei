@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const limited = await enforcePreset(request, "general");
+  const limited = await enforcePreset(request, "dmCreate");
   if (limited) return limited;
 
   const session = await auth();

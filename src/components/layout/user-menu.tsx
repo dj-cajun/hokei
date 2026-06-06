@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { LoginTrigger } from "@/components/auth/login-trigger";
 import { socialSignOut } from "@/lib/auth/social-sign-out";
-import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { LayoutDashboard, LogOut, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function UserMenu() {
@@ -39,6 +39,12 @@ export function UserMenu() {
           </Link>
         </Button>
       )}
+      <Button variant="ghost" size="sm" asChild>
+        <Link href="/messages">
+          <Mail className="mr-1 h-4 w-4" />
+          쪽지
+        </Link>
+      </Button>
       <Button variant="ghost" size="sm" asChild>
         <Link href="/profile">
           <User className="mr-1 h-4 w-4" />

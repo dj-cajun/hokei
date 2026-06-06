@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "호케이 Hokei - 호치민 한국 교민 포털",
   description:
-    "호케이(Hokei). 호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 퀴즈, 커뮤니티.",
+    "호케이(Hokei). 호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 Q&A, 커뮤니티.",
   keywords:
     "호케이, Hokei, 사이공, 호치민, 한국교민, 베트남, 숙소, 구인",
   manifest: "/manifest.webmanifest",
@@ -30,20 +30,47 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: [{ url: "/icons/hokei-icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icons/hokei-icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/hokei-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/hokei-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
   openGraph: {
     title: "호케이 Hokei - 호치민 한국 교민 포털",
     description:
-      "호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 퀴즈, 커뮤니티.",
+      "호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 Q&A, 커뮤니티.",
     locale: "ko_KR",
     type: "website",
+    siteName: "호케이 Hokei",
+    images: [
+      {
+        url: "/icons/hokei-icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "호케이 Hokei",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "호케이 Hokei - 호치민 한국 교민 포털",
+    description:
+      "호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 Q&A, 커뮤니티.",
+    images: ["/icons/hokei-icon-512.png"],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0064ff",
+  themeColor: "#c8102e",
 };
 
 export default function RootLayout({

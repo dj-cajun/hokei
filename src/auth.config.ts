@@ -35,7 +35,10 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      if (pathname === "/profile" && !isLoggedIn) {
+      if (
+        (pathname === "/profile" || pathname.startsWith("/messages")) &&
+        !isLoggedIn
+      ) {
         return false;
       }
 

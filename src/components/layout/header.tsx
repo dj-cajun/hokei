@@ -16,6 +16,7 @@ import { CategoryMenuClient } from "@/components/sidebar/category-menu-client";
 import { LoginBox } from "@/components/sidebar/login-box";
 import { WidgetsLoader } from "@/components/widgets/widgets-loader";
 import { GuestHeaderLogin } from "@/components/layout/guest-header-login";
+import { HeaderMessagesLink } from "@/components/layout/header-messages-link";
 import { UserMenu } from "@/components/layout/user-menu";
 import type { CategoryNavItem } from "@/lib/categories";
 
@@ -54,6 +55,7 @@ export function Header({ categoryTree }: HeaderProps) {
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
           </Button>
 
+          <HeaderMessagesLink />
           <GuestHeaderLogin />
           <UserMenu />
 

@@ -1,8 +1,14 @@
-const CACHE_VERSION = "hokei-v1";
+const CACHE_VERSION = "hokei-v2";
 const SHELL_CACHE = `hokei-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `hokei-runtime-${CACHE_VERSION}`;
 
-const PRECACHE_URLS = ["/", "/manifest.webmanifest", "/icons/hokei-icon.svg"];
+const PRECACHE_URLS = [
+  "/",
+  "/manifest.webmanifest",
+  "/icons/hokei-icon-192.png",
+  "/icons/hokei-icon-512.png",
+  "/icons/apple-touch-icon.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

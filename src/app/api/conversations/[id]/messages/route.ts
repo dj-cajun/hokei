@@ -72,7 +72,7 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const limited = await enforcePreset(request, "general");
+  const limited = await enforcePreset(request, "dmSend");
   if (limited) return limited;
 
   const session = await auth();

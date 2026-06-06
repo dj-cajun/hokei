@@ -7,19 +7,25 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#0064ff",
+  "theme_color": "#c8102e",
   "lang": "ko",
   "icons": [
     {
-      "src": "/icons/hokei-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icons/hokei-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/hokei-icon.svg",
+      "src": "/icons/hokei-icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/hokei-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]
