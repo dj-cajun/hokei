@@ -48,7 +48,7 @@ function isMissingColumnError(error: unknown): boolean {
 }
 
 async function findPopularPosts(
-  where: Parameters<typeof prisma.post.findMany>[0]["where"],
+  where: Prisma.PostWhereInput,
   orderBy: readonly { [key: string]: "desc" }[],
   limit: number
 ): Promise<FeedItem[]> {
