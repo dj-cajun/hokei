@@ -24,9 +24,25 @@ export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
   const post = await getPostById(id, { includeHiddenComments: false });
   if (!post || post.moderationStatus !== "VISIBLE") return { title: "호케이 Hokei" };
+
+  const description = (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160);
+  const ogImage = post.thumbnail ?? "/icons/hokei-icon-512.png";
+
   return {
     title: `${post.title} - 호케이 Hokei`,
-    description: (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160),
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      images: [{ url: ogImage, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 

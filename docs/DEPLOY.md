@@ -17,6 +17,8 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 | `CRON_SECRET` | Cron API 보호 (`npm run env:cron-secret`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://실제도메인` (localhost 금지) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob (글 첨부·이미지) |
+| `RESEND_API_KEY` · `EMAIL_FROM` | 이메일 회원가입 인증 (미설정 시 Google 로그인만) |
+| `UPSTASH_REDIS_REST_URL` · `TOKEN` | 분산 rate limit (권장) |
 
 ## 3. DB 마이그레이션 (최초 1회)
 
@@ -35,7 +37,7 @@ npx vercel env add DATABASE_URL production   # Vercel에 동일 URL 등록
 
 ## 4. Cron (뉴스 수집)
 
-`vercel.json`: 매일 **02:00 UTC** (= 09:00 ICT)
+`vercel.json`: 매일 **07:00·12:00 ICT** (`0 0 * * *` · `0 5 * * *` UTC, 일 15건 상한)
 
 Vercel Cron 요청 시 헤더:
 

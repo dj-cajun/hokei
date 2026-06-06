@@ -107,6 +107,16 @@ if (production) {
     failed = true;
   }
 
+  const resend = getValue(content, "RESEND_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
+  const emailFrom = getValue(content, "EMAIL_FROM")?.replace(/^["']|["']$/g, "") ?? "";
+  if (!resend || isPlaceholder(resend) || !emailFrom || isPlaceholder(emailFrom)) {
+    console.warn(
+      "[env:check] 프로덕션: RESEND_API_KEY·EMAIL_FROM 없으면 이메일 가입 불가 (Google 로그인만 가능)"
+    );
+  } else {
+    console.log("[env:check] OK RESEND (이메일 가입)");
+  }
+
   if (!keys.has("BLOB_READ_WRITE_TOKEN")) {
     console.warn("[env:check] 프로덕션 권장: BLOB_READ_WRITE_TOKEN (Vercel Blob)");
   } else {
