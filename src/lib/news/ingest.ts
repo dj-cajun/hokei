@@ -119,13 +119,14 @@ export async function ingestDailyNews(
 
   const rssOnly = process.env.INGEST_RSS_ONLY === "1";
   const topicSources = await loadNewsTopicSourcesFromDb();
+  const maxPerFeed = 8;
 
   for (const config of topicSources) {
     const feeds = rssOnly
       ? VNEXPRESS_RSS_FALLBACK_FEEDS[config.topic]
       : config.feeds;
     for (const feed of feeds) {
-      const items = await fetchNewsFromSource(feed, config.topic, 4);
+      const items = await fetchNewsFromSource(feed, config.topic, maxPerFeed);
       const filtered = items.filter((item) =>
         passesTopicRelevanceFilter(item.topic, item.title, item.description, {
           link: item.link,
@@ -180,7 +181,11 @@ export async function ingestDailyNews(
       );
     });
 
-  const toProcess = pickByIngestMix(candidates, remaining);
+  const attemptBudget = Math.min(
+    candidates.length,
+    Math.max(remaining, remaining * 4)
+  );
+  const toProcess = pickByIngestMix(candidates, attemptBudget);
 
   const knownNews = existingPosts.map((p) => ({
     title: p.title,
@@ -188,6 +193,7 @@ export async function ingestDailyNews(
   }));
 
   for (const raw of toProcess) {
+    if (result.inserted >= remaining) break;
     const config = topicSources.find((c) => c.topic === raw.topic);
     const categoryId = categoryMap.get(config?.categorySlug ?? "");
     if (!categoryId) {
@@ -256,6 +262,17 @@ export async function ingestDailyNews(
   const prune = await pruneEmptyContentAutomatedNews();
   result.prunedEmpty = prune.removed;
 
+  const ingestMeta = {
+    poolSize: dedupedPool.length,
+    candidates: candidates.length,
+    attempted: toProcess.length,
+    remainingQuota: remaining,
+    maxPerFeed,
+  };
+  result.errors.unshift(
+    `[ingest] pool=${ingestMeta.poolSize} candidates=${ingestMeta.candidates} attempt=${ingestMeta.attempted} quota=${ingestMeta.remainingQuota}`
+  );
+
   const errorSlice = result.errors.slice(0, 50);
   await prisma.newsIngestRun.create({
     data: {
@@ -263,15 +280,15 @@ export async function ingestDailyNews(
       skipped: result.skipped,
       errors:
         errorSlice.length > 0 ? errorSlice.join("\n") : null,
-      errorDetails:
-        errorSlice.length > 0
-          ? JSON.stringify(
-              errorSlice.map((message) => ({
-                message,
-                at: new Date().toISOString(),
-              }))
-            )
-          : null,
+      errorDetails: JSON.stringify({
+        meta: ingestMeta,
+        issues: errorSlice
+          .filter((m) => !m.startsWith("[ingest]"))
+          .map((message) => ({
+            message,
+            at: new Date().toISOString(),
+          })),
+      }),
       durationMs: Date.now() - startedAt,
       triggeredBy: options?.triggeredBy ?? null,
     },

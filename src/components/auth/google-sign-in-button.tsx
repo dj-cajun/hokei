@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   getGoogleClientId,
   preloadGoogleRedirectSdk,
@@ -33,27 +33,26 @@ export function GoogleSignInButton({
   const [insecureLocal] = useState(() => isInsecureLocalDev());
   const configured = Boolean(getGoogleClientId());
 
-  const primeRedirect = useCallback(async () => {
-    setGoogleCallbackCookie(callbackUrl);
-    const ok = await preloadGoogleRedirectSdk();
-    setRedirectPrimed(ok);
-    return ok;
-  }, [callbackUrl]);
-
   useEffect(() => {
     if (!configured) return;
 
     if (insecureLocal) {
       let cancelled = false;
-      primeRedirect().then((ok) => {
-        if (!cancelled && !ok) {
-          onError?.(
-            "구글 로그인을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요."
-          );
-        }
-      });
+      setGoogleCallbackCookie(callbackUrl);
+      const timer = window.setTimeout(() => {
+        void preloadGoogleRedirectSdk().then((ok) => {
+          if (cancelled) return;
+          setRedirectPrimed(ok);
+          if (!ok) {
+            onError?.(
+              "구글 로그인을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요."
+            );
+          }
+        });
+      }, 0);
       return () => {
         cancelled = true;
+        window.clearTimeout(timer);
         setRedirectPrimed(false);
       };
     }
@@ -93,7 +92,7 @@ export function GoogleSignInButton({
       host.replaceChildren();
       setGisReady(false);
     };
-  }, [configured, callbackUrl, onError, insecureLocal, primeRedirect]);
+  }, [configured, callbackUrl, onError, insecureLocal]);
 
   const handleInsecureLocalClick = () => {
     if (!redirectPrimed) {

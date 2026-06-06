@@ -64,7 +64,11 @@ export function ModerationPanel() {
   }, [tab, q]);
 
   useEffect(() => {
-    if (tab !== "reports") void load();
+    if (tab === "reports") return;
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [tab, load]);
 
   function toggle(id: string) {
