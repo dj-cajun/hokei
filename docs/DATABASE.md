@@ -61,9 +61,15 @@ npm run search:pg:setup
 
 ## SQLite → PostgreSQL 데이터 이전
 
-자동 마이그레이션 스크립트는 없습니다. 소량이면:
+```bash
+# PostgreSQL 스키마·시드 후
+export DATABASE_URL="postgresql://..."
+npm run db:pg:setup
+npm run db:migrate:sqlite-to-pg   # dev.db → PG 데이터 복사
+npm run search:pg:setup
+```
 
-1. PostgreSQL에 `db:pg:setup`으로 스키마·시드
-2. 필요 시 SQLite 데이터를 수동 export/import
+프로덕션(Vercel)은 빌드 시 `pg-apply-schema-patches.ts`가 migrate 실패를 보완합니다.  
+마이그레이션 lock·PG 이중 운영: [prisma/migrations/README.md](../prisma/migrations/README.md)
 
-대량 이전은 [pgloader](https://pgloader.io/) 등 전용 도구를 검토하세요.
+대량 이전·드리프트 해소는 [pgloader](https://pgloader.io/) 등 전용 도구를 검토하세요.

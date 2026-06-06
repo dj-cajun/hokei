@@ -44,7 +44,7 @@ export const feedItems: FeedItem[] = [
   },
   {
     id: "mock-4",
-    category: "퀴즈",
+    category: "Q&A",
     categoryColor: "bg-amber-50 text-amber-600",
     title: "베트남 생활 필수! Grab 택시 요금 협상 & 팁 문화 총정리",
     date: "8시간 전",

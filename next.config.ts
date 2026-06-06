@@ -68,6 +68,15 @@ const nextConfig: NextConfig = {
         destination: "/write?section=community",
         permanent: false,
       },
+      ...(process.env.NODE_ENV === "production"
+        ? [
+            {
+              source: "/sentry-example-page",
+              destination: "/404",
+              permanent: false,
+            },
+          ]
+        : []),
     ];
   },
   images: {

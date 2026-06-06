@@ -12,6 +12,7 @@ import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { AdSenseScript } from "@/components/ads/adsense-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
+import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 const siteUrl = resolveSiteUrl();
@@ -83,6 +84,7 @@ export default function RootLayout({
       <body
         className={`${pretendard.className} flex min-h-full flex-col pb-12 lg:pb-0`}
       >
+        <SiteJsonLd />
         <AuthSessionProvider>
           <ToastProvider>
           <LoginErrorHandler />

@@ -15,6 +15,7 @@ import { getPostById } from "@/lib/posts";
 import { prisma } from "@/lib/prisma";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { formatPostSourceLabel } from "@/lib/news/source-display";
+import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -67,8 +68,18 @@ export default async function PostPage({ params }: PageProps) {
     likedByMe = Boolean(like);
   }
 
+  const description = (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160);
+
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
+      <ArticleJsonLd
+        id={post.id}
+        title={post.title}
+        description={description}
+        publishedAt={post.publishedAt}
+        thumbnail={post.thumbnail}
+        authorName={post.author?.name}
+      />
       <ViewCounter postId={id} />
       <Sidebar />
       <div className="min-w-0 flex-1">

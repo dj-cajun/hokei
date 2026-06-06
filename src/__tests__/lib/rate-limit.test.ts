@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { checkRateLimit, peekRateLimit, recordRateLimitFailure } from "@/lib/rate-limit";
+import {
+  RATE_LIMIT_PRESETS,
+  checkRateLimit,
+  peekRateLimit,
+  recordRateLimitFailure,
+} from "@/lib/rate-limit";
 
 describe("checkRateLimit", () => {
   it("allows requests within limit", () => {
@@ -14,6 +19,11 @@ describe("checkRateLimit", () => {
     expect(checkRateLimit(key, 2, 60_000)).toBe(true);
     expect(checkRateLimit(key, 2, 60_000)).toBe(true);
     expect(checkRateLimit(key, 2, 60_000)).toBe(false);
+  });
+
+  it("defines DM rate limit presets", () => {
+    expect(RATE_LIMIT_PRESETS.dmCreate.maxRequests).toBe(10);
+    expect(RATE_LIMIT_PRESETS.dmSend.maxRequests).toBe(30);
   });
 
   it("peek does not increment count", () => {

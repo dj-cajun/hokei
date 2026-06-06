@@ -2,27 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Briefcase,
   Building2,
   Home,
+  Mail,
   MessageCircle,
   Newspaper,
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const baseNavItems = [
   { href: "/", label: "홈", icon: Home },
   { href: "/news", label: "뉴스", icon: Newspaper },
   { href: "/real-estate", label: "부동산", icon: Building2 },
   { href: "/jobs", label: "구인", icon: Briefcase },
   { href: "/community", label: "커뮤니티", icon: MessageCircle },
-  { href: "/profile", label: "내 정보", icon: User },
-];
+] as const;
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   if (
     pathname === "/write" ||
@@ -32,6 +34,14 @@ export function MobileNav() {
   ) {
     return null;
   }
+
+  const navItems = [
+    ...baseNavItems,
+    ...(session?.user
+      ? [{ href: "/messages", label: "쪽지", icon: Mail }]
+      : []),
+    { href: "/profile", label: "내 정보", icon: User },
+  ];
 
   return (
     <nav

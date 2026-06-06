@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ContactForm } from "@/components/contact/contact-form";
 import { LegalPageShell } from "@/components/legal/legal-page-shell";
 
 export const metadata: Metadata = {
@@ -18,18 +19,14 @@ export default function ContactPage() {
         서비스 이용, 개인정보, 광고·제휴, 오류 신고 등은 아래로 연락해 주세요.
       </p>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-foreground">이메일</p>
-        <a
-          href={`mailto:${CONTACT_EMAIL}`}
-          className="mt-1 block text-primary hover:underline"
-        >
+      <ContactForm contactEmail={CONTACT_EMAIL} />
+
+      <p className="text-xs text-muted-foreground">
+        직접 메일:{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">
           {CONTACT_EMAIL}
         </a>
-        <p className="mt-3 text-xs text-muted-foreground">
-          평일 기준 2~3영업일 내 답변을 드립니다.
-        </p>
-      </section>
+      </p>
 
       <section>
         <h2 className="text-base font-semibold text-foreground">자주 문의하는 항목</h2>
