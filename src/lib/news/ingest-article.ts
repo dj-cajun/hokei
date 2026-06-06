@@ -1,4 +1,5 @@
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
+import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import {
   fetchArticleBody,
   isBodyLikelyMatchingTitle,
@@ -62,5 +63,9 @@ export async function buildPostFromArticlePage(
   const body =
     content.length >= NEWS_MIN_BODY_LENGTH ? content.slice(0, 15_000) : null;
 
-  return { title: title.trim(), content: body, thumbnail };
+  return {
+    title: decodeHtmlEntities(title.trim()),
+    content: body ? decodeHtmlEntities(body) : null,
+    thumbnail,
+  };
 }

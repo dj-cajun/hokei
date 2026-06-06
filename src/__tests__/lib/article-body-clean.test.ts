@@ -34,6 +34,14 @@ describe("cleanArticleBody", () => {
     expect(out).toContain("호치민에서 열린 행사");
   });
 
+  it("HTML 엔티티를 디코딩한다", () => {
+    const raw = `호치민에서 열린 행사가 주목받고 있다. 참가자들은 it&#x27;s a success라고 평가했다. 행사는 성황리에 마무리되었다.`;
+
+    const out = cleanArticleBody(raw);
+    expect(out).toContain("it's a success");
+    expect(out).not.toContain("&#x27;");
+  });
+
   it("applyArticleRegexFilters 후 줄 단위 정제가 동작한다", () => {
     const raw = `(호치민=뉴스1) 샘플 리드입니다.
 

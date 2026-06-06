@@ -1,6 +1,7 @@
 /** 기사 본문 — 언론사·기자·소제목·관련뉴스·사진밑 캡션 제거 후 순수 본문만 */
 
 import { applyArticleRegexFilters } from "@/lib/news/article-body-regex";
+import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 
 const SECTION_CUTOFF =
   /^(관련\s*기사|관련\s*뉴스|연관\s*기사|많이\s*본\s*뉴스|핫\s*뉴스|추천\s*뉴스|이\s*시각|주요\s*뉴스|실시간\s*뉴스|오늘의\s*헤드|헤드라인\s*뉴스|기자\s*추천|태그\s*[:：]|◆\s*태그|#태그|키워드\s*[:：]|읽어볼만한|함께\s*보면\s*좋은|더\s*볼\s*뉴스|다른\s*기사|이\s*기사도|추천\s*기사|함께\s*읽기|구독\s*신청)/i;
@@ -170,7 +171,7 @@ function normalizeLine(line: string): string {
 export function cleanArticleBody(raw: string): string {
   if (!raw?.trim()) return "";
 
-  let cutAtSection = applyArticleRegexFilters(raw);
+  let cutAtSection = applyArticleRegexFilters(decodeHtmlEntities(raw));
   const sectionMatch = raw.search(
     /\n\s*(관련\s*기사|관련\s*뉴스|많이\s*본\s*뉴스|다른\s*기사\s*보기|이\s*기사도|◆\s*태그|태그\s*[:：])/i
   );

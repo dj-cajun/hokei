@@ -1,6 +1,7 @@
 import Parser from "rss-parser";
 import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
+import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import { extractImageFromHtml } from "@/lib/news/image";
 import type { NewsIngestTier } from "@/lib/news/news-ingest-tier";
 
@@ -31,10 +32,12 @@ const parser = new Parser({
 });
 
 function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return decodeHtmlEntities(
+    html
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
 
 function parseDate(item: Parser.Item): Date {

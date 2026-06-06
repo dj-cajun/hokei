@@ -1,5 +1,6 @@
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
 import { extractTextWithReadability } from "@/lib/news/article-body-readability";
+import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
@@ -14,16 +15,6 @@ export type ArticleBodyResult = {
   img?: string | null;
   source: "playwright" | "html";
 };
-
-function decodeHtmlEntities(text: string): string {
-  return text
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
-}
 
 function stripNoiseFromHtml(html: string): string {
   return html

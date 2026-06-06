@@ -1,5 +1,6 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
+import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import type { RawNewsItem } from "@/lib/news/rss";
 import { scrapeNaverNewsSearch } from "@/lib/news/naver-scrape";
 
@@ -19,15 +20,12 @@ type NaverNewsResponse = {
 
 /** 네이버 뉴스 검색 API 응답 HTML/엔티티 정리 */
 export function stripNaverHtml(text: string): string {
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
-    .trim();
+  return decodeHtmlEntities(
+    text
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
 
 export function isNaverNewsConfigured(): boolean {
