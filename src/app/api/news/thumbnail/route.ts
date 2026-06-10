@@ -24,7 +24,7 @@ function topicFallbackResponse(
 ): NextResponse {
   const staticBytes = readStaticFallbackBytes(topic);
   if (staticBytes) {
-    return new NextResponse(staticBytes.body, {
+    return new NextResponse(new Uint8Array(staticBytes.body), {
       headers: {
         "Content-Type": staticBytes.contentType,
         "Cache-Control": STATIC_FALLBACK_CACHE,
