@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import type { Session } from "next-auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 const buildStubSession: Session = {
   user: {
@@ -29,8 +30,15 @@ export async function requireAuth() {
 
 export async function requireAdmin() {
   const session = await requireAuth();
-  if (session.user.role !== "ADMIN") {
-    redirect("/");
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "ADMIN") {
+    redirect("/?adminDenied=1");
+  }
+  if (dbUser && session.user.role !== dbUser.role) {
+    session.user.role = dbUser.role;
   }
   return session;
 }

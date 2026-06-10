@@ -26,13 +26,9 @@ export const authConfig: NextAuthConfig = {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       const isLoggedIn = !!auth?.user;
-      const isAdmin = auth?.user?.role === "ADMIN";
-
-      if (pathname.startsWith("/admin")) {
-        if (!isLoggedIn) return false;
-        if (!isAdmin) {
-          return Response.redirect(new URL("/", request.nextUrl));
-        }
+      // /admin 권한(ADMIN) 검사는 서버 layout(requireAdmin)에서 DB 기준으로 처리
+      if (pathname.startsWith("/admin") && !isLoggedIn) {
+        return false;
       }
 
       if (

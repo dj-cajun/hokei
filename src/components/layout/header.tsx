@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,11 @@ interface HeaderProps {
 export function Header({ categoryTree }: HeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   if (pathname === "/write" || /\/posts\/[^/]+\/edit$/.test(pathname)) {
     return null;
@@ -59,7 +64,7 @@ export function Header({ categoryTree }: HeaderProps) {
           <GuestHeaderLogin />
           <UserMenu />
 
-          <Sheet>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -71,7 +76,14 @@ export function Header({ categoryTree }: HeaderProps) {
               </Button>
             </SheetTrigger>
             <SheetContent title="사이트 메뉴" className="overflow-y-auto p-3 pt-12">
-              <div className="flex flex-col gap-2">
+              <div
+                className="flex flex-col gap-2"
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest("a, button")) {
+                    setMenuOpen(false);
+                  }
+                }}
+              >
                 <LoginBox />
                 <CategoryMenuClient tree={categoryTree} />
                 <WidgetsLoader variant="weather" />
