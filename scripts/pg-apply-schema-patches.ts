@@ -2,12 +2,26 @@
  * Postgres 프로덕션 — migrate deploy 실패·누락 시 idempotent 스키마 보완
  * Vercel 빌드에서 prisma-generate-for-deploy 이후 호출
  */
+import { spawnSync } from "child_process";
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
 
 const url = process.env.DATABASE_URL?.trim() ?? "";
 if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) {
   console.log("[pg-patch] Postgres가 아니어서 건너뜀");
   process.exit(0);
+}
+
+// 로컬에서 sqlite client가 남아 있으면 adapter 불일치 — PG client 재생성
+const gen = spawnSync("npx", ["prisma", "generate"], {
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    DATABASE_URL: url,
+    PRISMA_SCHEMA: "prisma/schema.postgresql.prisma",
+  },
+});
+if (gen.status !== 0) {
+  process.exit(gen.status ?? 1);
 }
 
 const prisma = createPostgresPrisma(url);
@@ -74,6 +88,19 @@ async function main() {
     `ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "hiddenById" TEXT`
   );
 
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "NewsIngestRun" (
+      "id" TEXT NOT NULL,
+      "runAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "inserted" INTEGER NOT NULL DEFAULT 0,
+      "skipped" INTEGER NOT NULL DEFAULT 0,
+      "errors" TEXT,
+      "errorDetails" TEXT,
+      "durationMs" INTEGER,
+      "triggeredBy" TEXT,
+      "timezone" TEXT NOT NULL DEFAULT 'Asia/Ho_Chi_Minh',
+      CONSTRAINT "NewsIngestRun_pkey" PRIMARY KEY ("id")
+    )`);
   await exec(
     `ALTER TABLE "NewsIngestRun" ADD COLUMN IF NOT EXISTS "errorDetails" TEXT`
   );
@@ -195,8 +222,31 @@ async function main() {
       ON "DirectMessage"("conversationId", "createdAt")`
   );
 
+  const critical = await prisma.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'Post'
+      AND column_name IN ('likeCount', 'isAutomated', 'ingestedAt')`;
+  const cols = new Set(critical.map((r) => r.column_name));
+  for (const need of ["likeCount", "isAutomated", "ingestedAt"] as const) {
+    if (!cols.has(need)) {
+      throw new Error(`[pg-patch] 필수 컬럼 Post.${need} 없음`);
+    }
+  }
+
+  const tables = await prisma.$queryRaw<{ tablename: string }[]>`
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = 'public'
+      AND tablename IN ('NewsIngestRun', 'Post', 'Category')`;
+  const tableSet = new Set(tables.map((r) => r.tablename));
+  for (const need of ["NewsIngestRun", "Post", "Category"] as const) {
+    if (!tableSet.has(need)) {
+      throw new Error(`[pg-patch] 필수 테이블 ${need} 없음`);
+    }
+  }
+
   await prisma.$disconnect();
-  console.log("[pg-patch] 완료");
+  console.log("[pg-patch] 완료 (Post·NewsIngestRun·Category 검증 OK)");
 }
 
 main().catch((err) => {

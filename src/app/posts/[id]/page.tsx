@@ -15,6 +15,10 @@ import { getPostById } from "@/lib/posts";
 import { prisma } from "@/lib/prisma";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { formatPostSourceLabel } from "@/lib/news/source-display";
+import {
+  getFallbackThumbnail,
+  isFallbackThumbnailUrl,
+} from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +33,10 @@ export async function generateMetadata({ params }: PageProps) {
   if (!post || post.moderationStatus !== "VISIBLE") return { title: "호케이 Hokei" };
 
   const description = (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160);
-  const ogImage = post.thumbnail ?? "/icons/hokei-icon-512.png";
+  const ogImage =
+    post.thumbnail?.trim() && !isFallbackThumbnailUrl(post.thumbnail)
+      ? post.thumbnail
+      : getFallbackThumbnail(post.topic);
 
   return {
     title: `${post.title} - 호케이 Hokei`,
@@ -159,8 +166,8 @@ function NewsPostArticle({
           {post.title}
         </h1>
 
-        {post.thumbnail && (
-          <div className="relative mt-2 aspect-[16/9] w-full overflow-hidden rounded-sm">
+        {(post.thumbnail || post.isAutomated) && (
+          <div className="relative mt-2 aspect-[16/9] w-full overflow-hidden rounded-sm bg-secondary">
             <NewsThumbnail
               src={post.thumbnail}
               sourceUrl={post.sourceUrl}

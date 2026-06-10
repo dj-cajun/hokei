@@ -1,6 +1,7 @@
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
 import { extractTextWithReadability } from "@/lib/news/article-body-readability";
 import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
+import { parseOgImageFromHtml } from "@/lib/news/image";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
@@ -123,9 +124,11 @@ async function fetchArticleBodyFromHtml(
     if (content.length < MIN_BODY_LENGTH) return null;
 
     const title = extractTitleFromHtml(html);
+    const img = parseOgImageFromHtml(html.slice(0, 200_000)) ?? null;
     return {
       title,
       content: content.slice(0, 15_000),
+      img,
       source: "html",
     };
   } catch {

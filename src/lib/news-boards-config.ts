@@ -1,39 +1,19 @@
-/** 클라이언트·서버 공용 — DB/Prisma import 금지 */
+/** @deprecated 보드 URL → DB 하위 카테고리 리다이렉트 (네비 통일) */
 
 export type NewsBoardSlug = "news-local" | "news-world" | "news-community";
 
-export type NewsBoardConfig = {
-  slug: NewsBoardSlug;
-  href: `/board/${NewsBoardSlug}`;
-  title: string;
-  description: string;
+/** 구 `/board/news-*` → `/news/*` 하위 카테고리 */
+export const NEWS_BOARD_REDIRECTS: Record<NewsBoardSlug, string> = {
+  "news-local": "/news/visa-residency",
+  "news-world": "/news",
+  "news-community": "/news/column-opinion",
 };
 
-export const NEWS_BOARD_ITEMS: NewsBoardConfig[] = [
-  {
-    slug: "news-local",
-    href: "/board/news-local",
-    title: "호치민/현지 뉴스",
-    description: "호치민·사이공·베트남 현지 정책, 여행, 생활 정보",
-  },
-  {
-    slug: "news-world",
-    href: "/board/news-world",
-    title: "한국/세계 뉴스",
-    description: "한국·교민·글로벌 경제·기업 소식",
-  },
-  {
-    slug: "news-community",
-    href: "/board/news-community",
-    title: "교민/단톡방 소식",
-    description: "교민 커뮤니티·칼럼·현지 소통 이슈",
-  },
-];
-
-export function getNewsBoardConfig(
-  slug: string
-): NewsBoardConfig | undefined {
-  return NEWS_BOARD_ITEMS.find((b) => b.slug === slug);
+export function getNewsBoardRedirect(slug: string): string | undefined {
+  if (slug in NEWS_BOARD_REDIRECTS) {
+    return NEWS_BOARD_REDIRECTS[slug as NewsBoardSlug];
+  }
+  return undefined;
 }
 
 export function isNewsSectionPath(pathname: string): boolean {

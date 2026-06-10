@@ -1,5 +1,8 @@
 import { imageUrlVariants, isHttpOrHttpsUrl } from "@/lib/news/image-url";
 
+const NEWS_CDN_HOST_RE =
+  /(?:^|\.)((?:vnecdn|insidevina|vietnam)\.(?:net|com|vn)|vphoto\.vietnam\.vn|naver\.(?:net|com))$/i;
+
 const USER_AGENT =
   "Mozilla/5.0 (compatible; HokeiNewsBot/1.0; +https://hokei.vn)";
 const FETCH_TIMEOUT_MS = 10_000;
@@ -31,33 +34,8 @@ export async function verifyImageAccessible(
   url: string,
   articleUrl?: string
 ): Promise<boolean> {
-  const referer = refererForUrl(url, articleUrl);
-  const headers: Record<string, string> = { "User-Agent": USER_AGENT };
-  if (referer) headers.Referer = referer;
-
-  try {
-    const head = await fetch(url, {
-      method: "HEAD",
-      headers,
-      signal: AbortSignal.timeout(6000),
-      cache: "no-store",
-    });
-    if (head.ok) {
-      const ct = head.headers.get("content-type") ?? "";
-      if (ct.startsWith("image/")) return true;
-    }
-
-    const get = await fetch(url, {
-      method: "GET",
-      headers: { ...headers, Range: "bytes=0-2048" },
-      signal: AbortSignal.timeout(8000),
-      cache: "no-store",
-    });
-    const ct = get.headers.get("content-type") ?? "";
-    return get.ok && ct.startsWith("image/");
-  } catch {
-    return false;
-  }
+  const fetched = await fetchImageBytes(url, articleUrl);
+  return fetched !== null;
 }
 
 /** 이미지 URL 접근 확인 — 실패 시 잠시 대기 후 재시도 */
@@ -82,6 +60,7 @@ export function extractImageFromHtml(html: string): string | undefined {
   const patterns = [
     /<img[^>]+src=["']([^"']+)["']/gi,
     /<img[^>]+data-src=["']([^"']+)["']/gi,
+    /<img[^>]+(?:data-original|data-lazy-src|data-url)=["']([^"']+)["']/gi,
     /src=["']([^"']+\.(?:jpg|jpeg|png|webp)(?:\?[^"']*)?)["']/gi,
   ];
 
@@ -132,12 +111,50 @@ function isUsableImageUrl(url: string): boolean {
     return false;
   }
   if (lower.includes("logo") && !lower.includes("article")) return false;
+  if (lower.includes("/image/logo/") || lower.includes("default-user.png")) {
+    return false;
+  }
   return (
     /\.(jpe?g|png|webp|gif)(\?|$)/i.test(lower) ||
     lower.includes("vnecdn") ||
+    lower.includes("insidevina.com/news/") ||
     lower.includes("googleusercontent") ||
     lower.includes("/image/") ||
-    lower.includes("thumb")
+    lower.includes("thumb") ||
+    lower.includes("/photo/")
+  );
+}
+
+/** 뉴스 CDN — 서버 fetch는 403이어도 브라우저 직링크는 되는 경우가 많음 */
+export function isLikelyNewsCdnImageUrl(url: string): boolean {
+  if (!isHttpOrHttpsUrl(url)) return false;
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (NEWS_CDN_HOST_RE.test(host)) return true;
+  } catch {
+    return false;
+  }
+  const lower = url.toLowerCase();
+  return (
+    lower.includes("vnecdn") ||
+    lower.includes("cdn.insidevina.com/news/") ||
+    lower.includes("vphoto.vietnam.vn")
+  );
+}
+
+/** ingest 저장용 — 실제 다운로드 가능한 URL만 (vnecdn 403 등 제외) */
+export function isPlausibleStoredThumbnailUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed || isUnstableThumbnailUrl(trimmed) || !isHttpOrHttpsUrl(trimmed)) {
+    return false;
+  }
+  if (!isUsableImageUrl(trimmed)) return false;
+  if (isLikelyNewsCdnImageUrl(trimmed) && trimmed.toLowerCase().includes("vnecdn")) {
+    return false;
+  }
+  return (
+    isLikelyNewsCdnImageUrl(trimmed) ||
+    /\.(jpe?g|png|webp)(\?|$)/i.test(trimmed)
   );
 }
 
@@ -203,8 +220,8 @@ export async function resolveNewsThumbnail(
   if (link.startsWith("http")) {
     const thumb = await fetchArticleThumbnail(link);
     if (thumb && !isUnstableThumbnailUrl(thumb)) {
-      const ok = await verifyImageAccessibleWithRetry(thumb, link);
-      if (ok) return thumb;
+      const normalized = await normalizeStoredThumbnailUrl(thumb, link);
+      if (normalized) return normalized;
     }
   }
 
@@ -218,9 +235,8 @@ export async function normalizeStoredThumbnailUrl(
   articleUrl: string
 ): Promise<string | undefined> {
   for (const variant of imageUrlVariants(url)) {
-    if (await verifyImageAccessibleWithRetry(variant, articleUrl)) {
-      return variant;
-    }
+    const fetched = await fetchImageBytesWithRetry(variant, articleUrl);
+    if (fetched) return variant;
   }
   return undefined;
 }
@@ -265,19 +281,17 @@ export async function resolveNewsThumbnailWithRetry(
   htmlSources: (string | undefined)[]
 ): Promise<string | undefined> {
   const thumb = await resolveNewsThumbnail(link, htmlSources);
-  if (thumb && (await verifyImageAccessibleWithRetry(thumb, link))) {
-    return thumb;
+  if (thumb) {
+    const normalized = await normalizeStoredThumbnailUrl(thumb, link);
+    if (normalized) return normalized;
   }
 
   if (link.startsWith("http")) {
     await sleep(500);
     const refetched = await fetchArticleThumbnail(link);
-    if (
-      refetched &&
-      !isUnstableThumbnailUrl(refetched) &&
-      (await verifyImageAccessibleWithRetry(refetched, link))
-    ) {
-      return refetched;
+    if (refetched && !isUnstableThumbnailUrl(refetched)) {
+      const normalized = await normalizeStoredThumbnailUrl(refetched, link);
+      if (normalized) return normalized;
     }
   }
 

@@ -117,6 +117,41 @@ if (production) {
     console.log("[env:check] OK RESEND (이메일 가입)");
   }
 
+  const naverId =
+    getValue(content, "NAVER_CLIENT_ID")?.replace(/^["']|["']$/g, "") ?? "";
+  const naverSecret =
+    getValue(content, "NAVER_CLIENT_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
+  const naverOk =
+    naverId.length >= 8 &&
+    naverSecret.length >= 8 &&
+    !isPlaceholder(naverId) &&
+    !isPlaceholder(naverSecret);
+  const gemini = getValue(content, "GEMINI_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
+  const zai = getValue(content, "ZAI_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
+  const translateOk =
+    (gemini.length > 8 && !isPlaceholder(gemini)) ||
+    (zai.length > 8 && !isPlaceholder(zai)) ||
+    Boolean(
+      getValue(content, "GOOGLE_TRANSLATE_API_KEY")?.replace(/^["']|["']$/g, "")
+    );
+  const cron = getValue(content, "CRON_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
+  if (!cron || isPlaceholder(cron)) {
+    console.error("[env:check] 프로덕션: CRON_SECRET 필수 (Vercel Cron 401 방지)");
+    failed = true;
+  } else {
+    console.log("[env:check] OK CRON_SECRET");
+  }
+  if (!translateOk) {
+    console.error(
+      "[env:check] 프로덕션 뉴스: GEMINI_API_KEY 또는 ZAI_API_KEY 필수 (Vercel RSS 우회+번역)"
+    );
+    failed = true;
+  } else if (!naverOk) {
+    console.log(
+      "[env:check] OK 뉴스 수집 — Vercel RSS 우회 모드 (네이버 API 불필요)"
+    );
+  }
+
   if (!keys.has("BLOB_READ_WRITE_TOKEN")) {
     console.warn("[env:check] 프로덕션 권장: BLOB_READ_WRITE_TOKEN (Vercel Blob)");
   } else {

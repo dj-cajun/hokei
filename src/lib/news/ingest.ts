@@ -1,11 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { buildPostFromArticlePage } from "@/lib/news/ingest-article";
 import { fetchNewsFromSource } from "@/lib/news/fetch-sources";
-import { isNaverNewsConfigured } from "@/lib/news/naver-news";
 import {
-  isNaverRequestsScraperAvailable,
-  isNaverScraperAvailable,
-} from "@/lib/news/naver-scrape";
+  resolveIngestRssOnly,
+} from "@/lib/news/ingest-runtime";
 import { loadNewsTopicSourcesFromDb } from "@/lib/news/load-sources-config";
 import { MAX_DAILY_NEWS } from "@/lib/news/sources";
 import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
@@ -23,6 +21,7 @@ import { isVietnamKoreanMediaArticle } from "@/lib/news/vietnam-korean-media";
 import type { PostTopic } from "@/generated/prisma/client";
 import { hasSubstantialNewsBody } from "@/lib/news/news-body-quality";
 import { pruneEmptyContentAutomatedNews } from "@/lib/news/prune-empty-content-news";
+import { resolveNewsCategorySlug } from "@/lib/news/resolve-news-category";
 import { indexPostInSearch } from "@/lib/search/index-post";
 
 export type IngestResult = {
@@ -98,6 +97,19 @@ export async function ingestDailyNews(
     result.errors.push(
       `오늘(호치민 기준) 이미 ${MAX_DAILY_NEWS}건 수집 완료 — 건너뜀`
     );
+    try {
+      await prisma.newsIngestRun.create({
+        data: {
+          inserted: 0,
+          skipped: 0,
+          errors: result.errors.join("\n"),
+          durationMs: Date.now() - startedAt,
+          triggeredBy: options?.triggeredBy ?? null,
+        },
+      });
+    } catch {
+      /* 수집 스킵 기록 실패는 무시 */
+    }
     return result;
   }
 
@@ -108,33 +120,48 @@ export async function ingestDailyNews(
 
   const pool: RawNewsItem[] = [];
 
-  const naverScraperOk =
-    (await isNaverRequestsScraperAvailable()) ||
-    (await isNaverScraperAvailable());
-  if (!isNaverNewsConfigured() && !naverScraperOk) {
+  const { rssOnly, naverConfigured, naverScraperOk, reason: rssReason } =
+    await resolveIngestRssOnly();
+  if (!naverConfigured && !naverScraperOk) {
     result.errors.push(
-      "네이버 API·스크래퍼 없음 — pip3 install -r scripts/python/requirements.txt 또는 NAVER_CLIENT_ID/SECRET 설정"
+      rssOnly
+        ? `네이버 없음 → RSS 모드 (${rssReason})`
+        : "네이버 API·스크래퍼 없음 — NAVER_CLIENT_ID/SECRET 또는 INGEST_RSS_ONLY=1"
     );
   }
 
-  const rssOnly = process.env.INGEST_RSS_ONLY === "1";
+  const onVercel = process.env.VERCEL === "1";
   const topicSources = await loadNewsTopicSourcesFromDb();
-  const maxPerFeed = 8;
+  const maxPerFeed = onVercel ? 5 : 8;
 
-  for (const config of topicSources) {
-    const feeds = rssOnly
-      ? VNEXPRESS_RSS_FALLBACK_FEEDS[config.topic]
-      : config.feeds;
-    for (const feed of feeds) {
-      const items = await fetchNewsFromSource(feed, config.topic, maxPerFeed);
-      const filtered = items.filter((item) =>
-        passesTopicRelevanceFilter(item.topic, item.title, item.description, {
-          link: item.link,
-          sourceName: item.sourceName,
-        })
-      );
-      pool.push(...filtered);
+  async function collectFromFeeds(useRssOnly: boolean) {
+    const batch: RawNewsItem[] = [];
+    for (const config of topicSources) {
+      const feeds = useRssOnly
+        ? VNEXPRESS_RSS_FALLBACK_FEEDS[config.topic]
+        : config.feeds;
+      for (const feed of feeds) {
+        const items = await fetchNewsFromSource(feed, config.topic, maxPerFeed);
+        const filtered = items.filter((item) =>
+          passesTopicRelevanceFilter(item.topic, item.title, item.description, {
+            link: item.link,
+            sourceName: item.sourceName,
+          })
+        );
+        batch.push(...filtered);
+      }
     }
+    return batch;
+  }
+
+  pool.push(...(await collectFromFeeds(rssOnly)));
+
+  // 네이버 키는 있으나 401 등으로 풀이 비면 RSS로 재시도 (Vercel 이중 0건 방지)
+  if (!rssOnly && pool.length < 5) {
+    result.errors.push(
+      `소스 풀 부족(${pool.length}) → RSS 폴백 재수집`
+    );
+    pool.push(...(await collectFromFeeds(true)));
   }
 
   const uniqueByLink = new Map<string, RawNewsItem>();
@@ -181,9 +208,10 @@ export async function ingestDailyNews(
       );
     });
 
+  const attemptMultiplier = onVercel ? 2 : 4;
   const attemptBudget = Math.min(
     candidates.length,
-    Math.max(remaining, remaining * 4)
+    Math.max(remaining, remaining * attemptMultiplier)
   );
   const toProcess = pickByIngestMix(candidates, attemptBudget);
 
@@ -194,14 +222,6 @@ export async function ingestDailyNews(
 
   for (const raw of toProcess) {
     if (result.inserted >= remaining) break;
-    const config = topicSources.find((c) => c.topic === raw.topic);
-    const categoryId = categoryMap.get(config?.categorySlug ?? "");
-    if (!categoryId) {
-      result.skipped++;
-      result.errors.push(`카테고리 없음: ${config?.categorySlug}`);
-      continue;
-    }
-
     try {
       const { title, content, thumbnail } =
         await buildPostFromArticlePage(raw);
@@ -209,6 +229,23 @@ export async function ingestDailyNews(
       if (!hasSubstantialNewsBody(content)) {
         result.skipped++;
         result.errors.push(`${raw.link}: 본문 없음(80자 미만) — 저장 안 함`);
+        continue;
+      }
+
+      const summaryText =
+        (content ?? "").replace(/\s+/g, " ").trim().slice(0, 160) || title;
+
+      const categorySlug = resolveNewsCategorySlug({
+        topic: raw.topic,
+        title,
+        summary: summaryText,
+        sourceName: raw.sourceName,
+      });
+      const categoryId =
+        categoryMap.get(categorySlug) ?? categoryMap.get("news");
+      if (!categoryId) {
+        result.skipped++;
+        result.errors.push(`카테고리 없음: ${categorySlug}`);
         continue;
       }
 
@@ -220,9 +257,6 @@ export async function ingestDailyNews(
         result.skipped++;
         continue;
       }
-
-      const summaryText =
-        (content ?? "").replace(/\s+/g, " ").trim().slice(0, 160) || title;
 
       const post = await prisma.post.create({
         data: {
@@ -274,25 +308,30 @@ export async function ingestDailyNews(
   );
 
   const errorSlice = result.errors.slice(0, 50);
-  await prisma.newsIngestRun.create({
-    data: {
-      inserted: result.inserted,
-      skipped: result.skipped,
-      errors:
-        errorSlice.length > 0 ? errorSlice.join("\n") : null,
-      errorDetails: JSON.stringify({
-        meta: ingestMeta,
-        issues: errorSlice
-          .filter((m) => !m.startsWith("[ingest]"))
-          .map((message) => ({
-            message,
-            at: new Date().toISOString(),
-          })),
-      }),
-      durationMs: Date.now() - startedAt,
-      triggeredBy: options?.triggeredBy ?? null,
-    },
-  });
+  try {
+    await prisma.newsIngestRun.create({
+      data: {
+        inserted: result.inserted,
+        skipped: result.skipped,
+        errors:
+          errorSlice.length > 0 ? errorSlice.join("\n") : null,
+        errorDetails: JSON.stringify({
+          meta: { ...ingestMeta, rssOnly, rssReason },
+          issues: errorSlice
+            .filter((m) => !m.startsWith("[ingest]"))
+            .map((message) => ({
+              message,
+              at: new Date().toISOString(),
+            })),
+        }),
+        durationMs: Date.now() - startedAt,
+        triggeredBy: options?.triggeredBy ?? null,
+      },
+    });
+  } catch (logErr) {
+    const msg = logErr instanceof Error ? logErr.message : String(logErr);
+    result.errors.push(`NewsIngestRun 기록 실패(수집 결과는 유지): ${msg}`);
+  }
 
   return result;
 }

@@ -1,23 +1,35 @@
 import type { PostTopic } from "@/generated/prisma/client";
-import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
+import {
+  getFallbackThumbnail,
+  isFallbackThumbnailUrl,
+} from "@/lib/news/default-thumbnails";
 import {
   normalizeStoredThumbnailUrl,
   resolveNewsThumbnailWithRetry,
   verifyImageAccessibleWithRetry,
 } from "@/lib/news/image";
+import {
+  isNewsThumbnailBlobUrl,
+  persistNewsThumbnailToBlob,
+} from "@/lib/news/persist-thumbnail-blob";
 
-/** Unsplash 대체 이미지 — 기사 사진을 못 구했을 때만 사용 */
-export function isFallbackThumbnailUrl(url: string | null | undefined): boolean {
-  const trimmed = url?.trim() ?? "";
-  return trimmed.includes("images.unsplash.com");
-}
+export { isFallbackThumbnailUrl };
 
-async function normalizeIfAccessible(
+/** URL 정규화 → Blob 복사(가능 시) → 실패 시 원본 CDN URL */
+async function finalizeNewsThumbnail(
   url: string | undefined,
   articleUrl: string
 ): Promise<string | undefined> {
   if (!url?.trim()) return undefined;
-  return normalizeStoredThumbnailUrl(url.trim(), articleUrl);
+  const trimmed = url.trim();
+  if (isNewsThumbnailBlobUrl(trimmed)) return trimmed;
+
+  const normalized = await normalizeStoredThumbnailUrl(trimmed, articleUrl);
+  if (!normalized) return undefined;
+  if (isNewsThumbnailBlobUrl(normalized)) return normalized;
+
+  const blobUrl = await persistNewsThumbnailToBlob(normalized, articleUrl);
+  return blobUrl ?? normalized;
 }
 
 export type ResolvePostThumbnailInput = {
@@ -35,8 +47,10 @@ export type ResolvePostThumbnailInput = {
 
 /**
  * 자동 뉴스 썸네일 정책
- * 1) 기사·RSS·og:image 등 실제 이미지 URL을 우선 연결
- * 2) 접근 불가·없음 → 토픽별 대체(Unsplash)
+ * 1) 기사·RSS·og:image 등 실제 이미지 URL 확보
+ * 2) BLOB_READ_WRITE_TOKEN 있으면 Vercel Blob에 복사 (우리 CDN URL)
+ * 3) Blob 실패 시 원본 CDN URL 저장
+ * 4) 없음 → 토픽별 정적 폴백(/news/fallback/…)
  */
 export async function resolveAutomatedNewsThumbnail(
   input: ResolvePostThumbnailInput
@@ -55,14 +69,14 @@ export async function resolveAutomatedNewsThumbnail(
   ].filter((u): u is string => Boolean(u?.trim()));
 
   for (const candidate of orderedCandidates) {
-    const normalized = await normalizeIfAccessible(candidate, link);
-    if (normalized) return normalized;
+    const finalized = await finalizeNewsThumbnail(candidate, link);
+    if (finalized) return finalized;
   }
 
   const resolved = await resolveNewsThumbnailWithRetry(link, htmlSources);
   if (resolved) {
-    const normalized = await normalizeIfAccessible(resolved, link);
-    if (normalized) return normalized;
+    const finalized = await finalizeNewsThumbnail(resolved, link);
+    if (finalized) return finalized;
   }
 
   return getFallbackThumbnail(topic);
@@ -74,5 +88,8 @@ export async function isWorkingArticleThumbnail(
   sourceUrl: string
 ): Promise<boolean> {
   if (!thumbnail?.trim() || isFallbackThumbnailUrl(thumbnail)) return false;
-  return verifyImageAccessibleWithRetry(thumbnail.trim(), sourceUrl);
+  const trimmed = thumbnail.trim();
+  if (isNewsThumbnailBlobUrl(trimmed)) return true;
+  if (await verifyImageAccessibleWithRetry(trimmed, sourceUrl)) return true;
+  return false;
 }

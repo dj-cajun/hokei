@@ -5,8 +5,6 @@ import {
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
 import { newsAutomatedWhere } from "@/lib/news-automated-where";
-import { getNewsBoardWhere } from "@/lib/news-boards";
-import type { NewsBoardSlug } from "@/lib/news-boards-config";
 import type { FeedItem } from "@/types/feed";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
@@ -76,17 +74,6 @@ export async function getNewsArchivePosts(
   return fetchNewsPosts(newsAutomatedWhere, limit, page);
 }
 
-export async function countNewsBoardPosts(slug: NewsBoardSlug): Promise<number> {
-  return prisma.post.count({ where: getNewsBoardWhere(slug) });
-}
-
-export async function getNewsBoardPosts(
-  slug: NewsBoardSlug,
-  limit: number,
-  page = 1
-): Promise<FeedItem[]> {
-  return fetchNewsPosts(getNewsBoardWhere(slug), limit, page);
-}
 
 export type NewsDateGroup = {
   dateLabel: string;

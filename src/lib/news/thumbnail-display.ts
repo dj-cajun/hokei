@@ -1,26 +1,46 @@
 import type { PostTopic } from "@/generated/prisma/client";
-import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
-
+import {
+  getFallbackThumbnail,
+  isFallbackThumbnailUrl,
+  isStaticFallbackThumbnailPath,
+} from "@/lib/news/default-thumbnails";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 
-/** Unsplash는 직링크, http/https 외부 이미지는 서버 프록시(프로토콜 무관) */
+/**
+ * 브라우저에 노출할 썸네일 URL — 외부 https 직링크 금지
+ * 1) 정적 폴백(/news/fallback/…)
+ * 2) 그 외 http(s) → same-origin 프록시
+ */
 export function getThumbnailDisplayUrl(
   thumbnail: string | null | undefined,
   sourceUrl?: string | null,
   topic?: PostTopic
-): string | undefined {
+): string {
+  const resolvedTopic = topic ?? "KOREA";
+  const fallback = getFallbackThumbnail(resolvedTopic);
   const trimmed = thumbnail?.trim();
-  if (!trimmed || !isHttpOrHttpsUrl(trimmed)) return undefined;
 
-  if (trimmed.includes("images.unsplash.com")) {
-    return trimmed;
+  if (!trimmed) {
+    return fallback;
+  }
+
+  if (isStaticFallbackThumbnailPath(trimmed)) {
+    return trimmed.split("?")[0] ?? trimmed;
+  }
+
+  if (isFallbackThumbnailUrl(trimmed)) {
+    return fallback;
+  }
+
+  if (!isHttpOrHttpsUrl(trimmed)) {
+    return fallback;
   }
 
   const params = new URLSearchParams({ url: trimmed });
   if (sourceUrl?.trim() && isHttpOrHttpsUrl(sourceUrl)) {
     params.set("source", sourceUrl.trim());
   }
-  if (topic) params.set("topic", topic);
+  params.set("topic", resolvedTopic);
   return `/api/news/thumbnail?${params.toString()}`;
 }
 

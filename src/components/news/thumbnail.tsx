@@ -18,8 +18,7 @@ type NewsThumbnailProps = {
 
 type LoadPhase = "primary" | "retry" | "fallback";
 
-/** 외부 뉴스 썸네일 — 실패 시 1회 재시도 후 토픽별 기본 이미지 */
-export function NewsThumbnail({
+function NewsThumbnailInner({
   src,
   sourceUrl,
   topic = "KOREA",
@@ -36,7 +35,7 @@ export function NewsThumbnail({
   );
 
   const retryUrl = useMemo(() => {
-    if (!primaryUrl || primaryUrl.includes("images.unsplash.com")) {
+    if (!primaryUrl?.startsWith("/api/news/thumbnail")) {
       return undefined;
     }
     const sep = primaryUrl.includes("?") ? "&" : "?";
@@ -48,7 +47,7 @@ export function NewsThumbnail({
       ? fallbackUrl
       : phase === "retry"
         ? retryUrl ?? fallbackUrl
-        : primaryUrl ?? fallbackUrl;
+        : primaryUrl;
 
   const handleError = useCallback(() => {
     setPhase((current) => {
@@ -69,4 +68,10 @@ export function NewsThumbnail({
       onError={handleError}
     />
   );
+}
+
+/** 뉴스 썸네일 — 프록시 → 재시도 → 토픽별 정적 폴백 */
+export function NewsThumbnail(props: NewsThumbnailProps) {
+  const resetKey = `${props.src ?? ""}|${props.sourceUrl ?? ""}|${props.topic ?? "KOREA"}`;
+  return <NewsThumbnailInner key={resetKey} {...props} />;
 }

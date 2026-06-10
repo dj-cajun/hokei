@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { NewBadge } from "@/components/ui/new-badge";
 import { formatViewsComments } from "@/lib/format/post-list-meta";
+import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 import type { FeedItem } from "@/types/feed";
 
 function PostListMeta({ item }: { item: FeedItem }) {
@@ -17,7 +18,7 @@ function PostListMeta({ item }: { item: FeedItem }) {
 }
 
 export function NewsListItem({ item }: { item: FeedItem }) {
-  const hasThumb = Boolean(item.thumbnail || item.sourceUrl);
+  const hasThumb = shouldShowFeedThumbnail(item);
 
   return (
     <article className="border-b border-gray-50 last:border-b-0">

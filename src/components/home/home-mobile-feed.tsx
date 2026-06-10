@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
 import type { FeedItem, FeedTab } from "@/types/feed";
+import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 
 const tabs: { id: FeedTab; label: string }[] = [
   { id: "latest", label: "최신글" },
@@ -62,7 +63,7 @@ export function HomeMobileFeed({
           </p>
         ) : (
           items.slice(0, 8).map((item) =>
-            activeTab === "notice" || !item.thumbnail ? (
+            activeTab === "notice" || !shouldShowFeedThumbnail(item) ? (
               <TextListItem key={item.id} item={item} />
             ) : (
               <NewsListItem key={item.id} item={item} />

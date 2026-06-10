@@ -9,12 +9,7 @@ import type { NewsFeedSource } from "@/lib/news/sources";
 import { ensureNewsSourcesSeeded } from "@/lib/news/seed-sources-config";
 import { prisma } from "@/lib/prisma";
 
-const TOPIC_CATEGORY_SLUG: Record<PostTopic, string> = {
-  KOREA: "news",
-  TRAVEL: "news",
-  VIETNAM_POLICY: "news-visa-residency",
-  TOURIST: "news",
-};
+import { DEFAULT_TOPIC_CATEGORY_SLUG } from "@/lib/news/resolve-news-category";
 
 export async function loadNewsTopicSourcesFromDb(): Promise<NewsTopicConfig[]> {
   let rows: Awaited<
@@ -58,7 +53,7 @@ export async function loadNewsTopicSourcesFromDb(): Promise<NewsTopicConfig[]> {
   return topics.map((topic) => ({
     topic,
     label: TOPIC_LABELS[topic],
-    categorySlug: TOPIC_CATEGORY_SLUG[topic],
+    categorySlug: DEFAULT_TOPIC_CATEGORY_SLUG[topic],
     feeds: byTopic.get(topic) ?? [],
   }));
 }

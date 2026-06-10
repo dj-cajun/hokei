@@ -41,6 +41,10 @@ export function resolveDatabaseUrlForPrismaGenerate(): string {
   if (onCi && fromProcess) return fromProcess;
 
   if (!onVercel) {
+    // with-pg-env / --neon: 쉘의 Neon URL 우선 (.env file:./dev.db 덮어쓰기 방지)
+    if (process.env.PRISMA_USE_SHELL_DATABASE_URL === "1" && fromProcess) {
+      return fromProcess;
+    }
     const url = resolveLocalDevDatabaseUrl(fromProcess, fromFile);
     if (
       url === fromFile &&

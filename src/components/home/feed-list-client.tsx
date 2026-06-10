@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
 import type { FeedItem, FeedTab } from "@/types/feed";
+import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 
 const tabs: { id: FeedTab; label: string }[] = [
   { id: "latest", label: "최신글" },
@@ -67,7 +68,7 @@ export function FeedListClient({
           </p>
         ) : (
           items.map((item) =>
-            isNoticeTab || !item.thumbnail ? (
+            isNoticeTab || !shouldShowFeedThumbnail(item) ? (
               <TextListItem key={item.id} item={item} />
             ) : (
               <NewsListItem key={item.id} item={item} />

@@ -11,8 +11,7 @@ const required = [
 ] as const;
 
 const recommended = [
-  ["NAVER_CLIENT_ID", "네이버 개발자센터"],
-  ["NAVER_CLIENT_SECRET", "네이버 개발자센터 (검색 API 사용)"],
+  ["GEMINI_API_KEY", "Vercel RSS 우회 수집 — VnExpress 등 영문 기사 번역 (필수)"],
   ["BLOB_READ_WRITE_TOKEN", "Vercel Storage → Blob (첨부 필수)"],
   ["UPSTASH_REDIS_REST_URL", "Upstash Redis (rate limit)"],
   ["UPSTASH_REDIS_REST_TOKEN", "Upstash Redis"],
@@ -27,8 +26,9 @@ const optional = [
   ["NEXT_PUBLIC_SENTRY_DSN", "Sentry 클라이언트 DSN (동일 URL)"],
   ["SENTRY_ORG", "nam-bac-technology-and-service"],
   ["SENTRY_PROJECT", "javascript-nextjs"],
-  ["GEMINI_API_KEY", "VnExpress 번역"],
-  ["ZAI_API_KEY", "Z.AI 번역"],
+  ["ZAI_API_KEY", "Z.AI 번역 (Gemini 대안)"],
+  ["NAVER_CLIENT_ID", "로컬 전용 — Vercel 프로덕션 수집에 불필요"],
+  ["NAVER_CLIENT_SECRET", "로컬 전용"],
 ] as const;
 
 console.log(`
@@ -44,8 +44,9 @@ ${recommended.map(([k, d]) => `  ${k}\n    → ${d}`).join("\n")}
 ${optional.map(([k]) => `  ${k}`).join("\n")}
 
 배포 후:
-  1) npx prisma migrate deploy  (DATABASE_URL=... 한 번 로컬에서)
+  1) npm run db:pg:push           (최초 Neon 스키마)
   2) npm run search:pg:setup      (PostgreSQL 검색)
   3) Vercel Cron: CRON_SECRET + Authorization Bearer
-  4) npm run naver:test           (키 확인)
+  4) npm run news:check:prod      (수집·스키마 점검)
+  5) npm run naver:test / gemini:test
 `);

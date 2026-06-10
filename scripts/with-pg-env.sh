@@ -12,4 +12,5 @@ set -a
 source "$ENV_FILE"
 set +a
 export PRISMA_SCHEMA="${PRISMA_SCHEMA:-prisma/schema.postgresql.prisma}"
+export PRISMA_USE_SHELL_DATABASE_URL=1
 exec "$@"

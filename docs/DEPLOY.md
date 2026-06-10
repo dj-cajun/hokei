@@ -16,7 +16,7 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 | `AUTH_SECRET` | 32자+ 랜덤 (`npm run env:auth-secret`) |
 | `CRON_SECRET` | Cron API 보호 (`npm run env:cron-secret`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://실제도메인` (localhost 금지) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob (글 첨부·이미지) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob (글 첨부·뉴스 썸네일 ingest 복사) |
 | `RESEND_API_KEY` · `EMAIL_FROM` | 이메일 회원가입 인증 (미설정 시 Google 로그인만) |
 | `UPSTASH_REDIS_REST_URL` · `TOKEN` | 분산 rate limit (권장) |
 
@@ -45,7 +45,7 @@ Vercel Cron 요청 시 헤더:
 Authorization: Bearer <CRON_SECRET>
 ```
 
-> Vercel 서버에는 Playwright가 없어 **네이버 API 키**가 정상이어야 합니다. (`npm run naver:test`)
+> Vercel에는 Playwright·Python 스크래퍼가 없습니다. **네이버 API를 쓰지 않고** VnExpress·인사이드비나·Vietnam.vn RSS + Gemini/Z.AI 번역으로 수집합니다 (`INGEST_RSS_ONLY`는 Vercel에서 자동). 로컬에서 네이버 API·스크래퍼 테스트: `npm run naver:test`
 
 ## 5. Upstash (권장)
 

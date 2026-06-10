@@ -83,6 +83,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.vnexpress.net" },
+      { protocol: "https", hostname: "**.vnecdn.net" },
       { protocol: "https", hostname: "cdn.insidevina.com" },
       { protocol: "https", hostname: "**.insidevina.com" },
       { protocol: "https", hostname: "vphoto.vietnam.vn" },

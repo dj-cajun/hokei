@@ -1,4 +1,8 @@
-# 네이버 검색 API 설정
+# 네이버 검색 API (로컬·선택)
+
+> **프로덕션(Vercel)은 네이버 API를 사용하지 않습니다.**  
+> RSS 우회(VnExpress·인사이드비나·Vietnam.vn) + Gemini/Z.AI 번역이 기본입니다.  
+> 아래 설정은 **로컬 개발**에서 네이버 API 또는 스크래퍼를 쓸 때만 해당합니다.
 
 뉴스 수집 시 `401` / `errorCode 024` (Authentication failed)가 나오면:
 
@@ -18,13 +22,13 @@ npm run news:scrape:setup
 curl "http://localhost:3001/api/news?q=호치민+한인"
 ```
 
-Vercel 등 서버에서는 Playwright가 없으므로, 네이버 없이 **VnExpress RSS만** 수집:
+Vercel(프로덕션)은 **자동으로 RSS 우회 모드**입니다. 수동으로 맞추려면:
 
 ```bash
 INGEST_RSS_ONLY=1 npm run news:ingest
 ```
 
-프로덕션 Cron에도 `INGEST_RSS_ONLY=1` 환경 변수를 Vercel에 추가하면 동일하게 동작합니다.
+프로덕션 Cron은 `VERCEL=1` 환경에서 RSS만 사용하므로 `NAVER_CLIENT_ID`는 **필수가 아닙니다**.
 
 ## 키 동작 확인
 

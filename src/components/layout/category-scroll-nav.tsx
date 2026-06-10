@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { CategoryNavPopoverTab } from "@/components/layout/category-nav-popover-tab";
 import type { CategoryPopoverItem } from "@/components/layout/category-nav-popover-tab";
-import { isNewsSectionPath, NEWS_BOARD_ITEMS } from "@/lib/news-boards-config";
+import { isNewsSectionPath } from "@/lib/news-boards-config";
 import { cn } from "@/lib/utils";
 import type { CategoryNavItem } from "@/lib/categories";
 
@@ -17,10 +17,13 @@ interface CategoryScrollNavProps {
 
 function getDropdownItems(section: CategoryNavItem): CategoryPopoverItem[] {
   if (section.slug === "news") {
-    return NEWS_BOARD_ITEMS.map((b) => ({
-      label: b.title,
-      href: b.href,
-    }));
+    return [
+      { label: "전체 뉴스", href: "/news" },
+      ...section.children.map((c) => ({
+        label: c.label,
+        href: c.href,
+      })),
+    ];
   }
   return section.children.map((c) => ({
     label: c.label,

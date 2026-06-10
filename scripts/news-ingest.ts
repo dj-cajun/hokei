@@ -10,7 +10,7 @@ import { prisma } from "../src/lib/prisma";
 
 async function main() {
   const { ingestDailyNews } = await import("../src/lib/news/ingest");
-  const result = await ingestDailyNews();
+  const result = await ingestDailyNews({ triggeredBy: "manual-cli" });
   console.log(JSON.stringify(result, null, 2));
 }
 

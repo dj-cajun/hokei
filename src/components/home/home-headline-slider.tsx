@@ -5,12 +5,13 @@ import Link from "next/link";
 import { Pause, Play } from "lucide-react";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { cn } from "@/lib/utils";
+import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 import type { FeedItem } from "@/types/feed";
 
 const SWIPE_THRESHOLD_PX = 48;
 
 export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
-  const slides = items.filter((i) => i.thumbnail || i.sourceUrl).slice(0, 5);
+  const slides = items.filter((i) => shouldShowFeedThumbnail(i)).slice(0, 5);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);

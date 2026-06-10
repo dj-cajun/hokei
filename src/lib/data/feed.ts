@@ -14,7 +14,7 @@ export const feedItems: FeedItem[] = [
     views: 1240,
     comments: 18,
     thumbnail:
-      "https://images.unsplash.com/photo-1583417319070-4a5401d0a8e9?w=160&h=160&fit=crop",
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=160&h=160&fit=crop",
   },
   {
     id: "mock-2",
@@ -53,7 +53,7 @@ export const feedItems: FeedItem[] = [
     views: 3456,
     comments: 67,
     thumbnail:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f933?w=160&h=160&fit=crop",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=160&h=160&fit=crop",
   },
   {
     id: "mock-5",
@@ -79,7 +79,7 @@ export const feedItems: FeedItem[] = [
     views: 1890,
     comments: 12,
     thumbnail:
-      "https://images.unsplash.com/photo-1528183429752-a97d0bf99f60?w=160&h=160&fit=crop",
+      "https://images.unsplash.com/photo-1528127269322-539801943592?w=160&h=160&fit=crop",
   },
   {
     id: "mock-7",
