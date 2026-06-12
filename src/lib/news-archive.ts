@@ -4,12 +4,12 @@ import {
   formatRelativeTime,
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
-import { newsAutomatedWhere } from "@/lib/news-automated-where";
+import { newsAutomatedWhere } from "@/lib/news/news-list-where";
 import type { FeedItem } from "@/types/feed";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 
-export { newsAutomatedWhere } from "@/lib/news-automated-where";
+export { newsAutomatedWhere } from "@/lib/news/news-list-where";
 
 const archiveInclude = {
   category: { select: { label: true, colorClass: true } },

@@ -260,13 +260,11 @@ export async function getPostsBySectionSlug(
 }
 
 export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
+  const { newsAutomatedWhere } = await import("@/lib/news/news-list-where");
   const posts = await prisma.post.findMany({
     where: {
       ...visiblePostWhere,
-      isAutomated: true,
-      category: {
-        OR: [{ slug: "news" }, { parent: { slug: "news" } }],
-      },
+      ...newsAutomatedWhere,
     },
     orderBy: { ingestedAt: "desc" },
     take: limit,

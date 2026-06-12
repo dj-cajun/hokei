@@ -38,7 +38,7 @@ async function main() {
   const { assessIngestReadiness } = await import(
     "../src/lib/news/ingest-runtime"
   );
-  const { newsAutomatedWhere } = await import("../src/lib/news-automated-where");
+  const { newsAutomatedWhere } = await import("../src/lib/news/news-list-where");
 
   let prisma: import("../src/generated/prisma/client").PrismaClient;
   if (neon && isPg) {
