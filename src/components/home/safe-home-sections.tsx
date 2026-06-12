@@ -49,7 +49,7 @@ export async function SafeBoardPreviewList() {
   }
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 lg:space-y-4">
       {sections.map((section) => (
         <BoardPreviewSectionBox key={section.title} section={section} />
       ))}

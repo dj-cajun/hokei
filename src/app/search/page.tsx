@@ -6,6 +6,7 @@ import { SearchFilterBar } from "@/components/search/search-filter-bar";
 import { SearchResultList } from "@/components/search/search-result-list";
 import { SearchInfiniteList } from "@/components/search/search-infinite-list";
 import { SearchPopularSection } from "@/components/search/search-popular-section";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { searchPostsPaginated } from "@/lib/posts";
@@ -96,9 +97,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
             검색어는 {SEARCH_MIN_QUERY_LENGTH}글자 이상 입력해 주세요.
           </p>
         ) : results.length === 0 ? (
-          <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-            검색 결과가 없습니다.
-          </p>
+          <EmptyState
+            title="검색 결과가 없습니다"
+            description={`「${query}」에 맞는 글이 없어요. 키워드를 바꾸거나 필터·지역을 조정해 보세요.`}
+            actionHref="/community"
+            actionLabel="커뮤니티 둘러보기"
+          />
         ) : (
           <Suspense fallback={<SearchResultList items={results} query={query} />}>
             <SearchInfiniteList
