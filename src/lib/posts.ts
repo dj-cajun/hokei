@@ -356,7 +356,11 @@ function textContainsFilter(q: string) {
   ];
 }
 
-export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]> {
+export async function searchPosts(
+  query: string,
+  limit = 40,
+  filters?: import("@/lib/search/filter-options").SearchFilters
+): Promise<FeedItem[]> {
   const q = query.trim();
   if (q.length < SEARCH_MIN_QUERY_LENGTH) return [];
 
@@ -386,7 +390,14 @@ export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]
     posts.sort(
       (a, b) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999)
     );
-    return posts.map(toFeedItem);
+    let items = posts.map(toFeedItem);
+    if (filters) {
+      items = await applySearchFilters(items, filters, limit);
+    }
+    if (filters?.sort === "recent") {
+      items = [...items].sort((a, b) => (a.dateLabel < b.dateLabel ? 1 : -1));
+    }
+    return items.slice(0, limit);
   }
 
   const posts = await prisma.post.findMany({
@@ -399,7 +410,46 @@ export async function searchPosts(query: string, limit = 40): Promise<FeedItem[]
     include: postInclude,
   });
 
-  return posts.map(toFeedItem);
+  let items = posts.map(toFeedItem);
+  if (filters) {
+    items = await applySearchFilters(items, filters, limit);
+  }
+  if (filters?.sort === "recent") {
+    items = [...items].sort((a, b) => (a.dateLabel < b.dateLabel ? 1 : -1));
+  }
+  return items.slice(0, limit);
+}
+
+async function applySearchFilters(
+  items: FeedItem[],
+  filters: import("@/lib/search/filter-options").SearchFilters,
+  limit: number
+): Promise<FeedItem[]> {
+  const { periodCutoff } = await import("@/lib/search/filter-options");
+  const ids = items.map((i) => i.id);
+  if (ids.length === 0) return [];
+
+  const cutoff = periodCutoff(filters.period ?? "all");
+  const section = filters.section ?? "all";
+
+  const rows = await prisma.post.findMany({
+    where: {
+      id: { in: ids },
+      ...(cutoff ? { publishedAt: { gte: cutoff } } : {}),
+      ...(section !== "all"
+        ? {
+            category: {
+              OR: [{ parent: { slug: section } }, { slug: section }],
+            },
+          }
+        : {}),
+    },
+    select: { id: true },
+    take: limit * 2,
+  });
+
+  const allowed = new Set(rows.map((r) => r.id));
+  return items.filter((i) => allowed.has(i.id));
 }
 
 const publishedByCategorySlug = (categorySlug: string) => ({

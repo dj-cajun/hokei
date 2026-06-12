@@ -1,14 +1,22 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
-import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
+import { SearchFilterBar } from "@/components/search/search-filter-bar";
+import { SearchResultList } from "@/components/search/search-result-list";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { searchPosts } from "@/lib/posts";
+import { parseSearchFilters } from "@/lib/search/filter-options";
 import { enforceSearchRateLimitByIpAsync } from "@/lib/rate-limit";
 
 interface PageProps {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    section?: string;
+    period?: string;
+    sort?: string;
+  }>;
 }
 
 export async function generateMetadata({ searchParams }: PageProps) {
@@ -20,8 +28,9 @@ export async function generateMetadata({ searchParams }: PageProps) {
 }
 
 export default async function SearchPage({ searchParams }: PageProps) {
-  const { q } = await searchParams;
-  const query = q?.trim() ?? "";
+  const params = await searchParams;
+  const query = params.q?.trim() ?? "";
+  const filters = parseSearchFilters(params);
 
   let rateLimited = false;
   if (query.length >= SEARCH_MIN_QUERY_LENGTH) {
@@ -37,7 +46,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
     isDatabaseAvailable() &&
     query.length >= SEARCH_MIN_QUERY_LENGTH &&
     !rateLimited
-      ? await searchPosts(query)
+      ? await searchPosts(query, 40, filters)
       : [];
 
   return (
@@ -45,7 +54,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
       <Sidebar />
       <div className="min-w-0 flex-1 bg-surface lg:rounded-lg">
         <header className="border-b border-border-light px-3 py-3">
-          <h1 className="text-base font-bold text-gray-900">검색</h1>
+          <h1 className="text-base font-bold text-foreground">검색</h1>
           {query ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
               「{query}」 — {results.length}건
@@ -56,6 +65,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
             </p>
           )}
         </header>
+
+        <Suspense fallback={null}>
+          <SearchFilterBar query={query} />
+        </Suspense>
 
         {!query ? (
           <p className="px-3 py-8 text-center text-sm text-muted-foreground">
@@ -74,15 +87,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             검색 결과가 없습니다.
           </p>
         ) : (
-          <div>
-            {results.map((item) =>
-              item.thumbnail ? (
-                <NewsListItem key={item.id} item={item} />
-              ) : (
-                <TextListItem key={item.id} item={item} />
-              )
-            )}
-          </div>
+          <SearchResultList items={results} query={query} />
         )}
 
         <div className="border-t border-border-light px-3 py-3 text-center">
