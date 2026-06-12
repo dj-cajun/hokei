@@ -13,6 +13,7 @@ import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { hashGuestPassword, isCommentOwner } from "@/lib/post-permissions";
 import { visibleCommentWhere } from "@/lib/moderation";
+import { notifyPostComment } from "@/lib/notifications";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
@@ -64,7 +65,15 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const post = await prisma.post.findUnique({ where: { id } });
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        authorId: true,
+      },
+    });
 
     if (!post || post.status !== "PUBLISHED") {
       return apiError("글을 찾을 수 없습니다.", 404);
@@ -104,6 +113,14 @@ export async function POST(request: Request, context: RouteContext) {
     await prisma.post.update({
       where: { id },
       data: { commentCount: { increment: 1 } },
+    });
+
+    void notifyPostComment({
+      postAuthorId: post.authorId,
+      actorUserId: userId,
+      actorName: comment.author?.name ?? guestName?.trim() ?? "익명",
+      postId: id,
+      postTitle: post.title,
     });
 
     return apiSuccess(

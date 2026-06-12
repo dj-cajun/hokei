@@ -3,6 +3,7 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { notifyPostLike } from "@/lib/notifications";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -49,7 +50,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const post = await prisma.post.findUnique({
       where: { id },
-      select: { id: true, status: true },
+      select: { id: true, title: true, status: true, authorId: true },
     });
 
     if (!post || post.status !== "PUBLISHED") {
@@ -93,6 +94,13 @@ export async function POST(request: Request, context: RouteContext) {
     const updated = await prisma.post.findUnique({
       where: { id },
       select: { likeCount: true },
+    });
+
+    void notifyPostLike({
+      postAuthorId: post.authorId,
+      actorUserId: session.user.id,
+      postId: id,
+      postTitle: post.title,
     });
 
     return apiSuccess({

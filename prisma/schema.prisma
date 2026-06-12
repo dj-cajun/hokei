@@ -67,6 +67,7 @@ model User {
   comments          Comment[]
   postLikes         PostLike[]
   bookmarks         Bookmark[]
+  notifications     Notification[]
   conversationsA    Conversation[]     @relation("ConversationParticipantA")
   conversationsB    Conversation[]     @relation("ConversationParticipantB")
   sentMessages      DirectMessage[]
@@ -196,6 +197,21 @@ model PostLike {
   @@unique([userId, postId])
   @@index([postId])
   @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  href      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model Bookmark {

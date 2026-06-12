@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -19,6 +19,7 @@ import { GuestHeaderLogin } from "@/components/layout/guest-header-login";
 import { HeaderMessagesLink } from "@/components/layout/header-messages-link";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import type { CategoryNavItem } from "@/lib/categories";
 
 interface HeaderProps {
@@ -48,16 +49,7 @@ export function Header({ categoryTree }: HeaderProps) {
         </Suspense>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative hidden h-8 w-8 sm:flex"
-            aria-label="알림"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
-          </Button>
-
+          <NotificationBell />
           <ThemeToggle />
           <HeaderMessagesLink />
           <GuestHeaderLogin />

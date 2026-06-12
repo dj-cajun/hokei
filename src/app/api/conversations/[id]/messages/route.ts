@@ -4,6 +4,7 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { notifyDirectMessage } from "@/lib/notifications";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -110,6 +111,18 @@ export async function POST(request: Request, context: RouteContext) {
         data: { lastMessageAt: new Date() },
       });
       return created;
+    });
+
+    const recipientId =
+      conversation.participantAId === userId
+        ? conversation.participantBId
+        : conversation.participantAId;
+
+    void notifyDirectMessage({
+      recipientId,
+      senderName: session.user.name ?? "회원",
+      conversationId: id,
+      preview: parsed.data.body,
     });
 
     return apiSuccess({
