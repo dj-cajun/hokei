@@ -12,6 +12,7 @@ type SectionInfiniteListProps = {
   initialItems: FeedItem[];
   initialCursor: string | null;
   communityOnly?: boolean;
+  region?: string;
 };
 
 export function SectionInfiniteList({
@@ -19,6 +20,7 @@ export function SectionInfiniteList({
   initialItems,
   initialCursor,
   communityOnly = false,
+  region,
 }: SectionInfiniteListProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
@@ -34,6 +36,7 @@ export function SectionInfiniteList({
         cursor,
         communityOnly: communityOnly ? "1" : "0",
       });
+      if (region) params.set("region", region);
       const res = await fetch(`/api/posts/feed?${params}`);
       const data = await res.json();
       if (!res.ok || !data.ok) return;
@@ -48,7 +51,7 @@ export function SectionInfiniteList({
     } finally {
       setLoading(false);
     }
-  }, [hasMore, loading, cursor, sectionSlug, communityOnly]);
+  }, [hasMore, loading, cursor, sectionSlug, communityOnly, region]);
 
   const { sentinelRef } = useInfiniteScroll({
     hasMore,

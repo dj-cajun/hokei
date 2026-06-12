@@ -7,6 +7,9 @@ import {
   POST_CONTENT_MAX_LENGTH,
   POST_TITLE_MAX_LENGTH,
 } from "@/lib/constants";
+import { HOCHIMINH_REGIONS, isValidRegion } from "@/lib/regions";
+
+const regionSlugs = HOCHIMINH_REGIONS.map((r) => r.slug);
 
 export const postAttachmentSchema = z.object({
   url: z.string().min(1),
@@ -30,6 +33,14 @@ export const postCreateBodySchema = z.object({
     .array(postAttachmentSchema)
     .max(MAX_ATTACHMENTS_PER_POST)
     .optional(),
+  region: z
+    .string()
+    .optional()
+    .refine((v) => !v || isValidRegion(v), "올바른 지역을 선택해 주세요."),
 });
+
+export const postRegionSchema = z.enum(
+  regionSlugs as [string, ...string[]]
+);
 
 export type PostCreateBody = z.infer<typeof postCreateBodySchema>;

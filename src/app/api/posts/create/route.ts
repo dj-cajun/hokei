@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       guestName,
       guestPassword,
       attachments = [],
+      region,
     } = parsed.data;
 
     const category = await prisma.category.findUnique({
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
         guestPasswordHash: userId
           ? null
           : await hashGuestPassword(guestPassword!),
+        region: region || null,
         thumbnail: firstImage?.url ?? null,
         attachments: {
           create: attachments.map((a, i) => ({

@@ -298,6 +298,11 @@ async function main() {
       ON "SearchQueryStat"("count")`
   );
 
+  await exec(`ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "region" TEXT`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Post_region_idx" ON "Post"("region")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

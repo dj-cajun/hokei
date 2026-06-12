@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { CategoryIcon } from "@/components/category/category-icon";
 import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { Pagination } from "@/components/ui/pagination";
 import { SectionInfiniteList } from "@/components/category/section-infinite-list";
+import { RegionFilterBar } from "@/components/region/region-filter-bar";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { isWritableSection } from "@/lib/write-sections";
 import type { FeedItem } from "@/types/feed";
@@ -19,6 +21,7 @@ interface SectionArchivePageProps {
   totalCount: number;
   currentPage: number;
   totalPages: number;
+  region?: string;
 }
 
 export function SectionArchivePage({
@@ -32,7 +35,11 @@ export function SectionArchivePage({
   totalCount,
   currentPage,
   totalPages,
+  region,
 }: SectionArchivePageProps) {
+  const paginationQuery = region ? { region } : undefined;
+  const showRegionFilter = isWritableSection(sectionSlug);
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
@@ -69,6 +76,11 @@ export function SectionArchivePage({
               전체 글
             </h2>
           </header>
+          {showRegionFilter && (
+            <Suspense fallback={null}>
+              <RegionFilterBar basePath={basePath} />
+            </Suspense>
+          )}
           {sectionSlug === "community" && currentPage === 1 ? (
             <SectionInfiniteList
               sectionSlug={sectionSlug}
@@ -79,6 +91,7 @@ export function SectionArchivePage({
                   : null
               }
               communityOnly
+              region={region}
             />
           ) : posts.length === 0 ? (
             <p className="px-2 py-6 text-center text-xs text-muted-foreground">
@@ -96,7 +109,12 @@ export function SectionArchivePage({
               currentPage={currentPage}
               totalPages={totalPages}
               basePath={basePath}
-              className={sectionSlug === "community" && currentPage === 1 ? "hidden lg:flex" : undefined}
+              query={paginationQuery}
+              className={
+                sectionSlug === "community" && currentPage === 1
+                  ? "hidden lg:flex"
+                  : undefined
+              }
             />
           )}
         </section>

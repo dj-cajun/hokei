@@ -42,6 +42,7 @@ export default async function EditPostPage({ params }: PageProps) {
           categoryId: post.categoryId,
           title: post.title,
           body: post.content ?? "",
+          region: post.region,
           attachments: post.attachments.map((a) => ({
             url: a.url,
             fileName: a.fileName,

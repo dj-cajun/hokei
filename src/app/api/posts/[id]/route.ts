@@ -23,6 +23,7 @@ import {
   removePostFromSearch,
 } from "@/lib/search/index-post";
 import { attachmentUrlsToDelete } from "@/lib/posts/attachment-sync";
+import { isValidRegion } from "@/lib/regions";
 import { deleteUploadFile } from "@/lib/upload";
 
 const attachmentSchema = z.object({
@@ -48,6 +49,13 @@ const patchSchema = z.object({
     .max(GUEST_PASSWORD_MAX_LENGTH)
     .optional(),
   attachments: z.array(attachmentSchema).max(MAX_ATTACHMENTS_PER_POST).optional(),
+  region: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((v) => v === null || v === undefined || v === "" || isValidRegion(v), {
+      message: "올바른 지역을 선택해 주세요.",
+    }),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -94,7 +102,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       return apiError("수정 권한이 없습니다.", 403);
     }
 
-    const { title, content, categoryId, attachments, newGuestPassword } =
+    const { title, content, categoryId, attachments, newGuestPassword, region } =
       parsed.data;
 
     if (categoryId) {
@@ -148,6 +156,9 @@ export async function PATCH(request: Request, context: RouteContext) {
             : {}),
         ...(newGuestPassword && !session?.user?.id
           ? { guestPasswordHash: await hashGuestPassword(newGuestPassword) }
+          : {}),
+        ...(region !== undefined
+          ? { region: region || null }
           : {}),
       },
     });

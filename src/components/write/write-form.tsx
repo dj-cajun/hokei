@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
 import { RichEditor } from "@/components/write/rich-editor";
+import { HOCHIMINH_REGIONS } from "@/lib/regions";
 import { sanitizePostHtml, stripHtmlTags } from "@/lib/sanitize-html";
 import {
   SECTION_TO_MAIN,
@@ -31,6 +32,7 @@ export type WriteFormInitial = {
   categoryId: string;
   title: string;
   body: string;
+  region?: string | null;
   attachments?: UploadedAttachmentMeta[];
 };
 
@@ -129,6 +131,7 @@ export function WriteForm({
   const [title, setTitle] = useState(
     parsedInitialTitle?.rawTitle ?? initial?.title ?? ""
   );
+  const [region, setRegion] = useState(initial?.region ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
   const [attachments, setAttachments] = useState<PendingAttachment[]>(() =>
     (initial?.attachments ?? []).map((a, i) => ({
@@ -246,6 +249,7 @@ export function WriteForm({
             content: sanitizedBody,
             guestPassword: !isLoggedIn ? editPassword : undefined,
             attachments: uploaded,
+            region: region || null,
           }),
         });
         const data = await res.json();
@@ -269,6 +273,7 @@ export function WriteForm({
           guestName: isLoggedIn ? undefined : guestName.trim(),
           guestPassword: isLoggedIn ? undefined : guestPassword,
           attachments: uploaded,
+          region: region || undefined,
         }),
       });
       const data = (await res.json()) as { error?: string; id?: string };
@@ -442,6 +447,24 @@ export function WriteForm({
             />
           </div>
         )}
+
+        <div className="border-b border-border-light py-3 px-4">
+          <label className="mb-1 block text-[11px] text-muted-foreground">
+            지역 (선택)
+          </label>
+          <select
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            className="w-full appearance-none bg-transparent text-sm text-gray-700 focus-ring"
+          >
+            <option value="">지역 선택 안 함</option>
+            {HOCHIMINH_REGIONS.map((r) => (
+              <option key={r.slug} value={r.slug}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="border-b border-border-light py-3 px-4">
           <input

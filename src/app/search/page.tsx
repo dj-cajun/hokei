@@ -17,7 +17,7 @@ interface PageProps {
     q?: string;
     section?: string;
     period?: string;
-    sort?: string;
+    region?: string;
   }>;
 }
 

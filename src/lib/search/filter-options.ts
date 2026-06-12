@@ -1,3 +1,5 @@
+import { isValidRegion } from "@/lib/regions";
+
 export type SearchPeriod = "all" | "today" | "week" | "month";
 export type SearchSort = "relevance" | "recent";
 export type SearchSection =
@@ -11,12 +13,14 @@ export type SearchFilters = {
   section?: SearchSection;
   period?: SearchPeriod;
   sort?: SearchSort;
+  region?: string;
 };
 
 export function parseSearchFilters(params: {
   section?: string;
   period?: string;
   sort?: string;
+  region?: string;
 }): SearchFilters {
   const section = (
     ["all", "news", "community", "real-estate", "jobs"] as const
@@ -32,7 +36,10 @@ export function parseSearchFilters(params: {
 
   const sort = params.sort === "recent" ? "recent" : "relevance";
 
-  return { section, period, sort };
+  const region =
+    params.region && isValidRegion(params.region) ? params.region : undefined;
+
+  return { section, period, sort, region };
 }
 
 export function periodCutoff(period: SearchPeriod): Date | null {

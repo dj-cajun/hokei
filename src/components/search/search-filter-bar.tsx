@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { HOCHIMINH_REGIONS } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 
 const sections = [
@@ -30,6 +31,7 @@ export function SearchFilterBar({ query }: { query: string }) {
   const section = searchParams.get("section") ?? "all";
   const period = searchParams.get("period") ?? "all";
   const sort = searchParams.get("sort") ?? "relevance";
+  const region = searchParams.get("region") ?? "";
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -75,6 +77,20 @@ export function SearchFilterBar({ query }: { query: string }) {
             onClick={() => update("sort", s.id)}
           >
             {s.label}
+          </FilterChip>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-1">
+        <FilterChip active={!region} onClick={() => update("region", "all")}>
+          전체 지역
+        </FilterChip>
+        {HOCHIMINH_REGIONS.map((r) => (
+          <FilterChip
+            key={r.slug}
+            active={region === r.slug}
+            onClick={() => update("region", r.slug)}
+          >
+            {r.label}
           </FilterChip>
         ))}
       </div>

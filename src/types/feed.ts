@@ -22,6 +22,8 @@ export interface FeedItem {
   thumbnail?: string;
   sourceUrl?: string;
   topic?: PostTopic;
+  region?: string;
+  regionLabel?: string;
 }
 
 export type FeedTab = "latest" | "popular" | "notice";

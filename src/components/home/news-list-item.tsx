@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { NewBadge } from "@/components/ui/new-badge";
+import { RegionBadge } from "@/components/region/region-badge";
 import { formatViewsComments } from "@/lib/format/post-list-meta";
 import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 import type { FeedItem } from "@/types/feed";
@@ -10,6 +11,7 @@ import type { FeedItem } from "@/types/feed";
 function PostListMeta({ item }: { item: FeedItem }) {
   return (
     <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+      {item.regionLabel && <RegionBadge region={item.region} />}
       <time dateTime={item.dateLabel}>{item.dateLabel}</time>
       <span aria-hidden>·</span>
       <span>{formatViewsComments(item.views, item.comments, item.likes)}</span>

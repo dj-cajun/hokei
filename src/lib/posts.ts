@@ -14,6 +14,12 @@ import {
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
 import { visibleCommentWhere, visiblePostWhere } from "@/lib/moderation";
+import { getRegionLabel } from "@/lib/regions";
+
+export type PostListOptions = {
+  communityOnly?: boolean;
+  region?: string;
+};
 
 const communityWhere = {
   ...visiblePostWhere,
@@ -90,6 +96,7 @@ function toFeedItem(post: {
   views: number;
   likeCount?: number;
   commentCount: number;
+  region?: string | null;
   _count?: { comments: number };
   thumbnail: string | null;
   sourceUrl: string;
@@ -116,6 +123,8 @@ function toFeedItem(post: {
     thumbnail: post.thumbnail ?? undefined,
     sourceUrl: post.sourceUrl,
     topic: post.topic,
+    region: post.region ?? undefined,
+    regionLabel: getRegionLabel(post.region),
   };
 }
 
@@ -219,11 +228,12 @@ export async function getCommunityNotices(limit = 10): Promise<FeedItem[]> {
 
 function publishedBySectionSlug(
   sectionSlug: string,
-  options?: { communityOnly?: boolean }
+  options?: PostListOptions
 ) {
   return {
     ...visiblePostWhere,
     category: { parent: { slug: sectionSlug } },
+    ...(options?.region ? { region: options.region } : {}),
     ...(options?.communityOnly
       ? {
           isAutomated: false,
@@ -235,7 +245,7 @@ function publishedBySectionSlug(
 
 export async function countPostsBySectionSlug(
   sectionSlug: string,
-  options?: { communityOnly?: boolean }
+  options?: PostListOptions
 ): Promise<number> {
   return prisma.post.count({
     where: publishedBySectionSlug(sectionSlug, options),
@@ -246,7 +256,7 @@ export async function getPostsBySectionSlug(
   sectionSlug: string,
   limit = LIST_PAGE_SIZE,
   page = 1,
-  options?: { communityOnly?: boolean }
+  options?: PostListOptions
 ): Promise<FeedItem[]> {
   const safePage = Math.max(1, page);
   const posts = await prisma.post.findMany({
@@ -264,7 +274,7 @@ export async function getPostsBySectionCursor(
   sectionSlug: string,
   limit = LIST_PAGE_SIZE,
   cursor?: string | null,
-  options?: { communityOnly?: boolean }
+  options?: PostListOptions
 ): Promise<{ items: FeedItem[]; nextCursor: string | null }> {
   const baseWhere = publishedBySectionSlug(sectionSlug, options);
 
@@ -443,6 +453,7 @@ async function applySearchFilters(
             },
           }
         : {}),
+      ...(filters.region ? { region: filters.region } : {}),
     },
     select: { id: true },
     take: limit * 2,

@@ -8,10 +8,11 @@ import {
   countPostsBySectionSlug,
   getPostsBySectionSlug,
 } from "@/lib/posts";
+import { parseRegionParam } from "@/lib/regions";
 
 interface PageProps {
   params: Promise<{ section: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; region?: string }>;
 }
 
 export async function generateStaticParams() {
@@ -48,9 +49,14 @@ export default async function SectionRoutePage({
   const section = await getSectionBySlug(sectionSlug);
   if (!section) notFound();
 
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, region: regionParam } = await searchParams;
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const communityOnly = sectionSlug === "community";
+  const region = parseRegionParam(regionParam);
+  const listOptions = {
+    ...(communityOnly ? { communityOnly: true as const } : {}),
+    region,
+  };
 
   const [posts, totalCount] = isDatabaseAvailable()
     ? await Promise.all([
@@ -58,12 +64,9 @@ export default async function SectionRoutePage({
           sectionSlug,
           LIST_PAGE_SIZE,
           currentPage,
-          communityOnly ? { communityOnly: true } : undefined
+          listOptions
         ),
-        countPostsBySectionSlug(
-          sectionSlug,
-          communityOnly ? { communityOnly: true } : undefined
-        ),
+        countPostsBySectionSlug(sectionSlug, listOptions),
       ])
     : [[], 0];
 
@@ -81,6 +84,7 @@ export default async function SectionRoutePage({
       totalCount={totalCount}
       currentPage={Math.min(currentPage, totalPages)}
       totalPages={totalPages}
+      region={region}
     />
   );
 }

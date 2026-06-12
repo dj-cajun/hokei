@@ -5,6 +5,7 @@ import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
 import { PostImageGallery } from "@/components/posts/post-image-gallery";
+import { RegionBadge } from "@/components/region/region-badge";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
@@ -88,6 +89,7 @@ export function CommunityPostArticle({
               공지
             </span>
           )}
+          <RegionBadge region={post.region} />
         </div>
 
         <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">

@@ -117,6 +117,7 @@ model Post {
   sourceUrl           String           @unique
   sourceName          String?
   topic               PostTopic
+  region              String?
   categoryId          String
   category            Category         @relation(fields: [categoryId], references: [id])
   authorId            String?
@@ -150,6 +151,7 @@ model Post {
   @@index([publishedAt])
   @@index([status, publishedAt])
   @@index([topic])
+  @@index([region])
   @@index([ingestedAt])
   @@index([authorId])
   @@index([isAutomated])
