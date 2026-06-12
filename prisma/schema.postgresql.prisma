@@ -69,6 +69,7 @@ model User {
   posts             Post[]
   comments          Comment[]
   postLikes         PostLike[]
+  bookmarks         Bookmark[]
   conversationsA    Conversation[]     @relation("ConversationParticipantA")
   conversationsB    Conversation[]     @relation("ConversationParticipantB")
   sentMessages      DirectMessage[]
@@ -139,6 +140,7 @@ model Post {
   attachments         PostAttachment[]
   comments            Comment[]
   likes               PostLike[]
+  bookmarks           Bookmark[]
 
   @@index([categoryId])
   @@index([likeCount])
@@ -195,6 +197,20 @@ model PostLike {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId])
+  @@index([postId])
+  @@index([createdAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
   @@index([postId])
   @@index([createdAt])
 }

@@ -9,6 +9,8 @@ import { LayoutDashboard, Mail, Shield } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
+import { ProfileTabs } from "@/components/profile/profile-tabs";
+import { ProfileBookmarks } from "@/components/profile/profile-bookmarks";
 
 export default async function ProfilePage() {
   const session = await requireAuth();
@@ -54,18 +56,37 @@ export default async function ProfilePage() {
             </Button>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-secondary/60 p-4">
-              <p className="text-xs text-muted-foreground">계정 ID</p>
-              <p className="mt-1 truncate text-sm font-mono">{user.id}</p>
-            </div>
-            <div className="rounded-xl bg-secondary/60 p-4">
-              <p className="text-xs text-muted-foreground">권한</p>
-              <p className="mt-1 text-sm font-medium">
-                {user.role === "ADMIN" ? "관리자 (ADMIN)" : "일반 (USER)"}
-              </p>
-            </div>
-          </div>
+          <ProfileTabs
+            tabs={[
+              {
+                id: "account",
+                label: "계정",
+                content: (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl bg-secondary/60 p-4">
+                      <p className="text-xs text-muted-foreground">계정 ID</p>
+                      <p className="mt-1 truncate text-sm font-mono">
+                        {user.id}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-secondary/60 p-4">
+                      <p className="text-xs text-muted-foreground">권한</p>
+                      <p className="mt-1 text-sm font-medium">
+                        {user.role === "ADMIN"
+                          ? "관리자 (ADMIN)"
+                          : "일반 (USER)"}
+                      </p>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                id: "bookmarks",
+                label: "스크랩",
+                content: <ProfileBookmarks userId={user.id} />,
+              },
+            ]}
+          />
 
           {user.role === "ADMIN" && (
             <div className="mt-6">

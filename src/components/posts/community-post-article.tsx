@@ -6,7 +6,7 @@ import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
-import { PostLikeButton } from "@/components/posts/post-like-button";
+import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 import { mapPostComments } from "@/lib/map-post-comments";
@@ -30,6 +30,7 @@ type CommunityPostArticleProps = {
   sessionUserId?: string;
   isAdmin?: boolean;
   likedByMe?: boolean;
+  bookmarkedByMe?: boolean;
 };
 
 export function CommunityPostArticle({
@@ -37,6 +38,7 @@ export function CommunityPostArticle({
   sessionUserId,
   isAdmin,
   likedByMe = false,
+  bookmarkedByMe = false,
 }: CommunityPostArticleProps) {
   const authorName = getAuthorDisplayName(post);
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
@@ -100,10 +102,12 @@ export function CommunityPostArticle({
             {authorName && ` · ${authorName}`}
             {` · 조회 ${post.views + 1}`}
           </p>
-          <PostLikeButton
+          <PostActionBar
             postId={post.id}
-            initialCount={post.likeCount ?? 0}
-            initialLiked={likedByMe}
+            title={post.title}
+            likeCount={post.likeCount ?? 0}
+            likedByMe={likedByMe}
+            bookmarkedByMe={bookmarkedByMe}
           />
         </div>
 

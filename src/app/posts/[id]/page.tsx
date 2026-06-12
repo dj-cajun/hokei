@@ -6,7 +6,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
 import { PostComments } from "@/components/posts/post-comments";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
-import { PostLikeButton } from "@/components/posts/post-like-button";
+import { PostActionBar } from "@/components/posts/post-action-bar";
+import { isPostBookmarked } from "@/lib/bookmarks";
 import { ViewCounter } from "@/components/posts/view-counter";
 import { mapPostComments } from "@/lib/map-post-comments";
 import { auth } from "@/auth";
@@ -68,13 +69,18 @@ export default async function PostPage({ params }: PageProps) {
   const isCommunity = isCommunityPost(post.sourceUrl);
 
   let likedByMe = false;
+  let bookmarkedByMe = false;
   if (session?.user?.id) {
-    const like = await prisma.postLike.findUnique({
-      where: {
-        userId_postId: { userId: session.user.id, postId: id },
-      },
-    });
+    const [like, bookmarked] = await Promise.all([
+      prisma.postLike.findUnique({
+        where: {
+          userId_postId: { userId: session.user.id, postId: id },
+        },
+      }),
+      isPostBookmarked(session.user.id, id),
+    ]);
     likedByMe = Boolean(like);
+    bookmarkedByMe = bookmarked;
   }
 
   const description = (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160);
@@ -98,6 +104,7 @@ export default async function PostPage({ params }: PageProps) {
             sessionUserId={session?.user?.id}
             isAdmin={session?.user?.role === "ADMIN"}
             likedByMe={likedByMe}
+            bookmarkedByMe={bookmarkedByMe}
           />
         ) : (
           <NewsPostArticle
@@ -105,6 +112,7 @@ export default async function PostPage({ params }: PageProps) {
             sessionUserId={session?.user?.id}
             isAdmin={session?.user?.role === "ADMIN"}
             likedByMe={likedByMe}
+            bookmarkedByMe={bookmarkedByMe}
           />
         )}
       </div>
@@ -117,11 +125,13 @@ function NewsPostArticle({
   sessionUserId,
   isAdmin,
   likedByMe = false,
+  bookmarkedByMe = false,
 }: {
   post: NonNullable<Awaited<ReturnType<typeof getPostById>>>;
   sessionUserId?: string;
   isAdmin?: boolean;
   likedByMe?: boolean;
+  bookmarkedByMe?: boolean;
 }) {
   const sourceLabel = formatPostSourceLabel(post.sourceName);
   const initialComments = mapPostComments(
@@ -185,10 +195,12 @@ function NewsPostArticle({
             · 조회 {post.views}
             {sourceLabel && ` · ${sourceLabel}`}
           </p>
-          <PostLikeButton
+          <PostActionBar
             postId={post.id}
-            initialCount={post.likeCount ?? 0}
-            initialLiked={likedByMe}
+            title={post.title}
+            likeCount={post.likeCount ?? 0}
+            likedByMe={likedByMe}
+            bookmarkedByMe={bookmarkedByMe}
           />
         </div>
 
