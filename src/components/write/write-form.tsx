@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
@@ -15,6 +15,8 @@ import {
 } from "@/components/write/write-attachment-bar";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
+import { RichEditor } from "@/components/write/rich-editor";
+import { sanitizePostHtml, stripHtmlTags } from "@/lib/sanitize-html";
 import {
   SECTION_TO_MAIN,
   buildCascadeTitle,
@@ -140,6 +142,36 @@ export function WriteForm({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const draftKey = `hokei-draft-${postId ?? sectionSlug ?? "new"}`;
+
+  const [pendingDraft, setPendingDraft] = useState<{
+    title?: string;
+    body?: string;
+  } | null>(() => {
+    if (isEdit || initial?.body) return null;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { title?: string; body?: string };
+      if (!parsed.body?.trim() && !parsed.title?.trim()) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (isEdit) return;
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ title, body }));
+      } catch {
+        /* ignore */
+      }
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [title, body, draftKey, isEdit]);
+
   const effectiveMain = fixedMain || mainCategory;
 
   const sectionGroups = useMemo(
@@ -171,10 +203,12 @@ export function WriteForm({
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (!body.trim()) {
+    const plainBody = stripHtmlTags(body);
+    if (!plainBody) {
       setError("내용을 입력해 주세요.");
       return;
     }
+    const sanitizedBody = sanitizePostHtml(body);
     if (!isLoggedIn && !isEdit && (!guestName.trim() || !guestPassword.trim())) {
       setError("비회원 글쓰기는 이름과 비밀번호가 필요합니다.");
       return;
@@ -209,7 +243,7 @@ export function WriteForm({
           body: JSON.stringify({
             categoryId: submitCategoryId,
             title: finalTitle,
-            content: body.trim(),
+            content: sanitizedBody,
             guestPassword: !isLoggedIn ? editPassword : undefined,
             attachments: uploaded,
           }),
@@ -231,7 +265,7 @@ export function WriteForm({
         body: JSON.stringify({
           categoryId: submitCategoryId,
           title: finalTitle,
-          content: body.trim(),
+          content: sanitizedBody,
           guestName: isLoggedIn ? undefined : guestName.trim(),
           guestPassword: isLoggedIn ? undefined : guestPassword,
           attachments: uploaded,
@@ -241,6 +275,11 @@ export function WriteForm({
       if (!res.ok) {
         setError(parseApiError(data) ?? "등록에 실패했습니다.");
         return;
+      }
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        /* ignore */
       }
       if (data.id) {
         showToast("글이 등록되었습니다.");
@@ -277,6 +316,39 @@ export function WriteForm({
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
+      {pendingDraft && (
+        <div className="flex items-center justify-between gap-2 border-b border-border-light bg-accent/50 px-4 py-2 text-xs">
+          <span>임시 저장된 글이 있습니다</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="font-medium text-primary hover:underline"
+              onClick={() => {
+                if (pendingDraft.title) setTitle(pendingDraft.title);
+                if (pendingDraft.body) setBody(pendingDraft.body);
+                setPendingDraft(null);
+              }}
+            >
+              불러오기
+            </button>
+            <button
+              type="button"
+              className="text-muted-foreground hover:underline"
+              onClick={() => {
+                try {
+                  localStorage.removeItem(draftKey);
+                } catch {
+                  /* ignore */
+                }
+                setPendingDraft(null);
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+      )}
+
       <WriteFormTopBar
         title={isEdit ? "글 수정" : pageTitle}
         submitLabel={isEdit ? "완료" : "등록"}
@@ -383,12 +455,11 @@ export function WriteForm({
         </div>
 
         <div className="flex flex-1 flex-col border-b border-border-light">
-          <textarea
-            placeholder="내용을 입력해 주세요. 유튜브 주소(youtube.com/watch, youtu.be 등)만 붙여도 글에서 영상으로 표시됩니다."
+          <RichEditor
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            className="min-h-[300px] w-full resize-none py-4 px-4 text-sm text-gray-800 focus-ring"
-            required
+            onChange={setBody}
+            disabled={submitting}
+            placeholder="내용을 입력해 주세요. 유튜브 링크는 그대로 붙여도 됩니다."
           />
         </div>
 
