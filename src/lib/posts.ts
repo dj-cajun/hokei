@@ -259,6 +259,51 @@ export async function getPostsBySectionSlug(
   return posts.map(toFeedItem);
 }
 
+/** 커서 기반 무한 스크롤 — cursor는 마지막 글 id */
+export async function getPostsBySectionCursor(
+  sectionSlug: string,
+  limit = LIST_PAGE_SIZE,
+  cursor?: string | null,
+  options?: { communityOnly?: boolean }
+): Promise<{ items: FeedItem[]; nextCursor: string | null }> {
+  const baseWhere = publishedBySectionSlug(sectionSlug, options);
+
+  let cursorWhere: Prisma.PostWhereInput = baseWhere;
+  if (cursor) {
+    const anchor = await prisma.post.findUnique({
+      where: { id: cursor },
+      select: { id: true, publishedAt: true },
+    });
+    if (anchor) {
+      cursorWhere = {
+        AND: [
+          baseWhere,
+          {
+            OR: [
+              { publishedAt: { lt: anchor.publishedAt } },
+              { publishedAt: anchor.publishedAt, id: { lt: anchor.id } },
+            ],
+          },
+        ],
+      };
+    }
+  }
+
+  const posts = await prisma.post.findMany({
+    where: cursorWhere,
+    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    take: limit + 1,
+    include: postInclude,
+  });
+
+  const hasMore = posts.length > limit;
+  const slice = hasMore ? posts.slice(0, limit) : posts;
+  const items = slice.map(toFeedItem);
+  const nextCursor = hasMore ? (slice.at(-1)?.id ?? null) : null;
+
+  return { items, nextCursor };
+}
+
 export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
   const { newsAutomatedWhere } = await import("@/lib/news/news-list-where");
   const posts = await prisma.post.findMany({

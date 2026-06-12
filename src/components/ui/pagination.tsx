@@ -6,6 +6,7 @@ type PaginationProps = {
   totalPages: number;
   basePath: string;
   query?: Record<string, string>;
+  className?: string;
 };
 
 function pageHref(
@@ -25,6 +26,7 @@ export function Pagination({
   totalPages,
   basePath,
   query,
+  className,
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
@@ -37,7 +39,10 @@ export function Pagination({
 
   return (
     <nav
-      className="flex items-center justify-center gap-1 border-t border-border-light px-3 py-4"
+      className={cn(
+        "flex items-center justify-center gap-1 border-t border-border-light px-3 py-4",
+        className
+      )}
       aria-label="페이지 목록"
     >
       {currentPage > 1 && (

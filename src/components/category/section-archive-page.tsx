@@ -3,6 +3,8 @@ import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { Pagination } from "@/components/ui/pagination";
+import { SectionInfiniteList } from "@/components/category/section-infinite-list";
+import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { isWritableSection } from "@/lib/write-sections";
 import type { FeedItem } from "@/types/feed";
 
@@ -67,7 +69,18 @@ export function SectionArchivePage({
               전체 글
             </h2>
           </header>
-          {posts.length === 0 ? (
+          {sectionSlug === "community" && currentPage === 1 ? (
+            <SectionInfiniteList
+              sectionSlug={sectionSlug}
+              initialItems={posts}
+              initialCursor={
+                posts.length >= LIST_PAGE_SIZE && posts.length < totalCount
+                  ? (posts.at(-1)?.id ?? null)
+                  : null
+              }
+              communityOnly
+            />
+          ) : posts.length === 0 ? (
             <p className="px-2 py-6 text-center text-xs text-muted-foreground">
               등록된 글이 없습니다. 첫 글을 작성해 보세요.
             </p>
@@ -83,6 +96,7 @@ export function SectionArchivePage({
               currentPage={currentPage}
               totalPages={totalPages}
               basePath={basePath}
+              className={sectionSlug === "community" && currentPage === 1 ? "hidden lg:flex" : undefined}
             />
           )}
         </section>
