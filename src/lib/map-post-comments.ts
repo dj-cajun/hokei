@@ -3,6 +3,7 @@ import { isCommentOwner } from "@/lib/post-ownership";
 
 type CommentForMap = {
   id: string;
+  parentId?: string | null;
   content: string;
   createdAt: Date;
   authorId: string | null;
@@ -18,6 +19,7 @@ export function mapPostComments(
 ): CommentItem[] {
   return comments.map((c) => ({
     id: c.id,
+    parentId: c.parentId ?? null,
     content: c.content,
     createdAt: c.createdAt.toISOString(),
     authorName: c.author?.name ?? c.guestName ?? "익명",

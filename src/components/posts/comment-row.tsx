@@ -8,6 +8,8 @@ import { CommentReadOnly } from "@/components/posts/comment-parts/comment-read-o
 type CommentRowProps = {
   postId: string;
   comment: CommentItem;
+  onReply?: () => void;
+  isReply?: boolean;
   onUpdate: (updated: CommentItem) => void;
   onDelete: () => void;
 };
@@ -15,19 +17,28 @@ type CommentRowProps = {
 function CommentRowInner({
   postId,
   comment,
+  onReply,
+  isReply = false,
   onUpdate,
   onDelete,
 }: CommentRowProps) {
   const canManage = comment.isOwner || comment.isGuestComment;
+  const showReply = !isReply && onReply && !comment.parentId;
 
   if (!canManage) {
-    return <CommentReadOnly comment={comment} />;
+    return (
+      <CommentReadOnly
+        comment={comment}
+        onReply={showReply ? onReply : undefined}
+      />
+    );
   }
 
   return (
     <CommentManageableRow
       postId={postId}
       comment={comment}
+      onReply={showReply ? onReply : undefined}
       onUpdate={onUpdate}
       onDelete={onDelete}
     />

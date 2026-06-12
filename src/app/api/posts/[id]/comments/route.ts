@@ -17,6 +17,7 @@ import { notifyPostComment } from "@/lib/notifications";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
+  parentId: z.string().optional(),
   guestName: z.string().min(1).max(GUEST_NAME_MAX_LENGTH).optional(),
   guestPassword: z
     .string()
@@ -50,6 +51,7 @@ export async function GET(_request: Request, context: RouteContext) {
   return NextResponse.json(
     comments.map((c) => ({
       id: c.id,
+      parentId: c.parentId,
       content: c.content,
       createdAt: c.createdAt.toISOString(),
       authorName: c.author?.name ?? c.guestName ?? "익명",
@@ -90,16 +92,30 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const { content, guestName, guestPassword } = parsed.data;
+    const { content, guestName, guestPassword, parentId } = parsed.data;
     const userId = session?.user?.id;
 
     if (!userId && (!guestName?.trim() || !guestPassword?.trim())) {
       return apiError("로그인하거나 이름·비밀번호를 입력해 주세요.", 401);
     }
 
+    if (parentId) {
+      const parent = await prisma.comment.findFirst({
+        where: { id: parentId, postId: id },
+        select: { id: true, parentId: true },
+      });
+      if (!parent) {
+        return apiError("답글 대상 댓글을 찾을 수 없습니다.", 404);
+      }
+      if (parent.parentId) {
+        return apiError("답글에는 답글을 달 수 없습니다.", 400);
+      }
+    }
+
     const comment = await prisma.comment.create({
       data: {
         postId: id,
+        parentId: parentId ?? null,
         content: content.trim(),
         authorId: userId ?? null,
         guestName: userId ? null : guestName!.trim(),
@@ -126,6 +142,7 @@ export async function POST(request: Request, context: RouteContext) {
     return apiSuccess(
       {
         id: comment.id,
+        parentId: comment.parentId,
         content: comment.content,
         createdAt: comment.createdAt.toISOString(),
         authorName: comment.author?.name ?? comment.guestName ?? "익명",
