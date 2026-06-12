@@ -59,6 +59,7 @@ model User {
   email             String             @unique
   kakaoId           String?            @unique
   name              String
+  avatarUrl         String?
   password          String
   role              Role               @default(USER)
   emailVerified     DateTime?

@@ -278,6 +278,8 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "Comment_parentId_idx" ON "Comment"("parentId")`
   );
 
+  await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT`);
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'
