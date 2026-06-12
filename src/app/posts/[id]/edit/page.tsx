@@ -10,6 +10,8 @@ export const metadata = {
   title: "글 수정 - 호케이",
 };
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

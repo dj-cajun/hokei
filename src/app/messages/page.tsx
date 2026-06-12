@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "쪽지함 - 호케이 Hokei",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function MessagesPage() {
   const session = await auth();
   if (!session?.user) {

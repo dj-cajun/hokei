@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "쪽지 - 호케이 Hokei",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ConversationPage({ params }: PageProps) {
   const session = await auth();
   if (!session?.user) {

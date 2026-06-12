@@ -88,11 +88,13 @@ export default function RootLayout({
       className={`${pretendard.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+        <SiteJsonLd />
+      </head>
       <body
         className={`${pretendard.className} flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0`}
       >
-        <ThemeScript />
-        <SiteJsonLd />
         <ThemeProvider>
         <AuthSessionProvider>
           <ToastProvider>

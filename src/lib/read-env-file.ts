@@ -1,13 +1,21 @@
 import { existsSync, readFileSync } from "fs";
 import { parse } from "dotenv";
 
-/** `.env` 파일에서 단일 키 읽기 (따옴표 제거) */
-export function readEnvFileValue(key: string): string {
-  if (!existsSync(".env")) return "";
-  const parsed = parse(readFileSync(".env", "utf8"));
+function readEnvPathValue(path: string, key: string): string {
+  if (!existsSync(path)) return "";
+  const parsed = parse(readFileSync(path, "utf8"));
   const raw = parsed[key];
   if (typeof raw !== "string") return "";
   return raw.trim().replace(/^["']|["']$/g, "");
+}
+
+/** `.env` 파일에서 단일 키 읽기 (따옴표 제거) */
+export function readEnvFileValue(key: string): string {
+  return readEnvPathValue(".env", key);
+}
+
+function readEnvLocalFileValue(key: string): string {
+  return readEnvPathValue(".env.local", key);
 }
 
 export function isPostgresDatabaseUrl(url: string): boolean {
@@ -58,6 +66,9 @@ export function resolveDatabaseUrlForPrismaGenerate(): string {
     return url;
   }
 
-  // Vercel: process env만 사용 (배포물 .env·SQLite 폴백으로 빈 DB 연결 방지)
-  return fromProcess || "";
+  // Vercel: 런타임·CI 빌드는 process env 우선. vercel env pull 로컬 production 빌드는 .env.local SQLite 허용
+  if (fromProcess) return fromProcess;
+  const fromLocal = readEnvLocalFileValue("DATABASE_URL");
+  if (fromLocal.startsWith("file:")) return fromLocal;
+  return "";
 }

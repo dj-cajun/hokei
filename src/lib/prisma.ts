@@ -2,6 +2,7 @@ import { loadDotenv } from "@/lib/load-dotenv";
 
 loadDotenv();
 
+import { existsSync } from "fs";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
@@ -12,6 +13,12 @@ import { resolveDatabaseUrlForPrismaGenerate } from "@/lib/read-env-file";
 function resolveConnectionString(): string {
   const url = resolveDatabaseUrlForPrismaGenerate();
   if (url) return url;
+  if (
+    PRISMA_DATASOURCE_PROVIDER === "sqlite" &&
+    existsSync("dev.db")
+  ) {
+    return "file:./dev.db";
+  }
   if (process.env.VERCEL === "1") return "";
   if (PRISMA_DATASOURCE_PROVIDER === "sqlite") return "file:./dev.db";
   throw new Error(
