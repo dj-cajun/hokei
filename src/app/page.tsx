@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { HomePageContent } from "@/components/home/home-page-content";
 import { FeedSkeleton } from "@/components/ui/skeleton";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 function HomeMainFallback() {
   return <FeedSkeleton rows={8} />;

@@ -2,6 +2,7 @@ import { CategoryMenu } from "@/components/sidebar/category-menu";
 import { ExchangeWidget } from "@/components/sidebar/exchange-widget";
 import { LoginBox } from "@/components/sidebar/login-box";
 import { WeatherWidget } from "@/components/sidebar/weather-widget";
+import { EmergencyContactsWidget } from "@/components/widgets/emergency-contacts-widget";
 
 export function Sidebar() {
   return (
@@ -11,6 +12,7 @@ export function Sidebar() {
         <CategoryMenu />
         <WeatherWidget />
         <ExchangeWidget />
+        <EmergencyContactsWidget />
       </div>
     </aside>
   );
