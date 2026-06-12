@@ -26,9 +26,9 @@ const FALLBACK_META = "NEXT_PUBLIC_YOUTUBE_HIGHLIGHT_ID 환경 변수";
 export function HomeVideoHighlight() {
   if (!videoId) {
     return (
-      <section className="w-full bg-white px-3 pb-3 pt-2" aria-label="하이라이트 영상">
-        <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-neutral-100">
-          <p className="px-4 text-center text-xs text-gray-500">{FALLBACK_META}</p>
+      <section className="w-full bg-surface px-3 pb-3 pt-2" aria-label="하이라이트 영상">
+        <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-neutral-100">
+          <p className="px-4 text-center text-xs text-muted-foreground">{FALLBACK_META}</p>
         </div>
         <h2 className="mt-2 line-clamp-2 text-sm font-bold leading-snug text-gray-900">
           {FALLBACK_TITLE}
@@ -38,7 +38,7 @@ export function HomeVideoHighlight() {
   }
 
   return (
-    <section className="w-full bg-white px-3 pb-3 pt-2" aria-label="하이라이트 영상">
+    <section className="w-full bg-surface px-3 pb-3 pt-2" aria-label="하이라이트 영상">
       <YouTubeEmbed
         videoId={videoId}
         startSeconds={startSeconds}
@@ -51,7 +51,7 @@ export function HomeVideoHighlight() {
       <h2 className="mt-2 line-clamp-2 text-sm font-bold leading-snug text-gray-900">
         호치민 교민 커뮤니티 하이라이트
       </h2>
-      <p className="mt-0.5 text-[11px] text-gray-400">
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
         YouTube · 음소거 자동 반복 재생
       </p>
     </section>

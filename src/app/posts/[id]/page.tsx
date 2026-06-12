@@ -132,7 +132,7 @@ function NewsPostArticle({
 
   return (
     <>
-      <nav className="mb-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-gray-400">
+      <nav className="mb-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-muted-foreground">
         <Link href="/" className="hover:text-primary">
           홈
         </Link>
@@ -153,7 +153,7 @@ function NewsPostArticle({
         </Link>
       </nav>
 
-      <article className="bg-white px-2 py-3 lg:rounded-2xl lg:p-8">
+      <article className="bg-surface px-2 py-3 lg:rounded-2xl lg:p-8">
         <div className="flex flex-wrap items-center gap-1">
           <span
             className={`rounded-sm px-1.5 py-0.5 text-[10px] font-medium ${post.category.colorClass}`}
@@ -177,7 +177,7 @@ function NewsPostArticle({
           </div>
         )}
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
           <p>
             {post.publishedAt.toLocaleString("ko-KR", {
               timeZone: "Asia/Ho_Chi_Minh",
@@ -197,7 +197,7 @@ function NewsPostArticle({
             {post.content}
           </div>
         ) : isNaverNewsAggregatorLink(post.sourceUrl) ? (
-          <p className="mt-3 text-sm leading-snug text-gray-400">
+          <p className="mt-3 text-sm leading-snug text-muted-foreground">
             네이버 뉴스 요약만 제공됩니다. 아래 원문 링크에서 전체 내용을 확인해
             주세요.
           </p>

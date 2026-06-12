@@ -276,7 +276,7 @@ export function WriteForm({
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-white">
+    <div className="flex min-h-[100dvh] flex-col bg-surface">
       <WriteFormTopBar
         title={isEdit ? "글 수정" : pageTitle}
         submitLabel={isEdit ? "완료" : "등록"}
@@ -303,7 +303,7 @@ export function WriteForm({
             hideMain={Boolean(fixedMain)}
           />
         ) : (
-          <div className="relative border-b border-gray-100 py-3 px-4">
+          <div className="relative border-b border-border-light py-3 px-4">
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -332,14 +332,14 @@ export function WriteForm({
                   ))}
             </select>
             <ChevronDown
-              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden
             />
           </div>
         )}
 
         {!isLoggedIn && !isEdit && (
-          <div className="grid grid-cols-2 gap-4 border-b border-gray-100 py-3 px-4">
+          <div className="grid grid-cols-2 gap-4 border-b border-border-light py-3 px-4">
             <input
               type="text"
               placeholder="이름"
@@ -360,7 +360,7 @@ export function WriteForm({
         )}
 
         {!isLoggedIn && isEdit && (
-          <div className="border-b border-gray-100 py-3 px-4">
+          <div className="border-b border-border-light py-3 px-4">
             <input
               type="password"
               placeholder="글 비밀번호"
@@ -371,7 +371,7 @@ export function WriteForm({
           </div>
         )}
 
-        <div className="border-b border-gray-100 py-3 px-4">
+        <div className="border-b border-border-light py-3 px-4">
           <input
             type="text"
             placeholder="제목을 입력해 주세요."
@@ -382,7 +382,7 @@ export function WriteForm({
           />
         </div>
 
-        <div className="flex flex-1 flex-col border-b border-gray-100">
+        <div className="flex flex-1 flex-col border-b border-border-light">
           <textarea
             placeholder="내용을 입력해 주세요. 유튜브 주소(youtube.com/watch, youtu.be 등)만 붙여도 글에서 영상으로 표시됩니다."
             value={body}

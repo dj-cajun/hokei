@@ -26,7 +26,7 @@ export function HomeQuickGrid() {
 
   return (
     <section
-      className="border-b border-gray-100 bg-white px-4 py-6"
+      className="border-b border-border-light bg-surface px-4 py-6"
       aria-label="퀵 메뉴"
     >
       <div className="mx-auto grid max-w-md grid-cols-3 gap-x-4 gap-y-3 text-center">

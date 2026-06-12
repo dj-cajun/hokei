@@ -66,7 +66,7 @@ function CategoryScrollNavBody({
 
   return (
     <nav
-      className="relative z-40 border-t border-gray-200 bg-white"
+      className="relative z-40 border-t border-border bg-surface"
       aria-label="카테고리 탭"
     >
       <div
@@ -81,7 +81,7 @@ function CategoryScrollNavBody({
             "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
             pathname === "/"
               ? "border-primary font-bold text-primary"
-              : "border-transparent font-medium text-gray-500 hover:text-foreground"
+              : "border-transparent font-medium text-muted-foreground hover:text-foreground"
           )}
         >
           {homeTab.label}
@@ -100,7 +100,7 @@ function CategoryScrollNavBody({
                   "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
                   active
                     ? "border-primary font-bold text-primary"
-                    : "border-transparent font-medium text-gray-500 hover:text-foreground"
+                    : "border-transparent font-medium text-muted-foreground hover:text-foreground"
                 )}
               >
                 {section.label}

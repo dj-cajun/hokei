@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm md:p-8">
+    <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm md:p-8">
       <h1 className="text-xl font-bold text-foreground">이메일 인증</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         메일함에서 인증 링크를 확인해 주세요

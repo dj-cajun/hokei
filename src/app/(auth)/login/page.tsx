@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm md:p-8">
+    <div className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm md:p-8">
       <h1 className="text-xl font-bold text-foreground">로그인</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         호치민 교민 포털에 오신 것을 환영합니다

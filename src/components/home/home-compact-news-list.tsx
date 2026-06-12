@@ -7,7 +7,7 @@ export function HomeCompactNewsList({ items }: { items: FeedItem[] }) {
   if (list.length === 0) return null;
 
   return (
-    <section className="bg-white" aria-label="주요 뉴스">
+    <section className="bg-surface" aria-label="주요 뉴스">
       <div>
         {list.map((item) => (
           <NewsListItem key={item.id} item={item} />

@@ -20,7 +20,7 @@ export function CategoryMenuClient({ tree }: CategoryMenuClientProps) {
   }
 
   return (
-    <nav className="rounded-2xl bg-white p-2" aria-label="카테고리">
+    <nav className="rounded-2xl bg-surface p-2" aria-label="카테고리">
       <ul className="flex flex-col gap-0.5">
         <li>
           <Link

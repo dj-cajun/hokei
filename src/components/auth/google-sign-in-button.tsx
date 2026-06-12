@@ -123,7 +123,7 @@ export function GoogleSignInButton({
           onClick={handleInsecureLocalClick}
           disabled={!redirectPrimed}
           className={cn(
-            "flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-4 text-[15px] font-semibold text-foreground",
+            "flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 text-[15px] font-semibold text-foreground",
             "hover:bg-secondary/40 disabled:cursor-wait disabled:opacity-70"
           )}
         >
@@ -143,7 +143,7 @@ export function GoogleSignInButton({
       )}
     >
       <div
-        className="pointer-events-none flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-4 text-[15px] font-semibold text-foreground"
+        className="pointer-events-none flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 text-[15px] font-semibold text-foreground"
         aria-hidden
       >
         <GoogleMark />

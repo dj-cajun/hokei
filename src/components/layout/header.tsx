@@ -18,6 +18,7 @@ import { WidgetsLoader } from "@/components/widgets/widgets-loader";
 import { GuestHeaderLogin } from "@/components/layout/guest-header-login";
 import { HeaderMessagesLink } from "@/components/layout/header-messages-link";
 import { UserMenu } from "@/components/layout/user-menu";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import type { CategoryNavItem } from "@/lib/categories";
 
 interface HeaderProps {
@@ -35,7 +36,7 @@ export function Header({ categoryTree }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/85">
+    <header className="sticky top-0 z-50 border-b border-border/80 bg-surface/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-surface/85">
       <div className="mx-auto flex h-11 max-w-[480px] items-center gap-2 px-3 lg:h-14 lg:max-w-6xl lg:gap-3 lg:px-4">
         <SiteLogo compact={!isHome} />
 
@@ -57,6 +58,7 @@ export function Header({ categoryTree }: HeaderProps) {
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
           </Button>
 
+          <ThemeToggle />
           <HeaderMessagesLink />
           <GuestHeaderLogin />
           <UserMenu />
@@ -88,6 +90,10 @@ export function Header({ categoryTree }: HeaderProps) {
                 <CategoryMenuClient tree={categoryTree} />
                 <WidgetsLoader variant="weather" />
                 <WidgetsLoader variant="exchange" />
+                <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2">
+                  <span className="text-sm font-medium">화면 테마</span>
+                  <ThemeToggle />
+                </div>
               </div>
             </SheetContent>
           </Sheet>

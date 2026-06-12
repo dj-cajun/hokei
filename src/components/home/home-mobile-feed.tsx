@@ -32,8 +32,8 @@ export function HomeMobileFeed({
         : latest;
 
   return (
-    <section className="bg-white">
-      <header className="flex items-center justify-between border-b border-gray-50 px-3 py-2">
+    <section className="bg-surface">
+      <header className="flex items-center justify-between border-b border-border-light px-3 py-2">
         <h2 className="text-sm font-bold text-[#c8102e]">커뮤니티</h2>
         <SectionWriteLink sectionSlug="community" compact />
       </header>
@@ -47,7 +47,7 @@ export function HomeMobileFeed({
               "rounded-full px-3 py-1 text-xs font-medium",
               activeTab === tab.id
                 ? "bg-[#0f172a] text-white"
-                : "bg-gray-100 text-gray-500"
+                : "bg-muted text-muted-foreground"
             )}
           >
             {tab.label}
@@ -56,7 +56,7 @@ export function HomeMobileFeed({
       </div>
       <div>
         {items.length === 0 ? (
-          <p className="px-3 py-3 text-center text-xs text-gray-400">
+          <p className="px-3 py-3 text-center text-xs text-muted-foreground">
             {activeTab === "popular"
               ? "추천이 많은 글이 아직 없습니다."
               : "글이 없습니다."}
@@ -73,7 +73,7 @@ export function HomeMobileFeed({
       </div>
       <Link
         href="/community"
-        className="block border-t border-gray-50 py-2 text-center text-[11px] text-gray-500"
+        className="block border-t border-border-light py-2 text-center text-[11px] text-muted-foreground"
       >
         더보기
       </Link>

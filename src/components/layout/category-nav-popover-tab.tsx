@@ -91,7 +91,7 @@ export function CategoryNavPopoverTab({
         style={{ top: coords.top, left: coords.left }}
         className={cn(
           "fixed z-[100] w-44 -translate-x-1/2",
-          "overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl",
+          "overflow-hidden rounded-lg border border-border bg-surface shadow-xl",
           "animate-in fade-in zoom-in-95 duration-150 origin-top"
         )}
       >
@@ -101,7 +101,7 @@ export function CategoryNavPopoverTab({
               <Link
                 href={item.href}
                 role="menuitem"
-                className="block px-4 py-2.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary focus-ring active:bg-gray-100"
+                className="block px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-card-hover hover:text-primary focus-ring active:bg-muted"
                 onClick={onClose}
               >
                 {item.label}
@@ -122,7 +122,7 @@ export function CategoryNavPopoverTab({
           "flex items-center gap-0.5 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
           active || open
             ? "border-primary font-bold text-primary"
-            : "border-transparent font-medium text-gray-500 hover:text-foreground"
+            : "border-transparent font-medium text-muted-foreground hover:text-foreground"
         )}
         aria-expanded={open}
         aria-haspopup="true"
@@ -130,7 +130,7 @@ export function CategoryNavPopoverTab({
         <span>{label}</span>
         <ChevronDown
           className={cn(
-            "h-3 w-3 text-gray-400 transition-transform duration-200",
+            "h-3 w-3 text-muted-foreground transition-transform duration-200",
             open && "rotate-180"
           )}
           aria-hidden

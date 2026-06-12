@@ -29,7 +29,7 @@ export function SectionPage({
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
       <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex items-start justify-between gap-2 bg-white px-2 py-2 lg:rounded-xl lg:p-5">
+        <div className="flex items-start justify-between gap-2 bg-surface px-2 py-2 lg:rounded-xl lg:p-5">
           <div className="min-w-0">
             <h1 className="text-base font-bold leading-snug lg:text-lg">{label}</h1>
           </div>
@@ -38,7 +38,7 @@ export function SectionPage({
           )}
         </div>
 
-        <section className="divide-y divide-[#f3f4f6] bg-white">
+        <section className="divide-y divide-[#f3f4f6] bg-surface">
           {subcategories.map((child) => (
             <Link
               key={child.id}
@@ -56,7 +56,7 @@ export function SectionPage({
                     {child.label}
                   </h2>
                   {child.description && (
-                    <p className="line-clamp-1 text-[11px] text-gray-400">
+                    <p className="line-clamp-1 text-[11px] text-muted-foreground">
                       {child.description}
                     </p>
                   )}

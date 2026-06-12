@@ -43,7 +43,7 @@ export default async function ConversationPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-2xl">
-      <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+      <div className="flex items-center gap-2 border-b border-border-light px-4 py-3">
         <Link href="/messages" className="text-muted-foreground hover:text-primary">
           <ChevronLeft className="h-5 w-5" />
         </Link>

@@ -17,7 +17,7 @@ export function SiteLogo({ compact = false }: { compact?: boolean }) {
           HOKEI
         </span>
         {!compact && (
-          <span className="mt-0.5 text-[9px] font-medium tracking-wide text-gray-500">
+          <span className="mt-0.5 text-[9px] font-medium tracking-wide text-muted-foreground">
             호치민 한인 포털
           </span>
         )}

@@ -148,7 +148,7 @@ export function CurateNewsPanel({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-white p-5">
+      <div className="rounded-2xl bg-surface p-5">
         <h2 className="font-semibold">1. 출처</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           다른 사이트에서 가져온 글은 반드시 출처 URL을 남기세요. 원문 링크가
@@ -193,7 +193,7 @@ export function CurateNewsPanel({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-5">
+      <div className="rounded-2xl bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">2. 재가공 · 편집</h2>
           <Button
@@ -259,7 +259,7 @@ export function CurateNewsPanel({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-5">
+      <div className="rounded-2xl bg-surface p-5">
         <h2 className="font-semibold">3. 게시</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           뉴스 섹션에 올라가며, 상세 페이지에 「원문 보기」 링크가 붙습니다.

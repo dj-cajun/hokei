@@ -61,7 +61,7 @@ export function WriteAttachmentBar({
   return (
     <div>
       {attachments.length > 0 && (
-        <div className="scrollbar-none flex gap-2 overflow-x-auto border-b border-gray-100 bg-white px-4 py-2">
+        <div className="scrollbar-none flex gap-2 overflow-x-auto border-b border-border-light bg-surface px-4 py-2">
           {attachments.map((item) => (
             <div key={item.id} className="relative shrink-0">
               {item.type === "image" && (item.previewUrl || item.uploaded?.url) ? (
@@ -74,7 +74,7 @@ export function WriteAttachmentBar({
                   className="h-14 w-14 rounded-sm object-cover"
                 />
               ) : (
-                <div className="flex h-14 w-24 items-center justify-center rounded-sm bg-gray-100 px-1 text-[10px] text-gray-600">
+                <div className="flex h-14 w-24 items-center justify-center rounded-sm bg-muted px-1 text-[10px] text-muted-foreground">
                   {item.name.slice(0, 12)}
                 </div>
               )}
@@ -92,7 +92,7 @@ export function WriteAttachmentBar({
         </div>
       )}
 
-      <div className="flex items-center space-x-4 border-b border-t border-gray-200 bg-gray-50 px-4 py-2">
+      <div className="flex items-center space-x-4 border-b border-t border-border bg-muted px-4 py-2">
         <input
           ref={imageInputRef}
           type="file"
@@ -120,7 +120,7 @@ export function WriteAttachmentBar({
           type="button"
           disabled={disabled}
           onClick={() => imageInputRef.current?.click()}
-          className="text-gray-500 focus-ring disabled:opacity-40"
+          className="text-muted-foreground focus-ring disabled:opacity-40"
           aria-label="사진 첨부"
         >
           <Camera className="h-5 w-5" />
@@ -129,7 +129,7 @@ export function WriteAttachmentBar({
           type="button"
           disabled={disabled}
           onClick={() => fileInputRef.current?.click()}
-          className="text-gray-500 focus-ring disabled:opacity-40"
+          className="text-muted-foreground focus-ring disabled:opacity-40"
           aria-label="파일 첨부"
         >
           <Paperclip className="h-5 w-5" />

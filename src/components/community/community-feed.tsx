@@ -32,11 +32,11 @@ export function CommunityFeed({
         : latest;
 
   return (
-    <div className="bg-white">
-      <header className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+    <div className="bg-surface">
+      <header className="flex items-center justify-between border-b border-border-light px-4 py-3">
         <div>
           <h1 className="text-base font-bold text-gray-900">커뮤니티</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             교민 자유게시 · 생존 Q&A · 업소록
           </p>
         </div>
@@ -55,7 +55,7 @@ export function CommunityFeed({
               "rounded-full px-3 py-1 text-xs font-medium transition-colors",
               activeTab === tab.id
                 ? "bg-[#0f172a] text-white"
-                : "bg-gray-100 text-gray-500"
+                : "bg-muted text-muted-foreground"
             )}
           >
             {tab.label}
@@ -65,7 +65,7 @@ export function CommunityFeed({
 
       <ul>
         {items.length === 0 ? (
-          <li className="px-4 py-8 text-center text-xs text-gray-400">
+          <li className="px-4 py-8 text-center text-xs text-muted-foreground">
             {activeTab === "notice"
               ? "등록된 공지가 없습니다."
               : "아직 글이 없습니다. 첫 글을 작성해 보세요."}

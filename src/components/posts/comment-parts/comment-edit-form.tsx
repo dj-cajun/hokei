@@ -53,7 +53,7 @@ export function CommentEditForm({
         >
           {busy ? "저장 중…" : "저장"}
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-gray-500">
+        <button type="button" onClick={onCancel} className="text-xs text-muted-foreground">
           취소
         </button>
       </div>

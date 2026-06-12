@@ -30,14 +30,14 @@ export function NewsArchivePage({
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
       <div className="min-w-0 flex-1 space-y-1">
-        <div className="bg-white px-2 py-2 lg:rounded-xl lg:p-5">
+        <div className="bg-surface px-2 py-2 lg:rounded-xl lg:p-5">
           <h1 className="text-base font-bold leading-snug lg:text-lg">{label}</h1>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-muted-foreground">
             전체 {totalCount.toLocaleString()}건
           </p>
         </div>
 
-        <section className="bg-white lg:rounded-xl">
+        <section className="bg-surface lg:rounded-xl">
           <header className="border-b border-[#f3f4f6] px-2 py-2">
             <h2 className="border-l-4 border-l-primary pl-2 text-sm font-bold text-primary">
               전체 뉴스
@@ -45,14 +45,14 @@ export function NewsArchivePage({
           </header>
 
           {flatCount === 0 ? (
-            <p className="px-2 py-6 text-center text-xs text-gray-400">
+            <p className="px-2 py-6 text-center text-xs text-muted-foreground">
               아직 수집된 뉴스가 없습니다. 매일 오전 7시(호치민)에 자동으로
               추가됩니다.
             </p>
           ) : (
             dateGroups.map((group) => (
               <div key={group.dateLabel}>
-                <h3 className="sticky top-11 z-10 border-b border-[#f3f4f6] bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-600 lg:top-14">
+                <h3 className="sticky top-11 z-10 border-b border-[#f3f4f6] bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground lg:top-14">
                   {formatDayHeading(group.dateLabel)}
                 </h3>
                 <div>

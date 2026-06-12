@@ -32,7 +32,7 @@ export default async function EditPostPage({ params }: PageProps) {
   }
 
   return (
-    <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-white">
+    <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-surface">
       <WriteForm
         mode="edit"
         postId={id}

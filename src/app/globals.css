@@ -1,15 +1,37 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f3f4f6;
   --foreground: #191f28;
   --primary: #0064ff;
   --secondary: #f2f4f6;
+  --muted: #e5e7eb;
   --muted-foreground: #9ca3af;
   --accent: #e8f3ff;
   --border: #e5e7eb;
   --border-light: #f3f4f6;
   --destructive: #f04452;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f9fafb;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #3b82f6;
+  --secondary: #1e293b;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #1e3a5f;
+  --border: #334155;
+  --border-light: #1e293b;
+  --destructive: #f87171;
+  --surface: #1e293b;
+  --card: #1e293b;
+  --card-hover: #273449;
 }
 
 @theme inline {
@@ -17,13 +39,22 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-border: var(--border);
   --color-border-light: var(--border-light);
   --color-destructive: var(--destructive);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
   --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;
+  --animate-fade-in-up: fade-in-up 0.45s ease-out both;
+  --animate-slide-up: slide-up 0.35s ease-out both;
+  --animate-fade-out: fade-out 0.25s ease-in both;
+  --animate-pulse-shimmer: pulse-shimmer 1.6s ease-in-out infinite;
+  --animate-heart-bounce: heart-bounce 0.4s ease-out;
 }
 
 body {
@@ -32,6 +63,62 @@ body {
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.45;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes heart-bounce {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35);
+  }
+  70% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* 가로 스크롤 탭 — 스크롤바 숨김 */
@@ -51,6 +138,18 @@ body {
   .focus-ring:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--primary);
+  }
+
+  .animate-heart-bounce {
+    animation: heart-bounce 0.4s ease-out;
+  }
+
+  .feed-tab-panel {
+    animation: fade-in-up 0.25s ease-out;
+  }
+
+  .headline-crossfade {
+    animation: fade-in-up 0.5s ease-out;
   }
 }
 

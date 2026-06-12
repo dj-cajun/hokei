@@ -34,7 +34,7 @@ export function YouTubeEmbed({
   return (
     <div
       className={cn(
-        "video-container my-3 border border-gray-200 shadow-sm",
+        "video-container my-3 border border-border shadow-sm",
         className
       )}
     >

@@ -41,7 +41,7 @@ export function SubcategoryPage({
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
       <div className="min-w-0 flex-1 space-y-1">
-        <nav className="flex items-center gap-1 px-1 text-[11px] text-gray-400">
+        <nav className="flex items-center gap-1 px-1 text-[11px] text-muted-foreground">
           <Link href="/" className="hover:text-primary">
             홈
           </Link>
@@ -53,7 +53,7 @@ export function SubcategoryPage({
           <span className="text-foreground">{label}</span>
         </nav>
 
-        <div className="bg-white px-2 py-2 lg:rounded-xl lg:p-5">
+        <div className="bg-surface px-2 py-2 lg:rounded-xl lg:p-5">
           <div className="flex items-start gap-2">
             <span
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-sm ${colorClass}`}
@@ -70,7 +70,7 @@ export function SubcategoryPage({
                 {label}
               </h1>
               {description && (
-                <p className="mt-1 text-xs leading-snug text-gray-400">
+                <p className="mt-1 text-xs leading-snug text-muted-foreground">
                   {description}
                 </p>
               )}
@@ -78,7 +78,7 @@ export function SubcategoryPage({
           </div>
         </div>
 
-        <section className="bg-white">
+        <section className="bg-surface">
           <header className="flex items-center justify-between border-b border-[#f3f4f6] px-2 py-1.5">
             <h2 className="border-l-4 border-l-primary pl-2 text-sm font-bold text-primary">
               최신 글
@@ -88,7 +88,7 @@ export function SubcategoryPage({
             )}
           </header>
           {posts.length === 0 ? (
-            <p className="px-2 py-4 text-center text-xs text-gray-400">
+            <p className="px-2 py-4 text-center text-xs text-muted-foreground">
               {isNewsSection
                 ? "아직 글이 없습니다. 뉴스는 매일 오전 7시(호치민)에 자동 등록됩니다."
                 : "등록된 글이 없습니다. 첫 글을 작성해 보세요."}

@@ -37,7 +37,7 @@ export function StatsCards({
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.label} className="rounded-2xl bg-white p-5">
+          <div key={stat.label} className="rounded-2xl bg-surface p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{stat.label}</span>
               <span

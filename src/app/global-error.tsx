@@ -16,11 +16,11 @@ export default function GlobalError({
 
   return (
     <html lang="ko">
-      <body className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <body className="flex min-h-screen items-center justify-center bg-muted p-4">
         <div className="max-w-sm space-y-4 text-center">
           <p className="text-6xl font-black text-gray-200">!</p>
           <h1 className="text-lg font-bold text-gray-900">문제가 발생했습니다</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             잠시 후 다시 시도해 주세요.
           </p>
           <button

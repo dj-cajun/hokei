@@ -63,10 +63,10 @@ export function PostOwnerActions({
   }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-light pt-3">
       <Link
         href={`/posts/${postId}/edit`}
-        className="rounded-sm border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700"
+        className="rounded-sm border border-border px-3 py-1 text-xs font-medium text-gray-700"
       >
         수정
       </Link>

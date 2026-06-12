@@ -19,7 +19,7 @@ type SidebarCardProps = {
 
 function SidebarCard({ children }: SidebarCardProps) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">{children}</div>
+    <div className="rounded-2xl bg-surface p-4 shadow-sm">{children}</div>
   );
 }
 
@@ -52,11 +52,11 @@ export async function WeatherExchangeQuickGrid() {
       className="grid grid-cols-2 gap-1 lg:hidden"
       aria-label="빠른 통계"
     >
-      <div className="bg-white px-2 py-2">
+      <div className="bg-surface px-2 py-2">
         <WeatherDisplayHeader compact />
         <WeatherDisplay data={weather} compact />
       </div>
-      <div className="bg-white px-2 py-2">
+      <div className="bg-surface px-2 py-2">
         <ExchangeDisplayHeader compact />
         <ExchangeDisplay data={exchange} compact />
       </div>

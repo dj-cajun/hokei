@@ -16,15 +16,15 @@ export default async function AdminCategoriesPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl bg-white p-4">
+        <div className="rounded-2xl bg-surface p-4">
           <p className="text-sm text-muted-foreground">1depth 섹션</p>
           <p className="mt-1 text-2xl font-bold">{sections.length}</p>
         </div>
-        <div className="rounded-2xl bg-white p-4">
+        <div className="rounded-2xl bg-surface p-4">
           <p className="text-sm text-muted-foreground">2depth 서브</p>
           <p className="mt-1 text-2xl font-bold">{children.length}</p>
         </div>
-        <div className="rounded-2xl bg-white p-4">
+        <div className="rounded-2xl bg-surface p-4">
           <p className="text-sm text-muted-foreground">공개 API</p>
           <p className="mt-1 truncate text-sm font-mono text-primary">
             GET /api/categories

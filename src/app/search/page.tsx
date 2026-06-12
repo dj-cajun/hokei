@@ -43,22 +43,22 @@ export default async function SearchPage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
-      <div className="min-w-0 flex-1 bg-white lg:rounded-lg">
-        <header className="border-b border-gray-100 px-3 py-3">
+      <div className="min-w-0 flex-1 bg-surface lg:rounded-lg">
+        <header className="border-b border-border-light px-3 py-3">
           <h1 className="text-base font-bold text-gray-900">검색</h1>
           {query ? (
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               「{query}」 — {results.length}건
             </p>
           ) : (
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               검색어를 입력해 주세요.
             </p>
           )}
         </header>
 
         {!query ? (
-          <p className="px-3 py-8 text-center text-sm text-gray-400">
+          <p className="px-3 py-8 text-center text-sm text-muted-foreground">
             상단 검색창에 키워드를 입력하세요.
           </p>
         ) : rateLimited ? (
@@ -66,11 +66,11 @@ export default async function SearchPage({ searchParams }: PageProps) {
             검색 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.
           </p>
         ) : query.length < SEARCH_MIN_QUERY_LENGTH ? (
-          <p className="px-3 py-8 text-center text-sm text-gray-400">
+          <p className="px-3 py-8 text-center text-sm text-muted-foreground">
             검색어는 {SEARCH_MIN_QUERY_LENGTH}글자 이상 입력해 주세요.
           </p>
         ) : results.length === 0 ? (
-          <p className="px-3 py-8 text-center text-sm text-gray-400">
+          <p className="px-3 py-8 text-center text-sm text-muted-foreground">
             검색 결과가 없습니다.
           </p>
         ) : (
@@ -85,7 +85,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
           </div>
         )}
 
-        <div className="border-t border-gray-50 px-3 py-3 text-center">
+        <div className="border-t border-border-light px-3 py-3 text-center">
           <Link href="/" className="text-xs text-primary hover:underline">
             홈으로
           </Link>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
+import { FadeInUp } from "@/components/ui/fade-in-up";
 import type { FeedItem, FeedTab } from "@/types/feed";
 import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
 
@@ -35,9 +36,9 @@ export function FeedListClient({
   const isNoticeTab = activeTab === "notice";
 
   return (
-    <section className="bg-white">
+    <section className="bg-surface">
       <div
-        className="flex border-b border-[#e5e7eb]"
+        className="flex border-b border-border"
         role="tablist"
         aria-label="피드 탭"
       >
@@ -52,28 +53,30 @@ export function FeedListClient({
               "flex-1 border-b-2 px-2 py-2 text-sm transition-colors",
               activeTab === tab.id
                 ? "border-primary font-bold text-primary"
-                : "border-transparent font-medium text-gray-500"
+                : "border-transparent font-medium text-muted-foreground"
             )}
           >
             {tab.label}
           </button>
         ))}
       </div>
-      <div className="space-y-0" role="tabpanel">
+      <div key={activeTab} className="feed-tab-panel space-y-0" role="tabpanel">
         {items.length === 0 ? (
-          <p className="px-2 py-4 text-center text-xs text-gray-400">
+          <p className="px-2 py-4 text-center text-xs text-muted-foreground">
             {activeTab === "popular"
               ? "아직 추천이 많은 글이 없습니다. 마음에 드는 글에 좋아요를 눌러 보세요."
               : "표시할 글이 없습니다. 매일 오전 7시(호치민)에 뉴스가 자동 수집됩니다."}
           </p>
         ) : (
-          items.map((item) =>
-            isNoticeTab || !shouldShowFeedThumbnail(item) ? (
-              <TextListItem key={item.id} item={item} />
-            ) : (
-              <NewsListItem key={item.id} item={item} />
-            )
-          )
+          items.map((item, i) => (
+            <FadeInUp key={item.id} delayMs={Math.min(i * 40, 200)}>
+              {isNoticeTab || !shouldShowFeedThumbnail(item) ? (
+                <TextListItem item={item} />
+              ) : (
+                <NewsListItem item={item} />
+              )}
+            </FadeInUp>
+          ))
         )}
       </div>
     </section>

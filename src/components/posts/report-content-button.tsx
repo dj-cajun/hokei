@@ -73,7 +73,7 @@ export function ReportContentButton({
     <div className="mt-2 rounded-lg border border-border bg-secondary/30 p-2 text-xs">
       <p className="mb-1 font-medium text-foreground">신고 사유</p>
       <select
-        className="mb-2 w-full rounded border border-border bg-white px-2 py-1"
+        className="mb-2 w-full rounded border border-border bg-surface px-2 py-1"
         value={reason}
         onChange={(e) =>
           setReason(e.target.value as (typeof REASONS)[number]["value"])
@@ -86,7 +86,7 @@ export function ReportContentButton({
         ))}
       </select>
       <textarea
-        className="mb-2 w-full rounded border border-border bg-white px-2 py-1"
+        className="mb-2 w-full rounded border border-border bg-surface px-2 py-1"
         rows={2}
         placeholder="추가 설명 (선택)"
         value={detail}

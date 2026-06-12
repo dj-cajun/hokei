@@ -4,10 +4,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ToastType = "success" | "error";
@@ -15,6 +17,7 @@ export type ToastType = "success" | "error";
 type ToastState = {
   message: string;
   type: ToastType;
+  id: number;
 } | null;
 
 type ToastContextValue = {
@@ -27,11 +30,29 @@ const AUTO_DISMISS_MS = 3200;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastState>(null);
+  const [exiting, setExiting] = useState(false);
 
-  const showToast = useCallback((message: string, type: ToastType = "success") => {
-    setToast({ message, type });
-    window.setTimeout(() => setToast(null), AUTO_DISMISS_MS);
+  const dismiss = useCallback(() => {
+    setExiting(true);
+    window.setTimeout(() => {
+      setToast(null);
+      setExiting(false);
+    }, 250);
   }, []);
+
+  const showToast = useCallback(
+    (message: string, type: ToastType = "success") => {
+      setExiting(false);
+      setToast({ message, type, id: Date.now() });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(dismiss, AUTO_DISMISS_MS);
+    return () => window.clearTimeout(t);
+  }, [toast, dismiss]);
 
   const value = useMemo(() => ({ showToast }), [showToast]);
 
@@ -46,13 +67,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         >
           <p
             className={cn(
-              "max-w-[min(100%,360px)] rounded-lg px-4 py-2.5 text-center text-sm font-medium shadow-lg",
+              "flex max-w-[min(100%,360px)] items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-lg",
+              exiting ? "animate-fade-out" : "animate-slide-up",
               toast.type === "success"
-                ? "bg-[#0f172a] text-white"
+                ? "bg-[#0f172a] text-white dark:bg-surface dark:text-foreground"
                 : "bg-red-600 text-white"
             )}
           >
-            {toast.message}
+            {toast.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+            ) : (
+              <XCircle className="h-4 w-4 shrink-0" aria-hidden />
+            )}
+            <span>{toast.message}</span>
           </p>
         </div>
       )}

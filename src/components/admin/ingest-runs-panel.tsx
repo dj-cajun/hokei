@@ -67,7 +67,7 @@ export function IngestRunsPanel({ initialRuns }: Props) {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white">
+      <div className="overflow-hidden rounded-2xl bg-surface">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
@@ -120,7 +120,7 @@ export function IngestRunsPanel({ initialRuns }: Props) {
       </div>
 
       {detail && (
-        <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="rounded-2xl border border-border bg-surface p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold">실행 상세</h3>
             <button

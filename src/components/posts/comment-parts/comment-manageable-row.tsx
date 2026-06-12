@@ -33,7 +33,7 @@ export function CommentManageableRow({
   }
 
   return (
-    <li className="rounded-sm bg-gray-50 px-3 py-2">
+    <li className="rounded-sm bg-muted px-3 py-2">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-semibold text-gray-700">
           {comment.authorName}
@@ -48,7 +48,7 @@ export function CommentManageableRow({
                   setEditing(true);
                   setError("");
                 }}
-                className="text-[10px] text-gray-500 hover:text-gray-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                className="text-[10px] text-muted-foreground hover:text-gray-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
               >
                 수정
               </button>
@@ -62,7 +62,7 @@ export function CommentManageableRow({
               </button>
             </>
           )}
-          <time className="text-[10px] text-gray-400">
+          <time className="text-[10px] text-muted-foreground">
             {formatCommentTime(comment.createdAt)}
           </time>
         </div>

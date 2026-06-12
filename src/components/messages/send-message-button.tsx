@@ -61,7 +61,7 @@ export function SendMessageButton({
       onClick={() => void startConversation()}
       disabled={loading || session?.user?.id === recipientId}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-card-hover disabled:opacity-50",
         className
       )}
     >

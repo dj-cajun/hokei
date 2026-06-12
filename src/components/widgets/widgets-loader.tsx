@@ -52,7 +52,7 @@ export function WidgetsLoader({ variant }: WidgetsLoaderProps) {
   if (variant === "weather") {
     const data = weather ?? weatherFallback;
     return (
-      <div className="rounded-2xl bg-white p-4">
+      <div className="rounded-2xl bg-surface p-4">
         <WeatherDisplayHeader />
         <WeatherDisplay data={data} />
       </div>
@@ -62,7 +62,7 @@ export function WidgetsLoader({ variant }: WidgetsLoaderProps) {
   if (variant === "exchange") {
     const data = exchange ?? exchangeFallback;
     return (
-      <div className="rounded-2xl bg-white p-4">
+      <div className="rounded-2xl bg-surface p-4">
         <ExchangeDisplayHeader />
         <ExchangeDisplay data={data} />
       </div>
@@ -74,11 +74,11 @@ export function WidgetsLoader({ variant }: WidgetsLoaderProps) {
 
   return (
     <section className="grid grid-cols-2 gap-1 lg:hidden" aria-label="빠른 통계">
-      <div className="bg-white px-2 py-2">
+      <div className="bg-surface px-2 py-2">
         <WeatherDisplayHeader compact />
         <WeatherDisplay data={w} compact />
       </div>
-      <div className="bg-white px-2 py-2">
+      <div className="bg-surface px-2 py-2">
         <ExchangeDisplayHeader compact />
         <ExchangeDisplay data={e} compact />
       </div>

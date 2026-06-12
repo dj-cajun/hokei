@@ -12,7 +12,7 @@ export function LoginBox() {
 
   if (session?.user) {
     return (
-      <div className="rounded-2xl bg-white p-4">
+      <div className="rounded-2xl bg-surface p-4">
         <p className="text-sm font-medium text-foreground">
           {session.user.name}님
         </p>
@@ -52,7 +52,7 @@ export function LoginBox() {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-4">
+    <div className="rounded-2xl bg-surface p-4">
       <p className="text-sm text-muted-foreground">
         로그인하고 글을 작성해 보세요
       </p>

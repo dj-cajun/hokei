@@ -19,7 +19,7 @@ export function WriteFormTopBar({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <div className="flex h-11 items-center justify-between px-3">
         <button
           type="button"

@@ -35,8 +35,8 @@ export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
 
   if (slides.length === 0) {
     return (
-      <div className="aspect-[16/10] w-full bg-gray-200">
-        <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="aspect-[16/10] w-full bg-muted">
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
           뉴스 이미지 준비 중
         </div>
       </div>
@@ -77,10 +77,11 @@ export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
         className="relative block aspect-[16/10] w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       >
         <NewsThumbnail
+          key={index}
           src={current.thumbnail}
           sourceUrl={current.sourceUrl}
           topic={current.topic}
-          className="h-full w-full object-cover transition-opacity duration-500"
+          className="headline-crossfade h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <h2 className="absolute bottom-3 left-3 right-3 line-clamp-2 text-sm font-bold leading-snug text-white">
@@ -118,7 +119,7 @@ export function HomeHeadlineSlider({ items }: { items: FeedItem[] }) {
               onClick={() => setIndex(i)}
               className={cn(
                 "h-1 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-black/50",
-                i === index ? "w-3 bg-white" : "w-1 bg-white/50"
+                i === index ? "w-3 bg-surface" : "w-1 bg-surface/50"
               )}
             />
           ))}

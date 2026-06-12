@@ -10,7 +10,7 @@ export default async function AdminCuratePage() {
 
   if (categories.length === 0) {
     return (
-      <div className="rounded-2xl bg-white p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl bg-surface p-6 text-sm text-muted-foreground">
         뉴스 카테고리가 없습니다. npm run db:seed:categories 를 실행하세요.
       </div>
     );

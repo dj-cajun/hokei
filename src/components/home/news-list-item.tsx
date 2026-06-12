@@ -9,7 +9,7 @@ import type { FeedItem } from "@/types/feed";
 
 function PostListMeta({ item }: { item: FeedItem }) {
   return (
-    <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-400">
+    <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
       <time dateTime={item.dateLabel}>{item.dateLabel}</time>
       <span aria-hidden>·</span>
       <span>{formatViewsComments(item.views, item.comments, item.likes)}</span>
@@ -21,10 +21,10 @@ export function NewsListItem({ item }: { item: FeedItem }) {
   const hasThumb = shouldShowFeedThumbnail(item);
 
   return (
-    <article className="border-b border-gray-50 last:border-b-0">
+    <article className="border-b border-border-light last:border-b-0">
       <Link
         href={`/posts/${item.id}`}
-        className="flex gap-2 px-3 py-2 active:bg-gray-50"
+        className="flex gap-2 px-3 py-2 active:bg-muted"
       >
         {hasThumb && (
           <div className="h-[60px] w-20 shrink-0 overflow-hidden rounded-sm bg-secondary">
@@ -51,10 +51,10 @@ export function NewsListItem({ item }: { item: FeedItem }) {
 /** 썸네일 없는 공지·텍스트 목록 */
 export function TextListItem({ item }: { item: FeedItem }) {
   return (
-    <article className="border-b border-gray-50 last:border-b-0">
+    <article className="border-b border-border-light last:border-b-0">
       <Link
         href={`/posts/${item.id}`}
-        className="block px-3 py-2 active:bg-gray-50"
+        className="block px-3 py-2 active:bg-muted"
       >
         <h3 className="flex min-w-0 items-center gap-1 text-sm font-medium leading-snug text-foreground">
           {item.isNew && <NewBadge />}

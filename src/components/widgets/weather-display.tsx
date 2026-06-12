@@ -11,7 +11,7 @@ export function WeatherDisplay({ data, compact = false }: WeatherDisplayProps) {
     return (
       <>
         <p className="mt-0.5 text-base font-bold leading-none">{data.tempC}°C</p>
-        <p className="mt-0.5 line-clamp-1 text-[11px] text-gray-400">
+        <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
           {data.description} · 습도 {data.humidity}%
         </p>
       </>
@@ -49,7 +49,7 @@ export function WeatherDisplayHeader({ compact }: { compact?: boolean }) {
       <h3
         className={
           compact
-            ? "text-[11px] font-medium text-gray-400"
+            ? "text-[11px] font-medium text-muted-foreground"
             : "text-sm font-semibold text-foreground"
         }
       >

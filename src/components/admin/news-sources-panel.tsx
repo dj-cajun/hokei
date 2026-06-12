@@ -63,7 +63,7 @@ export function NewsSourcesPanel() {
   }
 
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-5">
+    <div className="space-y-4 rounded-2xl bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold">수집 소스 (DB)</h2>
         <div className="flex gap-2">

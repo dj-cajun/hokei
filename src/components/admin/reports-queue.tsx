@@ -81,7 +81,7 @@ export function ReportsQueue() {
               onClick={() => setStatus(s)}
               className={cn(
                 "rounded-xl px-3 py-1.5 text-sm",
-                status === s ? "bg-accent text-primary" : "bg-white text-muted-foreground"
+                status === s ? "bg-accent text-primary" : "bg-surface text-muted-foreground"
               )}
             >
               {s}
@@ -95,7 +95,7 @@ export function ReportsQueue() {
 
       <div className="space-y-2">
         {reports.map((r) => (
-          <div key={r.id} className="rounded-2xl bg-white p-4">
+          <div key={r.id} className="rounded-2xl bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <span className="text-xs font-medium text-primary">

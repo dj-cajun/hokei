@@ -21,7 +21,7 @@ export default function GlobalError({
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-[480px] flex-col items-center justify-center gap-4 px-4 text-center">
       <h1 className="text-lg font-bold text-gray-900">문제가 발생했습니다</h1>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         일시적인 오류일 수 있습니다. 잠시 후 다시 시도해 주세요.
       </p>
       <div className="flex gap-2">
@@ -34,7 +34,7 @@ export default function GlobalError({
         </button>
         <Link
           href="/"
-          className="rounded-sm border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700"
+          className="rounded-sm border border-border px-4 py-2 text-sm font-medium text-gray-700"
         >
           홈으로
         </Link>

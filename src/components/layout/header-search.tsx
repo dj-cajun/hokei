@@ -39,7 +39,7 @@ function SearchInput({
     >
       <Search
         className={cn(
-          "pointer-events-none absolute top-1/2 -translate-y-1/2 text-gray-400",
+          "pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted-foreground",
           isMobile ? "left-2.5 h-3.5 w-3.5" : "left-3 h-4 w-4"
         )}
       />
@@ -51,7 +51,7 @@ function SearchInput({
         placeholder={isMobile ? "검색" : "뉴스, 숙소, 구인 검색..."}
         aria-label="검색"
         className={cn(
-          "w-full rounded-full border border-gray-200 bg-gray-50 text-gray-800 outline-none placeholder:text-gray-400 focus:border-gray-300",
+          "w-full rounded-full border border-border bg-muted text-gray-800 outline-none placeholder:text-muted-foreground focus:border-gray-300",
           isMobile ? "h-8 pl-8 pr-3 text-xs" : "h-9 pl-9 pr-3 text-sm"
         )}
       />

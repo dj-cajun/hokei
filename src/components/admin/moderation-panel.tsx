@@ -136,7 +136,7 @@ export function ModerationPanel() {
             }}
             className={cn(
               "rounded-xl px-4 py-2 text-sm font-medium",
-              tab === t ? "bg-accent text-primary" : "bg-white text-muted-foreground"
+              tab === t ? "bg-accent text-primary" : "bg-surface text-muted-foreground"
             )}
           >
             {t === "posts" ? "게시글" : t === "comments" ? "댓글" : "신고"}
@@ -150,7 +150,7 @@ export function ModerationPanel() {
         <>
       <div className="flex flex-wrap gap-2">
         <input
-          className="min-w-[200px] flex-1 rounded-xl border border-border bg-white px-3 py-2 text-sm"
+          className="min-w-[200px] flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm"
           placeholder="제목·내용·작성자 검색"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -162,7 +162,7 @@ export function ModerationPanel() {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap gap-2 rounded-2xl bg-white p-3">
+        <div className="flex flex-wrap gap-2 rounded-2xl bg-surface p-3">
           <span className="text-sm text-muted-foreground">
             {selected.size}건 선택
           </span>
@@ -200,7 +200,7 @@ export function ModerationPanel() {
           posts.map((p) => (
             <label
               key={p.id}
-              className="flex cursor-pointer gap-3 rounded-2xl bg-white p-4"
+              className="flex cursor-pointer gap-3 rounded-2xl bg-surface p-4"
             >
               <input
                 type="checkbox"
@@ -247,7 +247,7 @@ export function ModerationPanel() {
           comments.map((c) => (
             <label
               key={c.id}
-              className="flex cursor-pointer gap-3 rounded-2xl bg-white p-4"
+              className="flex cursor-pointer gap-3 rounded-2xl bg-surface p-4"
             >
               <input
                 type="checkbox"

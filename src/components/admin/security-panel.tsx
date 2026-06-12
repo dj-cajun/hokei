@@ -83,7 +83,7 @@ export function SecurityPanel() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl bg-white p-5">
+      <section className="rounded-2xl bg-surface p-5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold">IP 차단</h2>
           <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
@@ -133,7 +133,7 @@ export function SecurityPanel() {
         </ul>
       </section>
 
-      <section className="rounded-2xl bg-white p-5">
+      <section className="rounded-2xl bg-surface p-5">
         <h2 className="mb-4 font-semibold">감사 로그</h2>
         <div className="max-h-[480px] overflow-y-auto">
           <table className="w-full text-left text-xs">

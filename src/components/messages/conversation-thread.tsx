@@ -172,7 +172,7 @@ export function ConversationThread({
               className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                 m.isMine
                   ? "bg-primary text-white"
-                  : "bg-gray-100 text-gray-800"
+                  : "bg-muted text-gray-800"
               }`}
             >
               {m.body}
@@ -184,7 +184,7 @@ export function ConversationThread({
 
       <form
         onSubmit={send}
-        className="sticky bottom-12 flex gap-2 border-t border-gray-200 bg-white p-3 lg:bottom-0"
+        className="sticky bottom-12 flex gap-2 border-t border-border bg-surface p-3 lg:bottom-0"
       >
         <input
           type="text"
@@ -192,7 +192,7 @@ export function ConversationThread({
           onChange={(e) => setDraft(e.target.value)}
           placeholder="메시지 입력"
           maxLength={2000}
-          className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+          className="min-w-0 flex-1 rounded-xl border border-border px-3 py-2 text-sm outline-none focus:border-primary"
         />
         <button
           type="submit"

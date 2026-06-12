@@ -44,7 +44,7 @@ export function LoginModal({
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[101] mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/60 bg-white/95 shadow-2xl outline-none backdrop-blur-xl supports-[backdrop-filter]:bg-white/90",
+            "fixed inset-x-0 bottom-0 z-[101] mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/60 bg-surface/95 shadow-2xl outline-none backdrop-blur-xl supports-[backdrop-filter]:bg-surface/90",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300",
             "pb-[max(1rem,env(safe-area-inset-bottom))]"

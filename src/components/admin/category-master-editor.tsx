@@ -227,7 +227,7 @@ export function CategoryMasterEditor({ initial }: Props) {
       {sections.map((section) => {
         const children = childrenByParent.get(section.id) ?? [];
         return (
-          <section key={section.id} className="rounded-2xl bg-white p-4">
+          <section key={section.id} className="rounded-2xl bg-surface p-4">
             <div className="mb-3 flex items-center gap-2">
               <span
                 className={cn(

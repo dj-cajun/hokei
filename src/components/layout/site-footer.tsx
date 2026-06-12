@@ -9,18 +9,18 @@ const links = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[#0b132b] p-6 text-[11px] text-gray-400">
+    <footer className="bg-[#0b132b] p-6 text-[11px] text-muted-foreground">
       <nav className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
         {links.map((link, i) => (
           <span key={link.href} className="inline-flex items-center">
-            {i > 0 && <span className="mx-1.5 text-gray-600">|</span>}
+            {i > 0 && <span className="mx-1.5 text-muted-foreground">|</span>}
             <Link href={link.href} className="hover:text-gray-200">
               {link.label}
             </Link>
           </span>
         ))}
       </nav>
-      <p className="mt-3 text-center leading-relaxed text-gray-500">
+      <p className="mt-3 text-center leading-relaxed text-muted-foreground">
         © {new Date().getFullYear()} 호케이 Hokei · Ho Chi Minh Korean Community
       </p>
     </footer>

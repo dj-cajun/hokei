@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="mx-auto flex min-h-[60dvh] max-w-[480px] flex-col items-center justify-center gap-3 px-4 text-center">
       <p className="text-4xl font-bold text-gray-200">404</p>
       <h1 className="text-lg font-bold text-gray-900">페이지를 찾을 수 없습니다</h1>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         주소가 잘못되었거나 삭제된 페이지일 수 있습니다.
       </p>
       <Link

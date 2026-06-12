@@ -17,7 +17,7 @@ export function CommentList({
   return (
     <ul className="mt-2 space-y-3">
       {comments.length === 0 ? (
-        <li className="text-xs text-gray-400">첫 댓글을 남겨 보세요.</li>
+        <li className="text-xs text-muted-foreground">첫 댓글을 남겨 보세요.</li>
       ) : (
         comments.map((c) => (
           <CommentRow

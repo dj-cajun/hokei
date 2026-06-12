@@ -67,7 +67,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white">
+    <div className="overflow-hidden rounded-2xl bg-surface">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
@@ -121,7 +121,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                           onChange={(e) =>
                             updateRole(user.id, e.target.value as Role)
                           }
-                          className="rounded-lg border border-border bg-white px-2 py-1 text-xs"
+                          className="rounded-lg border border-border bg-surface px-2 py-1 text-xs"
                         >
                           <option value="USER">일반</option>
                           <option value="ADMIN">관리자</option>

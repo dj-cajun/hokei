@@ -8,7 +8,7 @@ export default function SentryExamplePage() {
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="text-lg font-bold text-gray-900">Sentry 연동 테스트</h1>
-      <p className="mt-2 text-sm text-gray-500">
+      <p className="mt-2 text-sm text-muted-foreground">
         {enabled
           ? "버튼을 누르면 테스트 에러가 Sentry로 전송됩니다."
           : ".env에 NEXT_PUBLIC_SENTRY_DSN과 SENTRY_DSN을 설정한 뒤 dev 서버를 재시작하세요."}
@@ -28,7 +28,7 @@ export default function SentryExamplePage() {
 
         <button
           type="button"
-          className="rounded-sm border border-gray-200 px-4 py-2 text-sm font-medium text-gray-800 disabled:opacity-50"
+          className="rounded-sm border border-border px-4 py-2 text-sm font-medium text-gray-800 disabled:opacity-50"
           disabled={!enabled}
           onClick={() => {
             Sentry.captureMessage("Sentry Example Message", "info");
@@ -40,7 +40,7 @@ export default function SentryExamplePage() {
 
         <button
           type="button"
-          className="rounded-sm border border-gray-200 px-4 py-2 text-sm font-medium text-gray-800 disabled:opacity-50"
+          className="rounded-sm border border-border px-4 py-2 text-sm font-medium text-gray-800 disabled:opacity-50"
           disabled={!enabled}
           onClick={async () => {
             const res = await fetch("/api/sentry-example-api");
@@ -53,7 +53,7 @@ export default function SentryExamplePage() {
         </button>
       </div>
 
-      <p className="mt-8 text-xs text-gray-400">
+      <p className="mt-8 text-xs text-muted-foreground">
         프로젝트: javascript-nextjs · org: nam-bac-technology-and-service
         <br />
         <a

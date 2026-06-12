@@ -53,7 +53,7 @@ export function CommunityPostArticle({
 
   return (
     <>
-      <nav className="mb-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-gray-400">
+      <nav className="mb-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-muted-foreground">
         <Link href="/" className="hover:text-primary">
           홈
         </Link>
@@ -74,7 +74,7 @@ export function CommunityPostArticle({
         </Link>
       </nav>
 
-      <article className="bg-white px-2 py-3 lg:rounded-2xl lg:p-8">
+      <article className="bg-surface px-2 py-3 lg:rounded-2xl lg:p-8">
         <div className="flex flex-wrap items-center gap-1">
           <span
             className={`rounded-sm px-1.5 py-0.5 text-[10px] font-medium ${post.category.colorClass}`}
@@ -92,7 +92,7 @@ export function CommunityPostArticle({
           {post.title}
         </h1>
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
           <p>
             {post.publishedAt.toLocaleString("ko-KR", {
               timeZone: "Asia/Ho_Chi_Minh",
@@ -145,7 +145,7 @@ export function CommunityPostArticle({
         <AdSenseUnit slotKind="article" />
 
         {files.length > 0 && (
-          <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3">
+          <ul className="mt-3 space-y-1 border-t border-border-light pt-3">
             {files.map((f) => (
               <li key={f.id}>
                 <a
@@ -167,7 +167,7 @@ export function CommunityPostArticle({
         />
 
         {!isAdmin && (
-          <div className="mt-2 border-t border-gray-100 pt-2">
+          <div className="mt-2 border-t border-border-light pt-2">
             <ReportContentButton targetType="POST" targetId={post.id} />
           </div>
         )}

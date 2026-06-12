@@ -19,7 +19,7 @@ export function ExchangeDisplay({ data, compact = false }: ExchangeDisplayProps)
     return (
       <>
         <p className="mt-0.5 text-base font-bold leading-none">₫{formatVnd(vnd)}</p>
-        <p className="mt-0.5 text-[11px] text-gray-400">
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
           ₩{KRW_DISPLAY_UNIT.toLocaleString("ko-KR")} = ₫{formatVnd(vnd)}
         </p>
       </>
@@ -53,7 +53,7 @@ export function ExchangeDisplayHeader({ compact }: { compact?: boolean }) {
       <h3
         className={
           compact
-            ? "text-[11px] font-medium text-gray-400"
+            ? "text-[11px] font-medium text-muted-foreground"
             : "text-sm font-semibold text-foreground"
         }
       >

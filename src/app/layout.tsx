@@ -10,6 +10,9 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { LoginErrorHandler } from "@/components/auth/login-error-handler";
 import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeScript } from "@/components/providers/theme-script";
+import { WriteFab } from "@/components/layout/write-fab";
 import { AdSenseScript } from "@/components/ads/adsense-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
@@ -80,11 +83,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
+    <html
+      lang="ko"
+      className={`${pretendard.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body
-        className={`${pretendard.className} flex min-h-full flex-col pb-12 lg:pb-0`}
+        className={`${pretendard.className} flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0`}
       >
+        <ThemeScript />
         <SiteJsonLd />
+        <ThemeProvider>
         <AuthSessionProvider>
           <ToastProvider>
           <LoginErrorHandler />
@@ -104,9 +113,11 @@ export default function RootLayout({
               <SiteFooter />
             </div>
             <MobileNav />
+            <WriteFab />
           </LoginModalProvider>
           </ToastProvider>
         </AuthSessionProvider>
+        </ThemeProvider>
         <AdSenseScript />
         <RegisterServiceWorker />
         <Analytics />

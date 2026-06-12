@@ -28,7 +28,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 rounded-xl border border-gray-200 bg-white p-4"
+      className="space-y-3 rounded-xl border border-border bg-surface p-4"
     >
       <div>
         <label htmlFor="contact-name" className="text-sm font-medium">
@@ -39,7 +39,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           autoComplete="name"
         />
       </div>
@@ -53,7 +53,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           autoComplete="email"
         />
       </div>
@@ -66,7 +66,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
           required
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
         />
       </div>
       <div>
@@ -79,7 +79,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
           rows={5}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
         />
       </div>
       <Button type="submit" className="w-full">

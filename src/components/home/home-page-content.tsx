@@ -80,7 +80,7 @@ export async function HomePageContent() {
         <WelcomeBanner />
         <HomeVideoHighlight />
         <div className="space-y-0">
-          <div className="flex items-center border-b border-[#f3f4f6] bg-white px-2 py-1.5">
+          <div className="flex items-center border-b border-[#f3f4f6] bg-surface px-2 py-1.5">
             <h2 className="border-l-4 border-l-red-500 pl-2 text-sm font-bold text-red-600">
               뉴스
             </h2>

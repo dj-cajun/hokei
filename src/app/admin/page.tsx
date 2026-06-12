@@ -63,7 +63,7 @@ export default async function AdminDashboardPage() {
         오늘 자동 수집된 뉴스: {newsToday} / {MAX_DAILY_NEWS}건
       </p>
 
-      <section className="rounded-2xl bg-white">
+      <section className="rounded-2xl bg-surface">
         <div className="border-b border-border px-5 py-4">
           <h2 className="font-semibold">최근 가입 회원</h2>
         </div>

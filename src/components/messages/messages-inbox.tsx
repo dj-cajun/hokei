@@ -67,12 +67,12 @@ export function MessagesInbox() {
   }
 
   return (
-    <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+    <ul className="divide-y divide-gray-100 rounded-xl border border-border bg-surface">
       {items.map((item) => (
         <li key={item.id}>
           <Link
             href={`/messages/${item.id}`}
-            className="flex items-start justify-between gap-3 px-4 py-3 hover:bg-gray-50"
+            className="flex items-start justify-between gap-3 px-4 py-3 hover:bg-card-hover"
           >
             <div className="min-w-0 flex-1">
               <p className="font-medium text-foreground">{item.peer.name}</p>

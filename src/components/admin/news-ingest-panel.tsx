@@ -46,7 +46,7 @@ export function NewsIngestPanel() {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-5">
+    <div className="rounded-2xl bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">

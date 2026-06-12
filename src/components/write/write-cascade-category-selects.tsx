@@ -60,7 +60,7 @@ function SelectField({
         ))}
       </select>
       <ChevronDown
-        className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+        className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden
       />
     </div>
@@ -83,7 +83,7 @@ export function WriteCascadeCategorySelects({
   const showSub = Boolean(mainCategory && midCategory);
 
   return (
-    <div className="space-y-0 border-b border-gray-100 py-3 px-4">
+    <div className="space-y-0 border-b border-border-light py-3 px-4">
       {!hideMain && (
         <div className="relative">
           <label htmlFor="cascade-main" className="sr-only">
@@ -110,7 +110,7 @@ export function WriteCascadeCategorySelects({
             )}
           </select>
           <ChevronDown
-            className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+            className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
         </div>

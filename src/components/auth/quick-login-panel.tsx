@@ -47,7 +47,7 @@ export function QuickLoginPanel({
         <button
           type="button"
           onClick={() => setShowEmail(true)}
-          className="flex h-11 w-full items-center justify-center rounded-xl border border-[#e5e7eb] text-sm font-medium text-foreground hover:bg-secondary/60"
+          className="flex h-11 w-full items-center justify-center rounded-xl border border-border text-sm font-medium text-foreground hover:bg-secondary/60"
         >
           이메일로 로그인
         </button>

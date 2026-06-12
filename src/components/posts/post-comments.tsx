@@ -16,7 +16,7 @@ export function PostComments({ postId, initialComments }: PostCommentsProps) {
   const [comments, setComments] = useState(initialComments);
 
   return (
-    <section className="mt-4 border-t border-gray-100 pt-4">
+    <section className="mt-4 border-t border-border-light pt-4">
       <h2 className="text-sm font-bold text-gray-900">
         댓글 {comments.length}
       </h2>

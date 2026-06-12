@@ -29,7 +29,7 @@ export function AdminSidebar() {
 
   return (
     <aside className="w-full shrink-0 lg:w-56">
-      <div className="rounded-2xl bg-white p-3">
+      <div className="rounded-2xl bg-surface p-3">
         <Link
           href="/"
           className="mb-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
