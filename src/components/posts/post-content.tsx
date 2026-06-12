@@ -4,6 +4,7 @@ import {
   looksLikeHtml,
   sanitizePostHtml,
 } from "@/lib/sanitize-html";
+import { PostContentHtml } from "@/components/posts/post-content-html";
 
 type PostContentProps = {
   content: string;
@@ -16,12 +17,7 @@ type PostContentProps = {
 export function PostContent({ content, className }: PostContentProps) {
   if (looksLikeHtml(content)) {
     const safe = sanitizePostHtml(content);
-    return (
-      <div
-        className={`post-content text-sm leading-relaxed text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-lg [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5 ${className ?? ""}`}
-        dangerouslySetInnerHTML={{ __html: safe }}
-      />
-    );
+    return <PostContentHtml html={safe} className={className} />;
   }
 
   const parts = convertYoutubeLinks(content);

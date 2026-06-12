@@ -1,10 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
 import { PostComments } from "@/components/posts/post-comments";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
+import { PostImageGallery } from "@/components/posts/post-image-gallery";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
@@ -123,21 +123,7 @@ export function CommunityPostArticle({
             </div>
           )}
 
-        {images.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {images.map((img) => (
-                <Image
-                  key={img.id}
-                  src={img.url}
-                  alt={img.fileName}
-                  width={480}
-                  height={320}
-                  unoptimized
-                  className="h-auto w-full rounded-sm object-cover"
-                />
-            ))}
-          </div>
-        )}
+        {images.length > 0 && <PostImageGallery images={images} />}
 
         {post.content && (
           <PostContent
