@@ -1,7 +1,9 @@
 import { NewsListItem } from "@/components/home/news-list-item";
+import { NewsInfiniteList } from "@/components/category/news-infinite-list";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
-import type { NewsDateGroup } from "@/lib/news-archive";
+import type { NewsDateGroup } from "@/lib/news/group-news-by-date";
+import type { FeedItem } from "@/types/feed";
 
 function formatDayHeading(dateLabel: string): string {
   const [y, m, d] = dateLabel.split("-").map(Number);
@@ -15,6 +17,8 @@ interface NewsArchivePageProps {
   totalCount: number;
   currentPage: number;
   totalPages: number;
+  initialCursor?: string | null;
+  flatItems?: FeedItem[];
 }
 
 export function NewsArchivePage({
@@ -23,6 +27,8 @@ export function NewsArchivePage({
   totalCount,
   currentPage,
   totalPages,
+  initialCursor = null,
+  flatItems = [],
 }: NewsArchivePageProps) {
   const flatCount = dateGroups.reduce((n, g) => n + g.items.length, 0);
 
@@ -49,6 +55,11 @@ export function NewsArchivePage({
               아직 수집된 뉴스가 없습니다. 매일 오전 7시(호치민)에 자동으로
               추가됩니다.
             </p>
+          ) : currentPage === 1 ? (
+            <NewsInfiniteList
+              initialItems={flatItems.length > 0 ? flatItems : dateGroups.flatMap((g) => g.items)}
+              initialCursor={initialCursor}
+            />
           ) : (
             dateGroups.map((group) => (
               <div key={group.dateLabel}>
@@ -69,6 +80,7 @@ export function NewsArchivePage({
               currentPage={currentPage}
               totalPages={totalPages}
               basePath="/news"
+              className={currentPage === 1 ? "hidden lg:flex" : undefined}
             />
           )}
         </section>

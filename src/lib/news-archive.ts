@@ -9,6 +9,8 @@ import type { FeedItem } from "@/types/feed";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 
+export { groupNewsByIngestDate, type NewsDateGroup } from "@/lib/news/group-news-by-date";
+
 export { newsAutomatedWhere } from "@/lib/news/news-list-where";
 
 const archiveInclude = {
@@ -74,22 +76,47 @@ export async function getNewsArchivePosts(
   return fetchNewsPosts(newsAutomatedWhere, limit, page);
 }
 
+/** 뉴스 아카이브 커서 무한 스크롤 — cursor는 마지막 글 id */
+export async function getNewsArchivePostsCursor(
+  limit: number,
+  cursor?: string | null
+): Promise<{ items: FeedItem[]; nextCursor: string | null }> {
+  let where: Prisma.PostWhereInput = newsAutomatedWhere;
 
-export type NewsDateGroup = {
-  dateLabel: string;
-  items: FeedItem[];
-};
-
-/** 같은 수집일(호치민)끼리 묶기 — 페이지 내 그룹 헤더용 */
-export function groupNewsByIngestDate(items: FeedItem[]): NewsDateGroup[] {
-  const groups: NewsDateGroup[] = [];
-  for (const item of items) {
-    const last = groups[groups.length - 1];
-    if (last?.dateLabel === item.dateLabel) {
-      last.items.push(item);
-    } else {
-      groups.push({ dateLabel: item.dateLabel, items: [item] });
+  if (cursor) {
+    const anchor = await prisma.post.findUnique({
+      where: { id: cursor },
+      select: { id: true, ingestedAt: true },
+    });
+    if (anchor) {
+      where = {
+        AND: [
+          newsAutomatedWhere,
+          {
+            OR: [
+              { ingestedAt: { lt: anchor.ingestedAt } },
+              {
+                ingestedAt: anchor.ingestedAt,
+                id: { lt: anchor.id },
+              },
+            ],
+          },
+        ],
+      };
     }
   }
-  return groups;
+
+  const posts = await prisma.post.findMany({
+    where,
+    orderBy: [{ ingestedAt: "desc" }, { id: "desc" }],
+    take: limit + 1,
+    include: archiveInclude,
+  });
+
+  const hasMore = posts.length > limit;
+  const slice = hasMore ? posts.slice(0, limit) : posts;
+  const items = slice.map(toNewsArchiveItem);
+  const nextCursor = hasMore ? (slice.at(-1)?.id ?? null) : null;
+
+  return { items, nextCursor };
 }

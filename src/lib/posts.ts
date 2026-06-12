@@ -430,6 +430,90 @@ export async function searchPosts(
   return items.slice(0, limit);
 }
 
+const SEARCH_PAGE_SIZE = 20;
+
+/** 검색 결과 offset 기반 페이지 (무한 스크롤) */
+export async function searchPostsPaginated(
+  query: string,
+  limit = SEARCH_PAGE_SIZE,
+  offset = 0,
+  filters?: import("@/lib/search/filter-options").SearchFilters
+): Promise<{ items: FeedItem[]; nextOffset: number | null }> {
+  const q = query.trim();
+  if (q.length < SEARCH_MIN_QUERY_LENGTH) {
+    return { items: [], nextOffset: null };
+  }
+
+  const fetchCap = Math.min(300, offset + limit + 60);
+  let rankedIds: string[] = [];
+
+  if (getDatabaseKind() === "sqlite") {
+    const { searchPostIdsByFts } = await import("@/lib/search/post-fts");
+    rankedIds = await searchPostIdsByFts(q, fetchCap);
+  } else {
+    const { isPgFtsReady, searchPostIdsByPgFts } =
+      await import("@/lib/search/post-pg-fts");
+    if (await isPgFtsReady()) {
+      rankedIds = await searchPostIdsByPgFts(q, fetchCap);
+    }
+    if (rankedIds.length === 0) {
+      const { searchPostIdsByPg } = await import("@/lib/search/post-pg");
+      rankedIds = await searchPostIdsByPg(q, fetchCap);
+    }
+  }
+
+  if (rankedIds.length > 0) {
+    const posts = await prisma.post.findMany({
+      where: { id: { in: rankedIds }, ...visiblePostWhere },
+      include: postInclude,
+    });
+    const order = new Map(rankedIds.map((id, i) => [id, i]));
+    posts.sort(
+      (a, b) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999)
+    );
+    let items = posts.map(toFeedItem);
+    if (filters) {
+      items = await applySearchFilters(items, filters, fetchCap);
+    }
+    if (filters?.sort === "recent") {
+      items = [...items].sort((a, b) => (a.dateLabel < b.dateLabel ? 1 : -1));
+    }
+    const page = items.slice(offset, offset + limit);
+    const hasMore =
+      page.length === limit &&
+      (offset + limit < items.length || rankedIds.length === fetchCap);
+    return {
+      items: page,
+      nextOffset: hasMore ? offset + page.length : null,
+    };
+  }
+
+  const posts = await prisma.post.findMany({
+    where: {
+      ...visiblePostWhere,
+      OR: textContainsFilter(q),
+    },
+    orderBy: { publishedAt: "desc" },
+    skip: offset,
+    take: limit + 1,
+    include: postInclude,
+  });
+
+  const hasMore = posts.length > limit;
+  const slice = hasMore ? posts.slice(0, limit) : posts;
+  let items = slice.map(toFeedItem);
+  if (filters) {
+    items = await applySearchFilters(items, filters, limit);
+  }
+  if (filters?.sort === "recent") {
+    items = [...items].sort((a, b) => (a.dateLabel < b.dateLabel ? 1 : -1));
+  }
+  return {
+    items,
+    nextOffset: hasMore ? offset + items.length : null,
+  };
+}
+
 async function applySearchFilters(
   items: FeedItem[],
   filters: import("@/lib/search/filter-options").SearchFilters,

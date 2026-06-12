@@ -67,6 +67,12 @@ export default async function NewsArchiveRoutePage({ searchParams }: PageProps) 
     <NewsArchivePage
       label={section.label}
       dateGroups={groupNewsByIngestDate(posts)}
+      flatItems={posts}
+      initialCursor={
+        posts.length >= LIST_PAGE_SIZE && posts.length < totalCount
+          ? (posts.at(-1)?.id ?? null)
+          : null
+      }
       totalCount={totalCount}
       currentPage={Math.min(currentPage, totalPages)}
       totalPages={totalPages}

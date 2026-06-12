@@ -4,10 +4,11 @@ import { headers } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SearchFilterBar } from "@/components/search/search-filter-bar";
 import { SearchResultList } from "@/components/search/search-result-list";
+import { SearchInfiniteList } from "@/components/search/search-infinite-list";
 import { SearchPopularSection } from "@/components/search/search-popular-section";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { searchPosts } from "@/lib/posts";
+import { searchPostsPaginated } from "@/lib/posts";
 import { parseSearchFilters } from "@/lib/search/filter-options";
 import { recordSearchQuery } from "@/lib/search/popular-searches";
 import { enforceSearchRateLimitByIpAsync } from "@/lib/rate-limit";
@@ -44,12 +45,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     rateLimited = !(await enforceSearchRateLimitByIpAsync(ip));
   }
 
-  const results =
+  const { items: results, nextOffset } =
     isDatabaseAvailable() &&
     query.length >= SEARCH_MIN_QUERY_LENGTH &&
     !rateLimited
-      ? await searchPosts(query, 40, filters)
-      : [];
+      ? await searchPostsPaginated(query, 20, 0, filters)
+      : { items: [], nextOffset: null };
 
   if (
     query.length >= SEARCH_MIN_QUERY_LENGTH &&
@@ -99,7 +100,13 @@ export default async function SearchPage({ searchParams }: PageProps) {
             검색 결과가 없습니다.
           </p>
         ) : (
-          <SearchResultList items={results} query={query} />
+          <Suspense fallback={<SearchResultList items={results} query={query} />}>
+            <SearchInfiniteList
+              query={query}
+              initialItems={results}
+              initialOffset={nextOffset}
+            />
+          </Suspense>
         )}
 
         <div className="border-t border-border-light px-3 py-3 text-center">
