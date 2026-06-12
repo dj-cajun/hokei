@@ -31,8 +31,11 @@ console.log(`
   npm run db:pg:studio   PG Prisma Studio
 
 【 배포 】
+  npm run deploy:full    점검 + git push → Vercel 자동 배포 (권장)
+  npm run deploy         git push만 (CLI 토큰 불필요)
   npm run predeploy      배포 전 점검 (lint·test·build)
   npm run predeploy:prod 프로덕션 env 규칙 포함
+  npm run vercel:deploy  CLI 수동 배포 (만료 시 npx vercel login)
   npm run vercel:env     Vercel 환경 변수 목록
 
 【 품질 】

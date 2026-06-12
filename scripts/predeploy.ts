@@ -42,6 +42,8 @@ if (!production) {
 console.log(`
 [predeploy] 모든 점검 통과
 
-배포 직전 Vercel 환경 변수: npm run vercel:env
+다음: npm run deploy        (git push → Vercel 자동 배포, 권장)
+      npm run deploy:full   (점검 + push 한 번에)
+      npm run vercel:env    (Vercel 환경 변수 목록)
 가이드: docs/DEPLOY.md
 `);

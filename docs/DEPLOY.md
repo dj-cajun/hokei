@@ -1,5 +1,25 @@
 # Vercel 배포 가이드
 
+## 0. 배포 방법 (권장 순서)
+
+| 명령 | 용도 |
+|------|------|
+| **`npm run deploy:full`** | 점검(lint·test·build) 후 **git push** → Vercel 자동 배포 (**CLI 토큰 불필요**, 일상용) |
+| `npm run deploy` | 커밋된 변경만 **git push** (점검 생략) |
+| `npm run vercel:deploy` | Vercel CLI로 **수동** 프로덕션 배포 (비상·재배포용) |
+
+> `main`에 push하면 GitHub 연동으로 Vercel이 자동 배포합니다. CLI 토큰 만료로 막히지 않으려면 **`deploy:full`을 기본**으로 쓰세요.
+
+CLI 수동 배포 시:
+
+```bash
+npx vercel login    # 만료 시 브라우저 재로그인
+unset VERCEL_TOKEN  # .env·쉘에 만료 토큰이 있으면 제거 (로그인 세션 방해)
+npm run vercel:deploy
+```
+
+`.env`에 `VERCEL_TOKEN`을 넣지 마세요. 로컬은 `vercel login` 세션만 쓰면 됩니다.
+
 ## 1. 배포 전 로컬 점검
 
 ```bash
