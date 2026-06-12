@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,11 +27,8 @@ interface HeaderProps {
 export function Header({ categoryTree }: HeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const [menuOpenedAt, setMenuOpenedAt] = useState<string | null>(null);
+  const menuOpen = menuOpenedAt === pathname;
 
   if (pathname === "/write" || /\/posts\/[^/]+\/edit$/.test(pathname)) {
     return null;
@@ -64,7 +61,10 @@ export function Header({ categoryTree }: HeaderProps) {
           <GuestHeaderLogin />
           <UserMenu />
 
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <Sheet
+            open={menuOpen}
+            onOpenChange={(open) => setMenuOpenedAt(open ? pathname : null)}
+          >
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -80,7 +80,7 @@ export function Header({ categoryTree }: HeaderProps) {
                 className="flex flex-col gap-2"
                 onClick={(e) => {
                   if ((e.target as HTMLElement).closest("a, button")) {
-                    setMenuOpen(false);
+                    setMenuOpenedAt(null);
                   }
                 }}
               >

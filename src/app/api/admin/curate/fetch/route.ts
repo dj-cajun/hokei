@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const draft = await buildPostFromArticlePage({
       topic: "KOREA",
       title: "",
+      description: "",
       link: sourceUrl,
       sourceName: sourceName ?? "출처",
     });
