@@ -236,6 +236,16 @@ model Bookmark {
   @@index([createdAt])
 }
 
+model SearchQueryStat {
+  id        String   @id @default(cuid())
+  query     String   @unique
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([count])
+}
+
 model Conversation {
   id              String          @id @default(cuid())
   participantAId  String

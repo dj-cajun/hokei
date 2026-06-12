@@ -4,10 +4,12 @@ import { headers } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SearchFilterBar } from "@/components/search/search-filter-bar";
 import { SearchResultList } from "@/components/search/search-result-list";
+import { SearchPopularSection } from "@/components/search/search-popular-section";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { searchPosts } from "@/lib/posts";
 import { parseSearchFilters } from "@/lib/search/filter-options";
+import { recordSearchQuery } from "@/lib/search/popular-searches";
 import { enforceSearchRateLimitByIpAsync } from "@/lib/rate-limit";
 
 interface PageProps {
@@ -49,6 +51,13 @@ export default async function SearchPage({ searchParams }: PageProps) {
       ? await searchPosts(query, 40, filters)
       : [];
 
+  if (
+    query.length >= SEARCH_MIN_QUERY_LENGTH &&
+    !rateLimited &&
+    isDatabaseAvailable()
+  ) {
+    void recordSearchQuery(query);
+  }
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
@@ -71,9 +80,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
         </Suspense>
 
         {!query ? (
-          <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-            상단 검색창에 키워드를 입력하세요.
-          </p>
+          <>
+            <SearchPopularSection />
+            <p className="px-3 py-8 text-center text-sm text-muted-foreground">
+              상단 검색창에 키워드를 입력하세요.
+            </p>
+          </>
         ) : rateLimited ? (
           <p className="px-3 py-8 text-center text-sm text-red-600">
             검색 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.

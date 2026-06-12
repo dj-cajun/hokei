@@ -280,6 +280,24 @@ async function main() {
 
   await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT`);
 
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "SearchQueryStat" (
+      "id" TEXT NOT NULL,
+      "query" TEXT NOT NULL,
+      "count" INTEGER NOT NULL DEFAULT 1,
+      "updatedAt" TIMESTAMP(3) NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "SearchQueryStat_pkey" PRIMARY KEY ("id")
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "SearchQueryStat_query_key"
+      ON "SearchQueryStat"("query")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "SearchQueryStat_count_idx"
+      ON "SearchQueryStat"("count")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

@@ -32,8 +32,21 @@ function SearchInput({
   const [recent, setRecent] = useState<string[]>(() =>
     typeof window === "undefined" ? [] : getRecentSearches()
   );
+  const [popular, setPopular] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const isMobile = variant === "mobile";
+
+  useEffect(() => {
+    if (!open) return;
+    void fetch("/api/search/popular")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok && Array.isArray(data.items)) {
+          setPopular(data.items.map((i: { query: string }) => i.query));
+        }
+      })
+      .catch(() => setPopular([]));
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -73,7 +86,9 @@ function SearchInput({
   }
 
   const showPanel =
-    open && (suggestions.length > 0 || (q.trim().length < 2 && recent.length > 0));
+    open &&
+    (suggestions.length > 0 ||
+      (q.trim().length < 2 && (recent.length > 0 || popular.length > 0)));
 
   return (
     <div
@@ -142,6 +157,25 @@ function SearchInput({
                   {term}
                 </button>
               ))}
+            </div>
+          )}
+          {q.trim().length < 2 && popular.length > 0 && (
+            <div className="border-b border-border-light p-2">
+              <span className="mb-1 block px-2 text-[10px] font-semibold text-muted-foreground">
+                인기 검색
+              </span>
+              <div className="flex flex-wrap gap-1 px-1">
+                {popular.slice(0, 8).map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    className="rounded-full bg-secondary/80 px-2 py-1 text-[10px] hover:bg-card-hover"
+                    onClick={() => submit(term)}
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <ul>
