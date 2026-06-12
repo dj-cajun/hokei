@@ -1,5 +1,6 @@
 import { NewsListItem } from "@/components/home/news-list-item";
 import { NewsInfiniteList } from "@/components/category/news-infinite-list";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
 import type { NewsDateGroup } from "@/lib/news/group-news-by-date";
@@ -51,10 +52,10 @@ export function NewsArchivePage({
           </header>
 
           {flatCount === 0 ? (
-            <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-              아직 수집된 뉴스가 없습니다. 매일 오전 7시(호치민)에 자동으로
-              추가됩니다.
-            </p>
+            <EmptyState
+              title="아직 수집된 뉴스가 없습니다"
+              description="매일 오전 7시(호치민)에 VnExpress·네이버 등에서 자동 수집됩니다."
+            />
           ) : currentPage === 1 ? (
             <NewsInfiniteList
               initialItems={flatItems.length > 0 ? flatItems : dateGroups.flatMap((g) => g.items)}

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { NewsListItem } from "@/components/home/news-list-item";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { groupNewsByIngestDate } from "@/lib/news/group-news-by-date";
 import type { FeedItem } from "@/types/feed";
@@ -58,9 +59,10 @@ export function NewsInfiniteList({
 
   if (items.length === 0) {
     return (
-      <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-        아직 수집된 뉴스가 없습니다.
-      </p>
+      <EmptyState
+        title="아직 수집된 뉴스가 없습니다"
+        description="매일 오전 7시(호치민)에 자동으로 수집됩니다."
+      />
     );
   }
 

@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 import { TextListItem } from "@/components/home/news-list-item";
 import { FadeInUp } from "@/components/ui/fade-in-up";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { getWriteHref } from "@/lib/write-sections";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import type { FeedItem } from "@/types/feed";
 
@@ -61,9 +63,12 @@ export function SectionInfiniteList({
 
   if (items.length === 0) {
     return (
-      <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-        등록된 글이 없습니다. 첫 글을 작성해 보세요.
-      </p>
+      <EmptyState
+        title="아직 글이 없습니다"
+        description="이 게시판의 첫 글을 작성해 보세요."
+        actionHref={getWriteHref(sectionSlug)}
+        actionLabel="글쓰기"
+      />
     );
   }
 

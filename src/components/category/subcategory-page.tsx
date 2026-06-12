@@ -5,7 +5,8 @@ import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { Pagination } from "@/components/ui/pagination";
-import { isWritableSection } from "@/lib/write-sections";
+import { EmptyState } from "@/components/ui/empty-state";
+import { isWritableSection, getWriteHref } from "@/lib/write-sections";
 import type { FeedItem } from "@/types/feed";
 
 interface SubcategoryPageProps {
@@ -88,11 +89,26 @@ export function SubcategoryPage({
             )}
           </header>
           {posts.length === 0 ? (
-            <p className="px-2 py-4 text-center text-xs text-muted-foreground">
-              {isNewsSection
-                ? "아직 글이 없습니다. 뉴스는 매일 오전 7시(호치민)에 자동 등록됩니다."
-                : "등록된 글이 없습니다. 첫 글을 작성해 보세요."}
-            </p>
+            <EmptyState
+              title={
+                isNewsSection ? "아직 뉴스가 없습니다" : "아직 글이 없습니다"
+              }
+              description={
+                isNewsSection
+                  ? "매일 오전 7시(호치민)에 자동으로 수집됩니다."
+                  : "이 게시판의 첫 글을 작성해 보세요."
+              }
+              actionHref={
+                !isNewsSection && isWritableSection(sectionSlug)
+                  ? getWriteHref(sectionSlug)
+                  : undefined
+              }
+              actionLabel={
+                !isNewsSection && isWritableSection(sectionSlug)
+                  ? "글쓰기"
+                  : undefined
+              }
+            />
           ) : (
             <div>
               {posts.map((post) => (

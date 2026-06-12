@@ -6,8 +6,9 @@ import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { Pagination } from "@/components/ui/pagination";
 import { SectionInfiniteList } from "@/components/category/section-infinite-list";
 import { RegionFilterBar } from "@/components/region/region-filter-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
-import { isWritableSection } from "@/lib/write-sections";
+import { getWriteHref, isWritableSection } from "@/lib/write-sections";
 import type { FeedItem } from "@/types/feed";
 
 interface SectionArchivePageProps {
@@ -94,9 +95,16 @@ export function SectionArchivePage({
               region={region}
             />
           ) : posts.length === 0 ? (
-            <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-              등록된 글이 없습니다. 첫 글을 작성해 보세요.
-            </p>
+            <EmptyState
+              title="아직 글이 없습니다"
+              description="이 게시판의 첫 글을 작성해 보세요."
+              actionHref={
+                isWritableSection(sectionSlug)
+                  ? getWriteHref(sectionSlug)
+                  : undefined
+              }
+              actionLabel={isWritableSection(sectionSlug) ? "글쓰기" : undefined}
+            />
           ) : (
             <div>
               {posts.map((post) => (

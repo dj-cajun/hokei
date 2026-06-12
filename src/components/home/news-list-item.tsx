@@ -19,14 +19,17 @@ function PostListMeta({ item }: { item: FeedItem }) {
   );
 }
 
+const listLinkClass =
+  "block rounded-xl px-3 py-2 transition-all duration-200 hover:-translate-y-0.5 hover:bg-card-hover hover:shadow-md active:bg-muted lg:mx-1 lg:my-0.5";
+
 export function NewsListItem({ item }: { item: FeedItem }) {
   const hasThumb = shouldShowFeedThumbnail(item);
 
   return (
-    <article className="border-b border-border-light last:border-b-0">
+    <article className="border-b border-border-light last:border-b-0 lg:border-b-0">
       <Link
         href={`/posts/${item.id}`}
-        className="flex gap-2 px-3 py-2 active:bg-muted"
+        className={`flex gap-2 ${listLinkClass}`}
       >
         {hasThumb && (
           <div className="h-[60px] w-20 shrink-0 overflow-hidden rounded-sm bg-secondary">
@@ -53,11 +56,8 @@ export function NewsListItem({ item }: { item: FeedItem }) {
 /** 썸네일 없는 공지·텍스트 목록 */
 export function TextListItem({ item }: { item: FeedItem }) {
   return (
-    <article className="border-b border-border-light last:border-b-0">
-      <Link
-        href={`/posts/${item.id}`}
-        className="block px-3 py-2 active:bg-muted"
-      >
+    <article className="border-b border-border-light last:border-b-0 lg:border-b-0">
+      <Link href={`/posts/${item.id}`} className={listLinkClass}>
         <h3 className="flex min-w-0 items-center gap-1 text-sm font-medium leading-snug text-foreground">
           {item.isNew && <NewBadge />}
           <span className="line-clamp-2">{item.title}</span>
