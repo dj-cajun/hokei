@@ -11,7 +11,7 @@ import {
   groupNewsByIngestDate,
 } from "@/lib/news-archive";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export async function generateMetadata(): Promise<Metadata> {
   const section = await getSectionBySlug("news");

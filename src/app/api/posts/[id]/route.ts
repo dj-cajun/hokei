@@ -24,6 +24,7 @@ import {
 } from "@/lib/search/index-post";
 import { attachmentUrlsToDelete } from "@/lib/posts/attachment-sync";
 import { isValidRegion } from "@/lib/regions";
+import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { deleteUploadFile } from "@/lib/upload";
 
 const attachmentSchema = z.object({
@@ -171,6 +172,19 @@ export async function PATCH(request: Request, context: RouteContext) {
       status: updated.status,
     });
 
+    const withCategory = await prisma.post.findUnique({
+      where: { id: updated.id },
+      select: {
+        category: {
+          select: { href: true, parent: { select: { slug: true } } },
+        },
+      },
+    });
+    revalidatePostCaches(updated.id, {
+      sectionSlug: withCategory?.category.parent?.slug,
+      categoryHref: withCategory?.category.href,
+    });
+
     return apiSuccess({ id: updated.id });
   } catch (err) {
     log("error", "posts patch failed", {
@@ -188,7 +202,12 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const post = await prisma.post.findUnique({
       where: { id },
-      include: { attachments: true },
+      include: {
+        attachments: true,
+        category: {
+          select: { href: true, parent: { select: { slug: true } } },
+        },
+      },
     });
 
     if (!post || !isCommunityPost(post.sourceUrl)) {
@@ -225,6 +244,11 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     await prisma.post.delete({ where: { id } });
     await removePostFromSearch(id);
+
+    revalidatePostCaches(id, {
+      sectionSlug: post.category.parent?.slug,
+      categoryHref: post.category.href,
+    });
 
     return apiSuccess({ deleted: true });
   } catch (err) {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
-import { PostComments } from "@/components/posts/post-comments";
+import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
 import { PostImageGallery } from "@/components/posts/post-image-gallery";
@@ -10,8 +10,6 @@ import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
-import { mapPostComments } from "@/lib/map-post-comments";
-import { isPostOwner } from "@/lib/post-permissions";
 import type { Post, PostAttachment, Comment, User } from "@/generated/prisma/client";
 
 type PostWithRelations = Post & {
@@ -28,31 +26,13 @@ type PostWithRelations = Post & {
 
 type CommunityPostArticleProps = {
   post: PostWithRelations;
-  sessionUserId?: string;
-  isAdmin?: boolean;
-  likedByMe?: boolean;
-  bookmarkedByMe?: boolean;
 };
 
-export function CommunityPostArticle({
-  post,
-  sessionUserId,
-  isAdmin,
-  likedByMe = false,
-  bookmarkedByMe = false,
-}: CommunityPostArticleProps) {
+export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
   const authorName = getAuthorDisplayName(post);
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
   const files = post.attachments.filter((a) => a.kind === "FILE");
-  const canEditAsUser =
-    isAdmin || isPostOwner(post, sessionUserId);
   const isGuestPost = Boolean(post.guestPasswordHash && !post.authorId);
-
-  const initialComments = mapPostComments(
-    post.comments,
-    sessionUserId,
-    isAdmin
-  );
 
   return (
     <>
@@ -108,22 +88,18 @@ export function CommunityPostArticle({
             postId={post.id}
             title={post.title}
             likeCount={post.likeCount ?? 0}
-            likedByMe={likedByMe}
-            bookmarkedByMe={bookmarkedByMe}
           />
         </div>
 
-        {post.authorId &&
-          post.author &&
-          sessionUserId !== post.authorId && (
-            <div className="mt-2">
-              <SendMessageButton
-                recipientId={post.authorId}
-                recipientName={post.author.name}
-                postId={post.id}
-              />
-            </div>
-          )}
+        {post.authorId && post.author && (
+          <div className="mt-2">
+            <SendMessageButton
+              recipientId={post.authorId}
+              recipientName={post.author.name}
+              postId={post.id}
+            />
+          </div>
+        )}
 
         {images.length > 0 && <PostImageGallery images={images} />}
 
@@ -154,17 +130,15 @@ export function CommunityPostArticle({
 
         <PostOwnerActions
           postId={post.id}
-          canEditAsUser={canEditAsUser}
+          authorId={post.authorId}
           isGuestPost={isGuestPost}
         />
 
-        {!isAdmin && (
-          <div className="mt-2 border-t border-border-light pt-2">
-            <ReportContentButton targetType="POST" targetId={post.id} />
-          </div>
-        )}
+        <div className="mt-2 border-t border-border-light pt-2">
+          <ReportContentButton targetType="POST" targetId={post.id} />
+        </div>
 
-        <PostComments postId={post.id} initialComments={initialComments} />
+        <PostCommentsSession postId={post.id} comments={post.comments} />
       </article>
     </>
   );

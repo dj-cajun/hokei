@@ -55,6 +55,8 @@ export function SendMessageButton({
     }
   }
 
+  if (session?.user?.id === recipientId) return null;
+
   return (
     <button
       type="button"

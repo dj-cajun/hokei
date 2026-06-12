@@ -4,16 +4,12 @@ import { ChevronRight, ExternalLink } from "lucide-react";
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
-import { PostComments } from "@/components/posts/post-comments";
+import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostActionBar } from "@/components/posts/post-action-bar";
-import { isPostBookmarked } from "@/lib/bookmarks";
 import { ViewCounter } from "@/components/posts/view-counter";
-import { mapPostComments } from "@/lib/map-post-comments";
-import { auth } from "@/auth";
 import { isCommunityPost } from "@/lib/community";
 import { getPostById } from "@/lib/posts";
-import { prisma } from "@/lib/prisma";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { formatPostSourceLabel } from "@/lib/news/source-display";
 import {
@@ -22,7 +18,7 @@ import {
 } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -59,30 +55,12 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function PostPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await auth();
-  const isAdmin = session?.user?.role === "ADMIN";
-  const post = await getPostById(id, { includeHiddenComments: isAdmin });
+  const post = await getPostById(id, { includeHiddenComments: false });
 
   if (!post) notFound();
-  if (post.moderationStatus !== "VISIBLE" && !isAdmin) notFound();
+  if (post.moderationStatus !== "VISIBLE") notFound();
 
   const isCommunity = isCommunityPost(post.sourceUrl);
-
-  let likedByMe = false;
-  let bookmarkedByMe = false;
-  if (session?.user?.id) {
-    const [like, bookmarked] = await Promise.all([
-      prisma.postLike.findUnique({
-        where: {
-          userId_postId: { userId: session.user.id, postId: id },
-        },
-      }),
-      isPostBookmarked(session.user.id, id),
-    ]);
-    likedByMe = Boolean(like);
-    bookmarkedByMe = bookmarked;
-  }
-
   const description = (post.content ?? post.title).replace(/\n/g, " ").slice(0, 160);
 
   return (
@@ -99,21 +77,9 @@ export default async function PostPage({ params }: PageProps) {
       <Sidebar />
       <div className="min-w-0 flex-1">
         {isCommunity ? (
-          <CommunityPostArticle
-            post={post}
-            sessionUserId={session?.user?.id}
-            isAdmin={session?.user?.role === "ADMIN"}
-            likedByMe={likedByMe}
-            bookmarkedByMe={bookmarkedByMe}
-          />
+          <CommunityPostArticle post={post} />
         ) : (
-          <NewsPostArticle
-            post={post}
-            sessionUserId={session?.user?.id}
-            isAdmin={session?.user?.role === "ADMIN"}
-            likedByMe={likedByMe}
-            bookmarkedByMe={bookmarkedByMe}
-          />
+          <NewsPostArticle post={post} />
         )}
       </div>
     </div>
@@ -122,23 +88,10 @@ export default async function PostPage({ params }: PageProps) {
 
 function NewsPostArticle({
   post,
-  sessionUserId,
-  isAdmin,
-  likedByMe = false,
-  bookmarkedByMe = false,
 }: {
   post: NonNullable<Awaited<ReturnType<typeof getPostById>>>;
-  sessionUserId?: string;
-  isAdmin?: boolean;
-  likedByMe?: boolean;
-  bookmarkedByMe?: boolean;
 }) {
   const sourceLabel = formatPostSourceLabel(post.sourceName);
-  const initialComments = mapPostComments(
-    post.comments,
-    sessionUserId,
-    isAdmin
-  );
 
   return (
     <>
@@ -199,8 +152,6 @@ function NewsPostArticle({
             postId={post.id}
             title={post.title}
             likeCount={post.likeCount ?? 0}
-            likedByMe={likedByMe}
-            bookmarkedByMe={bookmarkedByMe}
           />
         </div>
 
@@ -229,7 +180,7 @@ function NewsPostArticle({
           </a>
         )}
 
-        <PostComments postId={post.id} initialComments={initialComments} />
+        <PostCommentsSession postId={post.id} comments={post.comments} />
       </article>
     </>
   );

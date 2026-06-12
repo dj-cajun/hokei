@@ -12,6 +12,8 @@ import {
   getPostsBySectionSlug,
 } from "@/lib/posts";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "커뮤니티 - 호케이 Hokei",
   description:

@@ -9,7 +9,7 @@ import {
   getPostsByCategorySlug,
 } from "@/lib/posts";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ section: string; slug: string }>;

@@ -6,6 +6,7 @@ import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { hashGuestPassword } from "@/lib/post-permissions";
 import { indexPostInSearch } from "@/lib/search/index-post";
+import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { postCreateBodySchema } from "@/lib/validation/post-create";
 
 function topicFromSection(sectionSlug: string): PostTopic {
@@ -42,7 +43,12 @@ export async function POST(request: Request) {
 
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
-      include: { parent: { select: { slug: true } } },
+      select: {
+        id: true,
+        href: true,
+        parentId: true,
+        parent: { select: { slug: true } },
+      },
     });
 
     if (!category?.parentId) {
@@ -98,6 +104,11 @@ export async function POST(request: Request) {
       summary: post.summary,
       content: post.content,
       status: post.status,
+    });
+
+    revalidatePostCaches(post.id, {
+      sectionSlug: category.parent?.slug,
+      categoryHref: category.href,
     });
 
     return apiSuccess({ id: post.id }, 201);

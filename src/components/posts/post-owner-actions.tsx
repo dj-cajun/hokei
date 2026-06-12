@@ -9,25 +9,28 @@ import { parseApiError } from "@/lib/api-response";
 
 type PostOwnerActionsProps = {
   postId: string;
-  canEditAsUser: boolean;
+  authorId?: string | null;
   isGuestPost: boolean;
 };
 
 export function PostOwnerActions({
   postId,
-  canEditAsUser,
+  authorId,
   isGuestPost,
 }: PostOwnerActionsProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
+  const canEditAsUser =
+    isAdmin ||
+    Boolean(session?.user?.id && authorId && authorId === session.user.id);
   const [showDelete, setShowDelete] = useState(false);
   const [guestPassword, setGuestPassword] = useState("");
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  if (!canEditAsUser && !isGuestPost && !isAdmin) return null;
+  if (!canEditAsUser && !isGuestPost) return null;
 
   async function handleDelete() {
     setError("");

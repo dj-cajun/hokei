@@ -10,6 +10,8 @@ import {
 } from "@/lib/posts";
 import { parseRegionParam } from "@/lib/regions";
 
+export const revalidate = 60;
+
 interface PageProps {
   params: Promise<{ section: string }>;
   searchParams: Promise<{ page?: string; region?: string }>;

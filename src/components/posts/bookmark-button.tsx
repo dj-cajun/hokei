@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bookmark } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLoginModal } from "@/components/auth/login-modal-context";
@@ -21,6 +21,16 @@ export function BookmarkButton({
   const { showToast } = useToast();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    void fetch(`/api/posts/${postId}/bookmark`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok) setBookmarked(Boolean(data.bookmarked));
+      })
+      .catch(() => {});
+  }, [postId, status]);
 
   async function toggle() {
     if (status !== "authenticated") {

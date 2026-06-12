@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLoginModal } from "@/components/auth/login-modal-context";
@@ -25,6 +25,19 @@ export function PostLikeButton({
   const [liked, setLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
   const [bounce, setBounce] = useState(false);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    void fetch(`/api/posts/${postId}/like`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok) {
+          setLiked(Boolean(data.likedByMe));
+          if (typeof data.likeCount === "number") setCount(data.likeCount);
+        }
+      })
+      .catch(() => {});
+  }, [postId, status]);
 
   async function toggle() {
     if (status !== "authenticated") {
