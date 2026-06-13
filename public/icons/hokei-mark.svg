@@ -1,8 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="Hokei">
-  <rect width="32" height="32" rx="8" fill="#c8102e"/>
-  <path
-    d="M9 8h4.2l3.8 8.2L20.8 8H25v16h-3.8V14.8L17.6 24h-3.2L10.8 14.8V24H7V8z"
+  <rect width="32" height="32" rx="6" fill="#c8102e"/>
+  <text
+    x="16"
+    y="22"
+    text-anchor="middle"
     fill="#fff"
-  />
-  <circle cx="24" cy="24" r="3" fill="#0064ff"/>
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="18"
+    font-weight="900"
+  >
+    H
+  </text>
 </svg>
