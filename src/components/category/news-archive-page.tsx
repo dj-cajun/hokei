@@ -53,8 +53,8 @@ export function NewsArchivePage({
 
           {flatCount === 0 ? (
             <EmptyState
-              title="아직 수집된 뉴스가 없습니다"
-              description="매일 오전 7시(호치민)에 VnExpress·네이버 등에서 자동 수집됩니다."
+              title="아직 뉴스가 없습니다"
+              description="호치민·베트남 관련 소식이 올라오면 여기에 표시됩니다."
             />
           ) : currentPage === 1 ? (
             <NewsInfiniteList

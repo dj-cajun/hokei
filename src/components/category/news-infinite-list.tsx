@@ -60,8 +60,8 @@ export function NewsInfiniteList({
   if (items.length === 0) {
     return (
       <EmptyState
-        title="아직 수집된 뉴스가 없습니다"
-        description="매일 오전 7시(호치민)에 자동으로 수집됩니다."
+        title="아직 뉴스가 없습니다"
+        description="호치민·베트남 관련 소식이 올라오면 여기에 표시됩니다."
       />
     );
   }

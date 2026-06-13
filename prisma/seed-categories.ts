@@ -22,7 +22,7 @@ export const CATEGORY_MASTER: SectionSeed[] = [
     slug: "news",
     label: "뉴스",
     description:
-      "VnExpress·네이버 뉴스 자동 수집, 비자·교육·칼럼 등 교민 필수 정보.",
+      "호치민·베트남 현지 소식, 비자·교육·칼럼 등 교민 필수 정보.",
     icon: "Newspaper",
     colorClass: "bg-red-50 text-red-600",
     sortOrder: 1,

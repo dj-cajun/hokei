@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: `${section.label} - 호케이 Hokei`,
     description:
       section.description ??
-      "호치민 교민 뉴스 아카이브. 자동 수집 기사를 날짜별로 모아 둡니다.",
+      "호치민·베트남 교민을 위한 뉴스를 날짜별로 모아 둡니다.",
     openGraph: {
       title: `${section.label} - 호케이 Hokei`,
       description: section.description ?? section.label,

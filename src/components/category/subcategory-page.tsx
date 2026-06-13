@@ -95,7 +95,7 @@ export function SubcategoryPage({
               }
               description={
                 isNewsSection
-                  ? "매일 오전 7시(호치민)에 자동으로 수집됩니다."
+                  ? "새 소식이 올라오면 이곳에서 확인할 수 있습니다."
                   : "이 게시판의 첫 글을 작성해 보세요."
               }
               actionHref={
