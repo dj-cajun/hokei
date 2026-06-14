@@ -1,92 +1,87 @@
 # 데이터베이스
 
-## SQLite (기본 · 로컬 개발)
+이 프로젝트는 **PostgreSQL 단일**입니다. SQLite(`file:./dev.db`)는 더 이상 지원하지 않습니다.
+
+## 환경 파일 역할
+
+| 파일 | 용도 | Neon 브랜치 |
+|------|------|-------------|
+| `.env` | 로컬 `npm run dev`, 일반 스크립트 | **dev** (예: `ep-wandering-cherry-…`) |
+| `.env.production.pg` | 프로덕션 DB 작업 (`news:prod:*`, Neon CLI) | **production** (예: `ep-snowy-heart-…`) |
+| Vercel env | 배포 런타임·빌드 | production URL (대시보드에서 수동 설정) |
+
+로컬 앱과 프로덕션 DB 스크립트는 **서로 다른 Neon 브랜치**를 씁니다. dev 브랜치에서 **자동 삭제(Auto-suspend/delete)** 는 끄는 것을 권장합니다.
+
+## 로컬 개발 (Neon dev — 권장)
 
 ```bash
 # .env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://...@ep-....neon.tech/neondb?sslmode=require"
 
-npm run db:seed
-npm run search:reindex   # FTS5 (SQLite 전용)
-npm run dev
+npm run db:generate   # Prisma Client (필요 시)
+npm run db:seed       # 최초 1회
+npm run search:pg:setup   # tsvector 검색 (최초 1회)
+npm run dev           # http://localhost:3001
 ```
 
-`npm run dev` / `npm run build` 는 `.env`의 `DATABASE_URL`에 맞춰 Prisma Client를 자동 생성합니다.  
-provider 불일치 오류 시: `npx tsx scripts/prisma-generate-for-deploy.ts` 후 dev 서버를 재시작하세요.  
-로컬 저장소의 `prisma-datasource.ts`는 **SQLite 기본**이며, Vercel 빌드 시 PostgreSQL로 다시 생성됩니다.
+`npm run dev`는 `.env`의 PostgreSQL URL을 검증하고 연결을 예열한 뒤 Next dev를 띄웁니다.  
+해외·원거리에서 Neon dev에 접속하면 첫 페이지 로드가 10초 이상 걸릴 수 있습니다.
 
-## PostgreSQL (Docker 로컬)
+**흔한 오류**
 
-한 번에 설정:
+- `.env.local`에 `file:./dev.db`가 남아 있음 → 해당 줄 삭제
+- 셸에 `export DATABASE_URL=file:…`가 남아 있음 → `unset DATABASE_URL`
+- provider 불일치 → `npm run db:generate` 후 dev 서버 재시작
+
+## Docker PostgreSQL (오프라인·로컬 전용)
+
+Neon 없이 로컬 Docker만 쓸 때:
 
 ```bash
-npm run db:pg:setup
-```
-
-수동 단계:
-
-```bash
-npm run db:postgres
+npm run setup:pg
 # .env
 DATABASE_URL="postgresql://hokei:hokei_local@localhost:5432/hokei"
 
-npm run db:pg:generate
-npm run db:pg:push
-npm run db:seed
 npm run dev
 ```
 
-> **중요:** DB 종류를 바꿀 때마다 `npx tsx scripts/prisma-generate-for-deploy.ts`를 실행하세요.
+수동 단계: `npm run db:postgres` → `db:pg:push` → `db:seed` → `search:pg:setup`
 
 ## 검색
 
-| DB | 방식 |
-|----|------|
-| SQLite | FTS5 (`post_fts`) + `npm run search:reindex` |
-| PostgreSQL | **tsvector** (`npm run search:pg:setup`) 우선, 없으면 ILIKE 폴백 |
+PostgreSQL **tsvector** (`search_vector` 컬럼)를 사용합니다.
 
 ```bash
-# PG 전환 후 한 번
-npm run search:pg:setup
+npm run search:pg:setup   # 스키마·트리거·초기 인덱스
 ```
 
-관리자 패널 **검색 재인덱스** 또는 `reindexAllSearch()`가 DB 종류에 맞게 동작합니다.
+관리자 패널 **검색 재인덱스** 또는 `reindexAllSearch()`가 PG에 맞게 동작합니다.  
+`search:reindex`(FTS5)는 SQLite 전용 레거시 명령으로, 일반 개발에서는 사용하지 않습니다.
 
-## 프로덕션 (Vercel)
+## 프로덕션 (Vercel + Neon)
 
-- **Neon** / **Supabase** 등托管 PostgreSQL 권장
-- `DATABASE_URL`에 connection pooling URL 사용 (예: `?pgbouncer=true`)
-- 배포 전 `db:pg:push` 또는 `prisma migrate deploy`
+- Vercel **Production** env에 Neon **production** `DATABASE_URL` 설정 (pooling URL 권장)
 - `CRON_SECRET`, `AUTH_SECRET` 필수
+- 배포: `npm run deploy:full` 또는 git push → Vercel 자동 빌드
+- 스키마: `prisma migrate deploy` 또는 빌드 시 `pg-apply-schema-patches.ts` 보완
 
-## SQLite → PostgreSQL 데이터 이전
+자세한 env: [DEPLOY.md](./DEPLOY.md)
 
-```bash
-# PostgreSQL 스키마·시드 후
-export DATABASE_URL="postgresql://..."
-npm run db:pg:setup
-npm run db:migrate:sqlite-to-pg   # dev.db → PG 데이터 복사
-npm run search:pg:setup
-```
+## Neon 프로덕션 DB 작업 (로컬 CLI)
 
-프로덕션(Vercel)은 빌드 시 `pg-apply-schema-patches.ts`가 migrate 실패를 보완합니다.  
-마이그레이션 lock·PG 이중 운영: [prisma/migrations/README.md](../prisma/migrations/README.md)
-
-대량 이전·드리프트 해소는 [pgloader](https://pgloader.io/) 등 전용 도구를 검토하세요.
-
-## Neon (로컬 CLI → 프로덕션 DB)
-
-로컬 앱은 SQLite(`file:./dev.db`), Neon 작업은 `.env.production.pg`만 사용합니다.
+`.env.production.pg`만 사용합니다. 로컬 `.env`(dev)와 섞이지 않습니다.
 
 ```bash
-# 전체 파이프라인
+# 전체 파이프라인 (env 동기화 → 수집 → 썸네일 → Prisma 재생성)
 npm run news:prod:update
 
 # 단계별
 INGEST_RSS_ONLY=1 npm run news:reset:neon -- --full
 npm run news:backfill-thumbnails -- --neon --missing-only
-npm run db:generate   # 로컬 SQLite Prisma 복구 필수
+npm run news:check:prod
 ```
 
-부트스트랩: `scripts/lib/neon-bootstrap.ts` (`openNeonPrisma`, `restoreLocalSqlitePrisma`)  
+부트스트랩: `scripts/lib/neon-bootstrap.ts` (`openNeonPrisma`, `readNeonDatabaseUrl`)  
 스크립트 목록: [SCRIPTS.md](./SCRIPTS.md)
+
+마이그레이션 lock·PG 이중 운영: [prisma/migrations/README.md](../prisma/migrations/README.md)

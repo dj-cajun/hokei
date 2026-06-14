@@ -8,9 +8,9 @@
 |------|------|
 | 프론트 | Next.js 16, React 19, Tailwind 4 |
 | 인증 | NextAuth v5 (이메일, Google) |
-| DB | SQLite (기본) / PostgreSQL (선택) |
+| DB | PostgreSQL (Neon dev 로컬 / production 배포) |
 | ORM | Prisma 7 |
-| 검색 | SQLite FTS5 (+ LIKE 폴백) |
+| 검색 | PostgreSQL tsvector |
 | 모니터링 | Sentry (선택), Vercel Analytics |
 
 ## 빠른 시작 (Cursor 통합 터미널)
@@ -18,15 +18,17 @@
 ```bash
 npm install
 cp .env.example .env
-# AUTH_SECRET: openssl rand -base64 32
+# .env — Neon dev Connect URL, AUTH_SECRET: openssl rand -base64 32
 
-npm run setup    # SQLite: 시드 + 검색 인덱스 (처음 한 번)
-npm run dev      # http://localhost:3001
+npm run db:seed           # 최초 1회
+npm run search:pg:setup   # 최초 1회
+npm run dev               # http://localhost:3001
 ```
 
 전체 명령 목록: **`npm run help`**
 
-PostgreSQL: `npm run setup:pg` → [docs/DATABASE.md](docs/DATABASE.md)
+DB·Neon dev/prod 분리: [docs/DATABASE.md](docs/DATABASE.md)  
+오프라인 Docker PG: `npm run setup:pg`
 
 http://localhost:3001
 
@@ -42,7 +44,7 @@ http://localhost:3001
 | 변수 | 설명 |
 |------|------|
 | `AUTH_SECRET` | NextAuth 시크릿 (32자+ 랜덤) |
-| `DATABASE_URL` | `file:./dev.db` 또는 PostgreSQL URL |
+| `DATABASE_URL` | Neon dev PostgreSQL URL (`.env`) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3001` |
 | `CRON_SECRET` | 뉴스 Cron API 보호 (프로덕션 필수) |
 | `NAVER_CLIENT_ID/SECRET` | 뉴스 수집 (권장) |
@@ -57,16 +59,14 @@ http://localhost:3001
 
 | 명령 | 설명 |
 |------|------|
-| `npm run setup` | SQLite 초기 설정 |
-| `npm run setup:pg` | PostgreSQL(Docker) 초기 설정 |
-| `npm run dev` | 개발 서버 :3001 |
+| `npm run setup` / `setup:pg` | Docker PG 초기 설정 |
+| `npm run dev` | 개발 서버 :3001 (Neon dev) |
 | `npm run check` | lint + test + build |
 | `npm run verify` | 보안 헤더 + env 점검 |
 | `npm run test:coverage` | Vitest 커버리지 |
 | `npm run naver:test` | 네이버 API 키 확인 |
 | `npm run search:pg:setup` | PG tsvector 검색 |
-| `npm run db:migrate:sqlite-to-pg` | SQLite → PG 이전 |
-| `npm run db:pg:generate` | PG Prisma Client (`.env`에 PG URL 필요) |
+| `npm run news:prod:update` | production Neon 뉴스 파이프라인 |
 
 ## 프로젝트 구조
 
@@ -76,7 +76,7 @@ src/
 ├── components/          # UI·레이아웃·글쓰기·댓글
 ├── lib/                 # posts, categories, search, auth
 ├── generated/prisma/    # Prisma Client
-docs/DATABASE.md         # SQLite ↔ PostgreSQL
+docs/DATABASE.md         # PostgreSQL · Neon dev/prod
 ```
 
 ## API 엔드포인트 (요약)
@@ -125,8 +125,8 @@ flowchart LR
   NextApp --> API[API Routes]
   NextApp --> RSC[Server Components]
   API --> Prisma
-  Prisma --> SQLite[(SQLite dev)]
-  Prisma --> PG[(PostgreSQL prod)]
+  Prisma --> NeonDev[(Neon dev .env)]
+  Prisma --> NeonProd[(Neon production)]
   API --> Upstash[Upstash Rate Limit]
   Cron[Vercel Cron] --> NewsIngest[news ingest]
   NewsIngest --> Prisma

@@ -32,7 +32,7 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 
 | 변수 | 설명 |
 |------|------|
-| `DATABASE_URL` | **PostgreSQL** (Neon/Supabase). `file:./dev.db`는 Vercel에서 동작하지 않음. **Production·Preview·Development(빌드) 모두** 체크 — 빌드에 없으면 SQLite Client가 생성되어 `google_login_failed` / `google_db_config` 발생 |
+| `DATABASE_URL` | **PostgreSQL** (Neon production). `file:./dev.db` 미지원. **Production·Preview·Development(빌드) 모두** 체크 |
 | `AUTH_SECRET` | 32자+ 랜덤 (`npm run env:auth-secret`) |
 | `CRON_SECRET` | Cron API 보호 (`npm run env:cron-secret`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://실제도메인` (localhost 금지) |
@@ -85,13 +85,9 @@ Google Cloud 콘솔에 **프로덕션 도메인**과 redirect URI 등록:
 - [ ] 관리자 `/admin` 뉴스 수집
 - [ ] 카테고리 설명 복구: `DATABASE_URL=postgresql://... npm run db:sync:category-descriptions`
 
-## 8. SQLite 데이터 이전
+## 8. 레거시 SQLite
 
-기존 `dev.db` 데이터가 있으면:
-
-```bash
-DATABASE_URL=postgresql://... npm run db:migrate:sqlite-to-pg
-```
+SQLite(`file:./dev.db`)는 더 이상 지원하지 않습니다. 과거 `dev.db` 데이터는 pgloader 등으로 Neon에 이전하세요. [DATABASE.md](./DATABASE.md)
 
 ## 9. GitHub CI
 
