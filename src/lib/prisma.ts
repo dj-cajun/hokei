@@ -3,7 +3,6 @@ import { loadDotenv } from "@/lib/load-dotenv";
 loadDotenv();
 
 import { existsSync } from "fs";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
 import { getGeneratedPrismaActiveProvider } from "@/lib/prisma-generated-provider";
@@ -44,6 +43,7 @@ function getRuntimeDatabaseKind(): "sqlite" | "postgresql" {
 function assertProviderMatchesUrl(): void {
   const runtime = getRuntimeDatabaseKind();
   const generated = getGeneratedPrismaActiveProvider();
+  const onVercel = process.env.VERCEL === "1";
 
   if (generated !== runtime) {
     throw new Error(
@@ -55,7 +55,9 @@ function assertProviderMatchesUrl(): void {
     );
   }
 
-  if (PRISMA_DATASOURCE_PROVIDER !== runtime) {
+  // Neon CLI: neon-bootstrap이 marker를 갱신 — 쉘 Postgres URL 우선 시 marker 검사 생략
+  const shellPg = process.env.PRISMA_USE_SHELL_DATABASE_URL === "1";
+  if (!onVercel && !shellPg && PRISMA_DATASOURCE_PROVIDER !== runtime) {
     throw new Error(
       [
         `prisma-datasource 마커(${PRISMA_DATASOURCE_PROVIDER})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
@@ -65,6 +67,14 @@ function assertProviderMatchesUrl(): void {
       ].join("\n")
     );
   }
+}
+
+function createSqlitePrismaClient(url: string): PrismaClient {
+  // Vercel(Postgres) 런타임에서 네이티브 모듈 로드 방지 — SQLite 경로에서만 require
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
+  const adapter = new PrismaBetterSqlite3({ url });
+  return new PrismaClient({ adapter });
 }
 
 function createPrismaClient(): PrismaClient {
@@ -78,8 +88,7 @@ function createPrismaClient(): PrismaClient {
     return createPostgresPrisma(connectionString);
   }
 
-  const adapter = new PrismaBetterSqlite3({ url: connectionString });
-  return new PrismaClient({ adapter });
+  return createSqlitePrismaClient(connectionString);
 }
 
 function isValidPrismaClient(
@@ -120,8 +129,4 @@ export const prisma = new Proxy({} as PrismaClient, {
 
 export function getDatabaseKind(): "sqlite" | "postgresql" {
   return getRuntimeDatabaseKind();
-}
-
-if (process.env.NODE_ENV !== "production") {
-  getPrisma();
 }

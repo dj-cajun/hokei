@@ -73,3 +73,20 @@ npm run search:pg:setup
 마이그레이션 lock·PG 이중 운영: [prisma/migrations/README.md](../prisma/migrations/README.md)
 
 대량 이전·드리프트 해소는 [pgloader](https://pgloader.io/) 등 전용 도구를 검토하세요.
+
+## Neon (로컬 CLI → 프로덕션 DB)
+
+로컬 앱은 SQLite(`file:./dev.db`), Neon 작업은 `.env.production.pg`만 사용합니다.
+
+```bash
+# 전체 파이프라인
+npm run news:prod:update
+
+# 단계별
+INGEST_RSS_ONLY=1 npm run news:reset:neon -- --full
+npm run news:backfill-thumbnails -- --neon --missing-only
+npm run db:generate   # 로컬 SQLite Prisma 복구 필수
+```
+
+부트스트랩: `scripts/lib/neon-bootstrap.ts` (`openNeonPrisma`, `restoreLocalSqlitePrisma`)  
+스크립트 목록: [SCRIPTS.md](./SCRIPTS.md)

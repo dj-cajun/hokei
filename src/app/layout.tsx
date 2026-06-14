@@ -11,7 +11,7 @@ import { LoginErrorHandler } from "@/components/auth/login-error-handler";
 import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ThemeScript } from "@/components/providers/theme-script";
+import { THEME_INIT_SCRIPT } from "@/components/providers/theme-script";
 import { WriteFab } from "@/components/layout/write-fab";
 import { AdSenseScript } from "@/components/ads/adsense-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
@@ -89,12 +89,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <ThemeScript />
-        <SiteJsonLd />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body
         className={`${pretendard.className} flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0`}
       >
+        <SiteJsonLd />
         <ThemeProvider>
         <AuthSessionProvider>
           <ToastProvider>

@@ -5,7 +5,7 @@ type CommentForMap = {
   id: string;
   parentId?: string | null;
   content: string;
-  createdAt: Date;
+  createdAt: Date | string;
   authorId: string | null;
   guestName: string | null;
   guestPasswordHash: string | null;
@@ -21,7 +21,10 @@ export function mapPostComments(
     id: c.id,
     parentId: c.parentId ?? null,
     content: c.content,
-    createdAt: c.createdAt.toISOString(),
+    createdAt:
+      typeof c.createdAt === "string"
+        ? c.createdAt
+        : c.createdAt.toISOString(),
     authorName: c.author?.name ?? c.guestName ?? "익명",
     isOwner: Boolean(isAdmin || isCommentOwner(c, sessionUserId)),
     isGuestComment: !c.authorId && Boolean(c.guestPasswordHash),

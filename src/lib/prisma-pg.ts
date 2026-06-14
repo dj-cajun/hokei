@@ -25,6 +25,10 @@ export function normalizePostgresConnectionString(
 export function createPostgresPrisma(connectionString: string): PrismaClient {
   const pool = new Pool({
     connectionString: normalizePostgresConnectionString(connectionString),
+    connectionTimeoutMillis: 15_000,
+    ssl: connectionString.includes("neon.tech")
+      ? { rejectUnauthorized: false }
+      : undefined,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

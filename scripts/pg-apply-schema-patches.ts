@@ -168,6 +168,29 @@ async function main() {
   await exec(`CREATE INDEX IF NOT EXISTS "Post_likeCount_idx" ON "Post"("likeCount")`);
 
   await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "AttachmentKind" AS ENUM ('IMAGE', 'FILE');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "PostAttachment" (
+      "id" TEXT NOT NULL,
+      "postId" TEXT NOT NULL,
+      "url" TEXT NOT NULL,
+      "fileName" TEXT NOT NULL,
+      "mimeType" TEXT NOT NULL,
+      "size" INTEGER NOT NULL,
+      "kind" "AttachmentKind" NOT NULL,
+      "sortOrder" INTEGER NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "PostAttachment_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "PostAttachment_postId_fkey"
+        FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PostAttachment_postId_idx" ON "PostAttachment"("postId")`
+  );
+
+  await exec(`
     CREATE TABLE IF NOT EXISTS "PostLike" (
       "id" TEXT NOT NULL,
       "userId" TEXT NOT NULL,

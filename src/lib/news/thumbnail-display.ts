@@ -1,4 +1,4 @@
-import type { PostTopic } from "@/generated/prisma/client";
+import type { PostTopic } from "@/lib/post-topic";
 import {
   getFallbackThumbnail,
   isFallbackThumbnailUrl,

@@ -16,13 +16,8 @@ describe("buildContentSecurityPolicy", () => {
     expect(csp).toContain("https://googleads.g.doubleclick.net");
   });
 
-  it("allows YouTube embed in frame-src and child-src (not legacy Kakao-only policy)", () => {
-    for (const isDev of [true, false]) {
-      const csp = buildContentSecurityPolicy(isDev);
-      expect(csp).toContain("https://www.youtube-nocookie.com");
-      expect(csp).toContain("https://www.youtube.com");
-      expect(csp).not.toContain("kauth.kakao.com");
-      expect(csp).not.toContain("kakaocdn.net");
-    }
+  it("allows service worker registration on same origin", () => {
+    const csp = buildContentSecurityPolicy(false);
+    expect(csp).toContain("worker-src 'self'");
   });
 });

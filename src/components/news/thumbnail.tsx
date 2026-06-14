@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { PostTopic } from "@/generated/prisma/client";
+import type { PostTopic } from "@/lib/post-topic";
 import { cn } from "@/lib/utils";
 import {
   getFallbackDisplayUrl,

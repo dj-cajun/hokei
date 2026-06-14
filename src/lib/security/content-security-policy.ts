@@ -63,6 +63,7 @@ export function buildContentSecurityPolicy(isDev: boolean): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://accounts.google.com",
     `connect-src ${connectSrc.join(" ")}`,
+    "worker-src 'self'",
     `child-src ${frameAndChildSrc}`,
     `frame-src ${frameAndChildSrc}`,
     "object-src 'none'",

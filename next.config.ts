@@ -6,7 +6,14 @@ const isDev = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = buildContentSecurityPolicy(isDev);
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["jsdom", "@mozilla/readability"],
+  serverExternalPackages: [
+    "jsdom",
+    "@mozilla/readability",
+    "better-sqlite3",
+    "@prisma/adapter-better-sqlite3",
+    "@prisma/adapter-pg",
+    "pg",
+  ],
   async headers() {
     return [
       {

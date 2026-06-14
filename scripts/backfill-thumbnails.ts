@@ -3,8 +3,16 @@
  * - 기사 이미지 있음 → URL 재연결·검증
  * - 없음 → 토픽별 대체 이미지
  * npm run news:backfill-thumbnails
+ * npm run news:backfill-thumbnails -- --neon   (Neon/프로덕션 DB)
+ * npm run news:backfill-thumbnails -- --neon --missing-only   (누락·깨진 것만)
+ * npm run news:backfill-thumbnails -- --neon --stats   (통계만)
  */
-import "dotenv/config";
+import {
+  openNeonPrisma,
+  pingNeonDb,
+  restoreLocalSqlitePrisma,
+} from "./lib/neon-bootstrap";
+import { loadDotenv } from "../src/lib/load-dotenv";
 import { fetchArticleBody } from "../src/lib/news/article-body";
 import {
   getFallbackThumbnail,
@@ -20,10 +28,92 @@ import {
   persistNewsThumbnailToBlob,
 } from "../src/lib/news/persist-thumbnail-blob";
 import { isBlobStorageEnabled } from "../src/lib/upload-blob";
-import { prisma } from "../src/lib/prisma";
 import type { PostTopic } from "../src/generated/prisma/client";
+import type { PrismaClient } from "../src/generated/prisma/client";
+
+function needsThumbnailFix(
+  thumbnail: string | null | undefined,
+  missingOnly: boolean
+): boolean {
+  if (!missingOnly) return true;
+  const t = thumbnail?.trim() ?? "";
+  if (!t) return true;
+  if (isNewsThumbnailBlobUrl(t)) return false;
+  if (isStaticFallbackThumbnailPath(t)) return false;
+  if (isFallbackThumbnailUrl(t) && !isStaticFallbackThumbnailPath(t)) return true;
+  if (t.includes("vnecdn")) return true;
+  return false;
+}
+
+async function printThumbnailStats(prisma: PrismaClient): Promise<void> {
+  const posts = await prisma.post.findMany({
+    where: { isAutomated: true, status: "PUBLISHED" },
+    select: { title: true, thumbnail: true },
+  });
+
+  let empty = 0;
+  let blob = 0;
+  let fallback = 0;
+  let external = 0;
+  const missing: string[] = [];
+
+  for (const p of posts) {
+    const t = p.thumbnail?.trim() ?? "";
+    if (!t) {
+      empty++;
+      missing.push(p.title.slice(0, 50));
+    } else if (isNewsThumbnailBlobUrl(t)) blob++;
+    else if (isFallbackThumbnailUrl(t)) {
+      fallback++;
+      missing.push(p.title.slice(0, 50));
+    } else external++;
+  }
+
+  console.log(
+    JSON.stringify(
+      { total: posts.length, empty, blob, fallback, external },
+      null,
+      2
+    )
+  );
+  if (missing.length) {
+    console.log("needs fix:", missing.slice(0, 10).join("\n"));
+  }
+}
+
+async function bootstrapPrisma(
+  useNeon: boolean,
+  skipGenerate: boolean
+): Promise<PrismaClient> {
+  if (useNeon) {
+    const prisma = await openNeonPrisma({ skipGenerate });
+    await pingNeonDb(prisma, "backfill");
+    return prisma;
+  }
+  loadDotenv();
+  const { prisma } = await import("../src/lib/prisma");
+  return prisma;
+}
 
 async function main() {
+  const useNeon = process.argv.includes("--neon");
+  const missingOnly = process.argv.includes("--missing-only");
+  const skipGenerate = process.argv.includes("--skip-generate");
+  const statsOnly = process.argv.includes("--stats");
+  const prisma = await bootstrapPrisma(useNeon, skipGenerate);
+
+  if (statsOnly) {
+    console.log(`[backfill] stats target=${useNeon ? "neon" : "local"}`);
+    await printThumbnailStats(prisma);
+    await prisma.$disconnect();
+    if (useNeon && !skipGenerate) restoreLocalSqlitePrisma();
+    return;
+  }
+
+  console.log(
+    `[backfill] target=${useNeon ? "neon" : "local"} missingOnly=${missingOnly} skipGenerate=${skipGenerate}`
+  );
+
   const posts = await prisma.post.findMany({
     where: { isAutomated: true, status: "PUBLISHED" },
     select: {
@@ -39,8 +129,14 @@ async function main() {
   let updated = 0;
   let blobCopied = 0;
   let fallbackOnly = 0;
+  let skipped = 0;
 
   for (const post of posts) {
+    if (!needsThumbnailFix(post.thumbnail, missingOnly)) {
+      skipped++;
+      continue;
+    }
+
     const topic = post.topic as PostTopic;
 
     if (
@@ -160,12 +256,16 @@ async function main() {
 
   console.log(
     JSON.stringify(
-      { total: posts.length, kept, updated, blobCopied, fallbackOnly },
+      { total: posts.length, skipped, kept, updated, blobCopied, fallbackOnly },
       null,
       2
     )
   );
   await prisma.$disconnect();
+
+  if (useNeon && !skipGenerate) {
+    restoreLocalSqlitePrisma();
+  }
 }
 
 main().catch((e) => {
