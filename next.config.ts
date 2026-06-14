@@ -6,10 +6,12 @@ const isDev = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = buildContentSecurityPolicy(isDev);
 
 const nextConfig: NextConfig = {
-  // jsdom을 외부 require로 두면 Vercel 런타임(require(ESM) 미지원)에서
-  // 전이 의존성 @exodus/bytes(ESM) require가 ERR_REQUIRE_ESM으로 터진다.
-  // 번들링하면 ESM→CJS로 트랜스파일되어 런타임 Node 버전과 무관하게 동작.
-  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
+  serverExternalPackages: [
+    "jsdom",
+    "@mozilla/readability",
+    "@prisma/adapter-pg",
+    "pg",
+  ],
   async headers() {
     return [
       {
