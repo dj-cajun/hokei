@@ -30,9 +30,10 @@ export function applyNeonShellEnv(url?: string): string {
 }
 
 /** Neon(.env.production.pg)으로 향하는 Postgres Prisma Client */
-export async function openNeonPrisma(_options?: {
+export async function openNeonPrisma(options?: {
   skipGenerate?: boolean;
 }): Promise<PrismaClient> {
+  void options; // 단일 Postgres에서 skipGenerate는 무의미하지만 호출부 호환 위해 유지
   const url = applyNeonShellEnv();
   return createPostgresPrisma(url);
 }
