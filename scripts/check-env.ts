@@ -47,9 +47,47 @@ if (!existsSync(envPath)) {
   process.exit(1);
 }
 
-const content = readFileSync(envPath, "utf8");
-const keys = parseKeys(content);
+const localContent = readFileSync(envPath, "utf8");
+
+// 프로덕션 점검은 .env.production.pg(있으면)를 우선 — 로컬 .env는 SQLite/localhost라 항상 실패
+const prodEnvPath = path.join(process.cwd(), ".env.production.pg");
+const hasProdEnv = production && existsSync(prodEnvPath);
+const prodContent = hasProdEnv ? readFileSync(prodEnvPath, "utf8") : "";
+
+/** 필수/권장: .env.production.pg에 있으면 그 값, 없으면 .env 폴백 */
+function pickContent(key: string): string {
+  if (hasProdEnv && new RegExp(`^${key}=`, "m").test(prodContent)) {
+    return prodContent;
+  }
+  return localContent;
+}
+
+/**
+ * 프로덕션 전용 값 — Vercel에서 관리하는 키는 로컬 .env(SQLite/localhost)로 폴백하지 않음.
+ * .env.production.pg에 있으면 그 값, 없으면 "" (→ 점검 생략, Vercel 관리로 간주).
+ */
+function prodValue(key: string): string {
+  if (hasProdEnv && new RegExp(`^${key}=`, "m").test(prodContent)) {
+    return getValue(prodContent, key)?.replace(/^["']|["']$/g, "") ?? "";
+  }
+  return "";
+}
+
+/** 키가 .env.production.pg에 실제로 정의돼 있는지 (없으면 Vercel 관리로 간주) */
+function inProdEnv(key: string): boolean {
+  return hasProdEnv && new RegExp(`^${key}=`, "m").test(prodContent);
+}
+
+const content = localContent;
+const keys = new Set([
+  ...parseKeys(localContent),
+  ...(hasProdEnv ? parseKeys(prodContent) : []),
+]);
 let failed = false;
+
+if (hasProdEnv) {
+  console.log("[env:check] 프로덕션 점검: .env.production.pg + .env 병합");
+}
 
 for (const key of required) {
   if (!keys.has(key)) {
@@ -57,7 +95,7 @@ for (const key of required) {
     failed = true;
     continue;
   }
-  const val = getValue(content, key);
+  const val = getValue(pickContent(key), key);
   if (!val || isPlaceholder(val)) {
     console.error(`[env:check] 필수 미설정/플레이스홀더: ${key}`);
     failed = true;
@@ -71,7 +109,7 @@ for (const key of recommended) {
     console.warn(`[env:check] 권장 누락: ${key}`);
     continue;
   }
-  const val = getValue(content, key);
+  const val = getValue(pickContent(key), key);
   if (!val || isPlaceholder(val)) {
     console.warn(`[env:check] 권장 미설정: ${key}`);
   } else {
@@ -80,35 +118,38 @@ for (const key of recommended) {
 }
 
 if (production) {
-  const db = getValue(content, "DATABASE_URL")?.replace(/^["']|["']$/g, "") ?? "";
+  const db = getValue(pickContent("DATABASE_URL"), "DATABASE_URL")?.replace(/^["']|["']$/g, "") ?? "";
   if (db.startsWith("file:")) {
     console.error(
-      "[env:check] 프로덕션: DATABASE_URL은 PostgreSQL이어야 합니다 (Neon/Supabase)"
+      "[env:check] 프로덕션: DATABASE_URL은 PostgreSQL이어야 합니다 (Neon/Supabase). .env.production.pg 확인"
     );
     failed = true;
   } else {
     console.log("[env:check] OK DATABASE_URL (PostgreSQL)");
   }
 
-  const site =
-    getValue(content, "NEXT_PUBLIC_SITE_URL")?.replace(/^["']|["']$/g, "") ?? "";
-  if (!site.startsWith("https://") || /localhost|127\.0\.0\.1/i.test(site)) {
+  const site = prodValue("NEXT_PUBLIC_SITE_URL");
+  if (site && (!site.startsWith("https://") || /localhost|127\.0\.0\.1/i.test(site))) {
     console.error(
       "[env:check] 프로덕션: NEXT_PUBLIC_SITE_URL=https://실제도메인 필요"
     );
     failed = true;
-  } else {
+  } else if (site) {
     console.log("[env:check] OK NEXT_PUBLIC_SITE_URL (https)");
+  } else {
+    console.log(
+      "[env:check] NEXT_PUBLIC_SITE_URL은 Vercel 환경변수에서 관리 (로컬 점검 생략)"
+    );
   }
 
-  const auth = getValue(content, "AUTH_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
-  if (auth.length < 32) {
+  const auth = prodValue("AUTH_SECRET");
+  if (auth && auth.length < 32) {
     console.error("[env:check] 프로덕션: AUTH_SECRET 32자 이상 권장");
     failed = true;
   }
 
-  const resend = getValue(content, "RESEND_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
-  const emailFrom = getValue(content, "EMAIL_FROM")?.replace(/^["']|["']$/g, "") ?? "";
+  const resend = getValue(pickContent("RESEND_API_KEY"), "RESEND_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
+  const emailFrom = getValue(pickContent("EMAIL_FROM"), "EMAIL_FROM")?.replace(/^["']|["']$/g, "") ?? "";
   if (!resend || isPlaceholder(resend) || !emailFrom || isPlaceholder(emailFrom)) {
     console.warn(
       "[env:check] 프로덕션: RESEND_API_KEY·EMAIL_FROM 없으면 이메일 가입 불가 (Google 로그인만 가능)"
@@ -117,45 +158,53 @@ if (production) {
     console.log("[env:check] OK RESEND (이메일 가입)");
   }
 
-  const naverId =
-    getValue(content, "NAVER_CLIENT_ID")?.replace(/^["']|["']$/g, "") ?? "";
-  const naverSecret =
-    getValue(content, "NAVER_CLIENT_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
+  const naverId = prodValue("NAVER_CLIENT_ID");
+  const naverSecret = prodValue("NAVER_CLIENT_SECRET");
   const naverOk =
     naverId.length >= 8 &&
     naverSecret.length >= 8 &&
     !isPlaceholder(naverId) &&
     !isPlaceholder(naverSecret);
-  const gemini = getValue(content, "GEMINI_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
-  const zai = getValue(content, "ZAI_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
+  const gemini = prodValue("GEMINI_API_KEY");
+  const zai = prodValue("ZAI_API_KEY");
   const translateOk =
     (gemini.length > 8 && !isPlaceholder(gemini)) ||
     (zai.length > 8 && !isPlaceholder(zai)) ||
-    Boolean(
-      getValue(content, "GOOGLE_TRANSLATE_API_KEY")?.replace(/^["']|["']$/g, "")
-    );
-  const cron = getValue(content, "CRON_SECRET")?.replace(/^["']|["']$/g, "") ?? "";
-  if (!cron || isPlaceholder(cron)) {
+    Boolean(prodValue("GOOGLE_TRANSLATE_API_KEY"));
+  const cron = prodValue("CRON_SECRET");
+  if (cron && !isPlaceholder(cron)) {
+    console.log("[env:check] OK CRON_SECRET");
+  } else if (inProdEnv("CRON_SECRET")) {
     console.error("[env:check] 프로덕션: CRON_SECRET 필수 (Vercel Cron 401 방지)");
     failed = true;
   } else {
-    console.log("[env:check] OK CRON_SECRET");
+    console.log("[env:check] CRON_SECRET은 Vercel 환경변수에서 관리 (로컬 점검 생략)");
   }
-  if (!translateOk) {
+
+  const translateInProd =
+    inProdEnv("GEMINI_API_KEY") ||
+    inProdEnv("ZAI_API_KEY") ||
+    inProdEnv("GOOGLE_TRANSLATE_API_KEY");
+  if (translateOk) {
+    if (!naverOk) {
+      console.log(
+        "[env:check] OK 뉴스 수집 — Vercel RSS 우회 모드 (네이버 API 불필요)"
+      );
+    }
+  } else if (translateInProd) {
     console.error(
       "[env:check] 프로덕션 뉴스: GEMINI_API_KEY 또는 ZAI_API_KEY 필수 (Vercel RSS 우회+번역)"
     );
     failed = true;
-  } else if (!naverOk) {
+  } else {
     console.log(
-      "[env:check] OK 뉴스 수집 — Vercel RSS 우회 모드 (네이버 API 불필요)"
+      "[env:check] GEMINI/ZAI 번역 키는 Vercel 환경변수에서 관리 (로컬 점검 생략)"
     );
   }
-
   if (!keys.has("BLOB_READ_WRITE_TOKEN")) {
     console.warn("[env:check] 프로덕션 권장: BLOB_READ_WRITE_TOKEN (Vercel Blob)");
   } else {
-    const blob = getValue(content, "BLOB_READ_WRITE_TOKEN");
+    const blob = prodValue("BLOB_READ_WRITE_TOKEN") || getValue(localContent, "BLOB_READ_WRITE_TOKEN");
     if (blob && !isPlaceholder(blob)) {
       console.log("[env:check] OK BLOB_READ_WRITE_TOKEN");
     } else {
