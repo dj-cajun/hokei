@@ -1,32 +1,22 @@
 # Prisma 마이그레이션
 
-## 구조
+## 구조 (단일 PostgreSQL)
 
-| 환경 | 스키마 | 마이그레이션 |
-|------|--------|-------------|
-| 로컬 SQLite | `prisma/schema.prisma` | `prisma/migrations/` (`migration_lock.toml` = **sqlite**) |
-| 프로덕션 PG | `prisma/schema.postgresql.prisma` | `migrate deploy` + `scripts/pg-apply-schema-patches.ts` |
+로컬·프로덕션 모두 **PostgreSQL** 단일 스키마(`prisma/schema.prisma`)를 사용합니다.
+로컬 개발은 Neon dev 브랜치, 프로덕션은 Neon production 브랜치를 가리킵니다.
 
-`migration_lock.toml`이 `sqlite`이므로 Neon/Vercel에서 `prisma migrate deploy`만으로는 **P3019**가 날 수 있습니다.  
-프로덕션 빌드는 `scripts/prisma-generate-for-deploy.ts`가 PG Client 생성 후 `pg-patch`로 누락 컬럼·테이블을 idempotent 보완합니다.
+`prisma/migrations/`의 기존 마이그레이션은 초기 SQLite 시절 산출물이라
+`migration_lock.toml`이 `sqlite`입니다. 따라서 Neon/Vercel에서 `prisma migrate deploy`만으로는
+**P3019**가 날 수 있어, 프로덕션 빌드는 `scripts/prisma-generate-for-deploy.ts`가
+PG Client를 생성한 뒤 `scripts/pg-apply-schema-patches.ts`(`pg-patch`)로
+누락 컬럼·테이블·인덱스를 idempotent 하게 보완합니다.
 
-## 로컬
+## 로컬 / 프로덕션 공통
 
 ```bash
-# SQLite
-DATABASE_URL="file:./dev.db" npm run db:generate
-npx prisma db push
-
-# PostgreSQL (Docker/Neon)
 DATABASE_URL="postgresql://..." npm run db:generate
-npm run db:pg:push
-```
-
-## SQLite → PostgreSQL 데이터 이전
-
-```bash
-npm run db:migrate:sqlite-to-pg
-npm run search:pg:setup
+npm run db:pg:push        # 스키마 반영 (db push)
+npm run search:pg:setup   # 전문 검색(FTS) 설정
 ```
 
 자세한 내용: [docs/DATABASE.md](../../docs/DATABASE.md)

@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { getGeneratedPrismaActiveProvider } from "@/lib/prisma-generated-provider";
-import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
 import { getDatabaseKind } from "@/lib/prisma";
 import { getPostById } from "@/lib/posts";
 
@@ -22,8 +20,6 @@ export async function GET(request: Request) {
     "cmqcnt4430000h4h7o4n0k0hn";
 
   const meta = {
-    marker: PRISMA_DATASOURCE_PROVIDER,
-    generated: getGeneratedPrismaActiveProvider(),
     runtime: getDatabaseKind(),
     vercel: process.env.VERCEL === "1",
   };

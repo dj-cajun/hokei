@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     "jsdom",
     "@mozilla/readability",
-    "better-sqlite3",
-    "@prisma/adapter-better-sqlite3",
     "@prisma/adapter-pg",
     "pg",
   ],

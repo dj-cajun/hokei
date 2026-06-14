@@ -1,11 +1,13 @@
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { createPostgresPrisma } from "../src/lib/prisma-pg";
 import { seedCategories } from "./seed-categories";
 
-const connectionString = process.env.DATABASE_URL ?? "file:./dev.db";
-const adapter = new PrismaBetterSqlite3({ url: connectionString });
-const prisma = new PrismaClient({ adapter });
+const connectionString = process.env.DATABASE_URL?.trim() ?? "";
+if (!connectionString.startsWith("postgres")) {
+  console.error("[seed:categories] DATABASE_URL=postgresql://… 필요 (단일 Postgres)");
+  process.exit(1);
+}
+const prisma = createPostgresPrisma(connectionString);
 
 if (!process.argv.includes("--force-reset")) {
   console.error(

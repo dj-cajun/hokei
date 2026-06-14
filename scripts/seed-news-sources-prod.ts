@@ -1,6 +1,6 @@
 /**
  * Neon 등 Postgres — NewsSourceConfig 시드
- * DATABASE_URL=postgresql://... PRISMA_SCHEMA=prisma/schema.postgresql.prisma npx tsx scripts/seed-news-sources-prod.ts
+ * DATABASE_URL=postgresql://... npx tsx scripts/seed-news-sources-prod.ts
  */
 import { syncNewsSourcesFromCode } from "../src/lib/news/seed-sources-config";
 import { prisma } from "../src/lib/prisma";

@@ -2,21 +2,15 @@
  * CATEGORY_MASTER 기준으로 Category.description 복구 (delete 없이 update)
  */
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
 import { CATEGORY_MASTER } from "../prisma/seed-categories";
 
 function createPrisma() {
-  const connectionString = process.env.DATABASE_URL ?? "file:./dev.db";
-  if (
-    connectionString.startsWith("postgresql://") ||
-    connectionString.startsWith("postgres://")
-  ) {
-    return createPostgresPrisma(connectionString);
+  const connectionString = process.env.DATABASE_URL?.trim() ?? "";
+  if (!connectionString.startsWith("postgres")) {
+    throw new Error("[sync-category] DATABASE_URL=postgresql://… 필요 (단일 Postgres)");
   }
-  const adapter = new PrismaBetterSqlite3({ url: connectionString });
-  return new PrismaClient({ adapter });
+  return createPostgresPrisma(connectionString);
 }
 
 const prisma = createPrisma();

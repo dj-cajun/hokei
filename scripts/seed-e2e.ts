@@ -2,13 +2,15 @@
  * CI·E2E용 최소 데이터 (카테고리 + 샘플 글 1건)
  */
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { createPostgresPrisma } from "../src/lib/prisma-pg";
 import { seedCategories } from "../prisma/seed-categories";
 
-const connectionString = process.env.DATABASE_URL ?? "file:./dev.db";
-const adapter = new PrismaBetterSqlite3({ url: connectionString });
-const prisma = new PrismaClient({ adapter });
+const connectionString = process.env.DATABASE_URL?.trim() ?? "";
+if (!connectionString.startsWith("postgres")) {
+  console.error("[seed-e2e] DATABASE_URL=postgresql://… 필요 (단일 Postgres)");
+  process.exit(1);
+}
+const prisma = createPostgresPrisma(connectionString);
 
 async function main() {
   const categoryCount = await prisma.category.count();

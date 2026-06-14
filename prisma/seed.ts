@@ -1,20 +1,17 @@
 import "dotenv/config";
 import { hash } from "bcryptjs";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
+import type { PrismaClient } from "../src/generated/prisma/client";
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
 import { seedCategories } from "./seed-categories";
 
 function createSeedPrisma(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL ?? "file:./dev.db";
-  if (
-    connectionString.startsWith("postgresql://") ||
-    connectionString.startsWith("postgres://")
-  ) {
-    return createPostgresPrisma(connectionString);
+  const connectionString = process.env.DATABASE_URL?.trim() ?? "";
+  if (!connectionString.startsWith("postgres")) {
+    throw new Error(
+      "[seed] DATABASE_URL=postgresql://… 필요 (단일 Postgres — 로컬은 Neon dev 브랜치)"
+    );
   }
-  const adapter = new PrismaBetterSqlite3({ url: connectionString });
-  return new PrismaClient({ adapter });
+  return createPostgresPrisma(connectionString);
 }
 
 const prisma = createSeedPrisma();

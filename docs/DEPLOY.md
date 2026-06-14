@@ -46,8 +46,7 @@ Neon 등 PostgreSQL URL 확보 후 (예: `npx neon-new -y -e .env.production.pg`
 
 ```bash
 export DATABASE_URL="postgresql://..."   # .env.production.pg 참고
-npx prisma db push                      # PRISMA_SCHEMA=prisma/schema.postgresql.prisma
-npm run db:migrate:sqlite-to-pg         # 기존 dev.db 데이터 이전
+npx prisma db push                      # 단일 schema (prisma/schema.prisma)
 npm run search:pg:setup
 npm run db:sync:category-descriptions
 npx vercel env add DATABASE_URL production   # Vercel에 동일 URL 등록

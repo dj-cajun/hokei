@@ -4,7 +4,7 @@
  */
 import { execSync } from "child_process";
 
-process.env.PRISMA_SCHEMA = "prisma/schema.postgresql.prisma";
+process.env.PRISMA_SCHEMA = "prisma/schema.prisma";
 
 console.log("[migrate-prod] Vercel production DATABASE_URL로 migrate deploy …");
 execSync(

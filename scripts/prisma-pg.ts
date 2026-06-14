@@ -15,6 +15,6 @@ if (!args) {
 }
 
 run(`npx prisma ${args}`, {
-  PRISMA_SCHEMA: "prisma/schema.postgresql.prisma",
+  PRISMA_SCHEMA: "prisma/schema.prisma",
   DATABASE_URL: PG_URL,
 });

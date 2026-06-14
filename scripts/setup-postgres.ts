@@ -18,12 +18,12 @@ async function main() {
   await waitForPostgres();
 
   run("npx prisma generate", {
-    PRISMA_SCHEMA: "prisma/schema.postgresql.prisma",
+    PRISMA_SCHEMA: "prisma/schema.prisma",
     DATABASE_URL: PG_URL,
   });
 
   run("npx prisma db push", {
-    PRISMA_SCHEMA: "prisma/schema.postgresql.prisma",
+    PRISMA_SCHEMA: "prisma/schema.prisma",
     DATABASE_URL: PG_URL,
   });
 

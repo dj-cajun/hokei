@@ -45,20 +45,30 @@ function applyThemeClass(resolved: "light" | "dark") {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
-  const [systemDark, setSystemDark] = useState(readSystemDark);
+  // SSR과 클라이언트 첫 렌더가 반드시 일치하도록 결정적 초기값 사용 (#418 하이드레이션 방지)
+  // 실제 값은 마운트 후 localStorage/시스템 설정에서 동기화. 화면 깜빡임은 <head> 인라인 스크립트가 차단.
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [systemDark, setSystemDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const resolvedTheme: "light" | "dark" =
     theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
   useEffect(() => {
+    setThemeState(readStoredTheme());
+    setSystemDark(readSystemDark());
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     applyThemeClass(resolvedTheme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {
       /* ignore */
     }
-  }, [theme, resolvedTheme]);
+  }, [mounted, theme, resolvedTheme]);
 
   useEffect(() => {
     if (theme !== "system") return;

@@ -1,36 +1,21 @@
 /**
- * DATABASE_URL과 생성된 Prisma Client provider 불일치 시 자동 재생성 (로컬 dev)
+ * 생성된 Prisma Client가 없으면 생성 (단일 PostgreSQL).
  */
+import { existsSync } from "fs";
+import { join } from "path";
 import { spawnSync } from "child_process";
-import { loadDotenv } from "../src/lib/load-dotenv";
-import { PRISMA_DATASOURCE_PROVIDER } from "../src/lib/prisma-datasource";
-import { getGeneratedPrismaActiveProvider } from "../src/lib/prisma-generated-provider";
-import {
-  isPostgresDatabaseUrl,
-  resolveDatabaseUrlForPrismaGenerate,
-} from "../src/lib/read-env-file";
 
-loadDotenv();
+const clientDir = join(process.cwd(), "src/generated/prisma");
+const hasClient =
+  existsSync(join(clientDir, "client.ts")) ||
+  existsSync(join(clientDir, "client.js"));
 
-delete process.env.PRISMA_USE_SHELL_DATABASE_URL;
-
-const url = resolveDatabaseUrlForPrismaGenerate();
-if (url) {
-  process.env.DATABASE_URL = url;
-}
-
-const expected = isPostgresDatabaseUrl(url) ? "postgresql" : "sqlite";
-const actual = getGeneratedPrismaActiveProvider();
-const marker = PRISMA_DATASOURCE_PROVIDER;
-
-if (actual === expected && marker === expected) {
-  console.log(`[prisma] Client provider=${actual} (ok)`);
+if (hasClient) {
+  console.log("[prisma] Client 존재 (ok)");
   process.exit(0);
 }
 
-console.warn(
-  `[prisma] 불일치 → 재생성 (client=${actual}, marker=${marker}, expected=${expected})`
-);
+console.log("[prisma] Client 없음 → 생성");
 const r = spawnSync("npx", ["tsx", "scripts/prisma-generate-for-deploy.ts"], {
   stdio: "inherit",
   env: process.env,

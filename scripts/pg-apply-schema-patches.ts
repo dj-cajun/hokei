@@ -17,7 +17,7 @@ const gen = spawnSync("npx", ["prisma", "generate"], {
   env: {
     ...process.env,
     DATABASE_URL: url,
-    PRISMA_SCHEMA: "prisma/schema.postgresql.prisma",
+    PRISMA_SCHEMA: "prisma/schema.prisma",
   },
 });
 if (gen.status !== 0) {

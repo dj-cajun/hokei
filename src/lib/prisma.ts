@@ -2,94 +2,40 @@ import { loadDotenv } from "@/lib/load-dotenv";
 
 loadDotenv();
 
-import { existsSync } from "fs";
 import { PrismaClient } from "@/generated/prisma/client";
-import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
-import { getGeneratedPrismaActiveProvider } from "@/lib/prisma-generated-provider";
 import { createPostgresPrisma } from "@/lib/prisma-pg";
-import { resolveDatabaseUrlForPrismaGenerate } from "@/lib/read-env-file";
+import { isPostgresDatabaseUrl } from "@/lib/read-env-file";
 
+// 모듈 로드 시점에는 던지지 않는다 (next build의 page-data 수집·테스트에서 import만 해도
+// 터지는 것을 방지). 실제 쿼리 시점(getPrisma)에 검증.
 function resolveConnectionString(): string {
-  const url = resolveDatabaseUrlForPrismaGenerate();
-  if (url) return url;
-  if (
-    PRISMA_DATASOURCE_PROVIDER === "sqlite" &&
-    existsSync("dev.db")
-  ) {
-    return "file:./dev.db";
-  }
-  if (process.env.VERCEL === "1") return "";
-  if (PRISMA_DATASOURCE_PROVIDER === "sqlite") return "file:./dev.db";
-  throw new Error(
-    "DATABASE_URL이 비어 있습니다. .env에 postgresql://… 또는 로컬 SQLite용 file:./dev.db 를 설정하세요."
-  );
-}
+  const url = process.env.DATABASE_URL?.trim() ?? "";
 
-const connectionString = resolveConnectionString();
+  if (!url) {
+    throw new Error(
+      [
+        "DATABASE_URL이 비어 있습니다.",
+        "이 프로젝트는 Neon PostgreSQL 단일 DB를 사용합니다.",
+        '.env에 DATABASE_URL="postgresql://…" 를 설정하세요 (로컬은 Neon dev 브랜치 권장).',
+      ].join("\n")
+    );
+  }
+
+  if (!isPostgresDatabaseUrl(url)) {
+    throw new Error(
+      [
+        `DATABASE_URL이 PostgreSQL이 아닙니다: ${url.slice(0, 16)}…`,
+        "이 프로젝트는 Neon PostgreSQL 단일 DB를 사용합니다 (SQLite 미지원).",
+      ].join("\n")
+    );
+  }
+
+  return url;
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
-  prismaConnectionKind?: "sqlite" | "postgresql";
 };
-
-function isPostgresUrl(url: string): boolean {
-  return url.startsWith("postgresql://") || url.startsWith("postgres://");
-}
-
-function getRuntimeDatabaseKind(): "sqlite" | "postgresql" {
-  return isPostgresUrl(connectionString) ? "postgresql" : "sqlite";
-}
-
-function assertProviderMatchesUrl(): void {
-  const runtime = getRuntimeDatabaseKind();
-  const generated = getGeneratedPrismaActiveProvider();
-  const onVercel = process.env.VERCEL === "1";
-
-  if (generated !== runtime) {
-    throw new Error(
-      [
-        `생성된 Prisma Client(${generated})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
-        "로컬: npm run dev  또는  npm run db:generate",
-        "캐시 초기화: npm run dev:clean",
-      ].join("\n")
-    );
-  }
-
-  // Neon CLI: neon-bootstrap이 marker를 갱신 — 쉘 Postgres URL 우선 시 marker 검사 생략
-  const shellPg = process.env.PRISMA_USE_SHELL_DATABASE_URL === "1";
-  if (!onVercel && !shellPg && PRISMA_DATASOURCE_PROVIDER !== runtime) {
-    throw new Error(
-      [
-        `prisma-datasource 마커(${PRISMA_DATASOURCE_PROVIDER})와 DATABASE_URL(${runtime})이 맞지 않습니다.`,
-        "다음을 실행하세요: npm run db:generate",
-        `로컬 SQLite: DATABASE_URL="file:./dev.db"`,
-        `Neon/프로덕션: DATABASE_URL="postgresql://..."`,
-      ].join("\n")
-    );
-  }
-}
-
-function createSqlitePrismaClient(url: string): PrismaClient {
-  // Vercel(Postgres) 런타임에서 네이티브 모듈 로드 방지 — SQLite 경로에서만 require
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
-  const adapter = new PrismaBetterSqlite3({ url });
-  return new PrismaClient({ adapter });
-}
-
-function createPrismaClient(): PrismaClient {
-  assertProviderMatchesUrl();
-
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured");
-  }
-
-  if (getRuntimeDatabaseKind() === "postgresql") {
-    return createPostgresPrisma(connectionString);
-  }
-
-  return createSqlitePrismaClient(connectionString);
-}
 
 function isValidPrismaClient(
   client: PrismaClient | undefined
@@ -98,22 +44,12 @@ function isValidPrismaClient(
 }
 
 function getPrisma(): PrismaClient {
-  const kind = getRuntimeDatabaseKind();
   const existing = globalForPrisma.prisma;
-
-  if (
-    isValidPrismaClient(existing) &&
-    globalForPrisma.prismaConnectionKind === kind
-  ) {
+  if (isValidPrismaClient(existing)) {
     return existing;
   }
 
-  if (existing) {
-    void (existing as PrismaClient).$disconnect().catch(() => undefined);
-  }
-
-  globalForPrisma.prisma = createPrismaClient();
-  globalForPrisma.prismaConnectionKind = kind;
+  globalForPrisma.prisma = createPostgresPrisma(resolveConnectionString());
   return globalForPrisma.prisma;
 }
 
@@ -127,6 +63,10 @@ export const prisma = new Proxy({} as PrismaClient, {
   },
 });
 
+/**
+ * 단일 Postgres DB를 사용하므로 항상 "postgresql".
+ * 반환 타입은 기존 호출부(`!== "sqlite"` 비교) 호환을 위해 유니온 유지.
+ */
 export function getDatabaseKind(): "sqlite" | "postgresql" {
-  return getRuntimeDatabaseKind();
+  return "postgresql";
 }

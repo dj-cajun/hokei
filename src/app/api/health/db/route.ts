@@ -2,9 +2,7 @@ import { apiSuccess } from "@/lib/api-response";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { log } from "@/lib/logger";
 import { newsAutomatedWhere } from "@/lib/news/news-list-where";
-import { prisma } from "@/lib/prisma";
-import { getGeneratedPrismaActiveProvider } from "@/lib/prisma-generated-provider";
-import { PRISMA_DATASOURCE_PROVIDER } from "@/lib/prisma-datasource";
+import { getDatabaseKind, prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +22,7 @@ export async function GET() {
     vercel: process.env.VERCEL === "1",
     databaseConfigured: isDatabaseAvailable(),
     dbHost: host || null,
-    prismaMarker: PRISMA_DATASOURCE_PROVIDER,
-    prismaClient: getGeneratedPrismaActiveProvider(),
+    db: getDatabaseKind(),
   };
 
   if (!isDatabaseAvailable()) {

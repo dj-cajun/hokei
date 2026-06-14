@@ -1,5 +1,6 @@
 /**
- * DATABASE_URL에 맞는 Prisma Client 생성 (Vercel·로컬 공통)
+ * Prisma Client 생성 (Vercel·로컬 공통) — 단일 PostgreSQL 스키마.
+ * 실제 Postgres DB가 연결될 때만 idempotent 스키마 패치를 적용한다.
  */
 import { loadDotenv } from "../src/lib/load-dotenv";
 import {
@@ -9,8 +10,6 @@ import {
 import { spawnSync } from "child_process";
 
 loadDotenv();
-import { writeFileSync } from "fs";
-import { join } from "path";
 
 const url = resolveDatabaseUrlForPrismaGenerate();
 const onVercel = process.env.VERCEL === "1";
@@ -20,46 +19,31 @@ if (onVercel && !isPostgresDatabaseUrl(url)) {
     [
       "[prisma-generate] Vercel 빌드에 postgresql:// DATABASE_URL이 필요합니다.",
       "Vercel → Settings → Environment Variables → DATABASE_URL",
-      "→ Production·Preview·Development 모두 체크 (Build 시 postinstall에서 사용)",
+      "→ Production·Preview·Development 모두 체크",
       "현재 URL:",
-      url ? `${url.slice(0, 24)}…` : "(비어 있음 → SQLite client 생성됨 → 로그인 google_login_failed)",
+      url ? `${url.slice(0, 24)}…` : "(비어 있음)",
     ].join("\n")
   );
   process.exit(1);
 }
 
-const isPostgres = isPostgresDatabaseUrl(url);
-const schema = isPostgres
-  ? "prisma/schema.postgresql.prisma"
-  : "prisma/schema.prisma";
-const provider = isPostgres ? "postgresql" : "sqlite";
-
-console.log(`[prisma-generate] schema=${schema} provider=${provider}`);
+console.log("[prisma-generate] schema=prisma/schema.prisma provider=postgresql");
 
 const r = spawnSync("npx", ["prisma", "generate"], {
   stdio: "inherit",
-  env: { ...process.env, PRISMA_SCHEMA: schema },
+  env: process.env,
 });
 
 if (r.status !== 0) {
   process.exit(r.status ?? 1);
 }
 
-const markerPath = join(process.cwd(), "src/lib/prisma-datasource.ts");
-const marker = `/** 자동 생성 — scripts/prisma-generate-for-deploy.ts (직접 수정하지 마세요) */
-export type PrismaDatasourceProvider = "sqlite" | "postgresql";
-
-export const PRISMA_DATASOURCE_PROVIDER: PrismaDatasourceProvider = "${provider}";
-`;
-writeFileSync(markerPath, marker, "utf8");
-console.log(`[prisma-generate] wrote ${markerPath}`);
-
-if (isPostgres) {
-  // migration_lock.toml=sqlite — PG는 migrate deploy 대신 idempotent pg-patch만 사용
+// 실제 Postgres DB가 있을 때만 스키마 패치 (로컬에서 DATABASE_URL 미설정 시 generate만)
+if (isPostgresDatabaseUrl(url)) {
   console.log("[prisma-generate] postgres pg-patch …");
   const patch = spawnSync("npx", ["tsx", "scripts/pg-apply-schema-patches.ts"], {
     stdio: "inherit",
-    env: { ...process.env, PRISMA_SCHEMA: schema },
+    env: process.env,
   });
   if (patch.status !== 0) {
     process.exit(patch.status ?? 1);
