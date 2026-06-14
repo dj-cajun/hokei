@@ -5,20 +5,23 @@ import {
 } from "@/lib/read-env-file";
 
 describe("resolveLocalDevDatabaseUrl", () => {
-  it("prefers .env sqlite when shell has leftover postgres URL", () => {
+  it("prefers postgres from process env", () => {
     expect(
       resolveLocalDevDatabaseUrl(
         "postgresql://neon.example/db",
         "file:./dev.db"
       )
-    ).toBe("file:./dev.db");
+    ).toBe("postgresql://neon.example/db");
   });
 
-  it("uses process env when not sqlite override", () => {
+  it("falls back to postgres in .env file", () => {
+    expect(resolveLocalDevDatabaseUrl("", "postgresql://neon.example/db")).toBe(
+      "postgresql://neon.example/db"
+    );
+  });
+
+  it("returns empty when neither is postgres", () => {
     expect(resolveLocalDevDatabaseUrl("", "file:./dev.db")).toBe("file:./dev.db");
-    expect(
-      resolveLocalDevDatabaseUrl("postgresql://neon.example/db", "")
-    ).toBe("postgresql://neon.example/db");
   });
 });
 

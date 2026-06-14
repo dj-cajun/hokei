@@ -22,18 +22,14 @@ export function isPostgresDatabaseUrl(url: string): boolean {
   return url.startsWith("postgresql://") || url.startsWith("postgres://");
 }
 
-/** 로컬 dev: 쉘 Postgres + .env SQLite일 때 file 우선 */
+/** 로컬 dev: Postgres 단일 DB — process env 우선, 없으면 .env */
 export function resolveLocalDevDatabaseUrl(
   fromProcess: string,
   fromFile: string
 ): string {
-  if (
-    fromFile.startsWith("file:") &&
-    isPostgresDatabaseUrl(fromProcess)
-  ) {
-    return fromFile;
-  }
-  return fromProcess || fromFile || "file:./dev.db";
+  if (isPostgresDatabaseUrl(fromProcess)) return fromProcess;
+  if (isPostgresDatabaseUrl(fromFile)) return fromFile;
+  return fromProcess || fromFile || "";
 }
 
 /**
@@ -49,21 +45,11 @@ export function resolveDatabaseUrlForPrismaGenerate(): string {
   if (onCi && fromProcess) return fromProcess;
 
   if (!onVercel) {
-    // with-pg-env / --neon: 쉘의 Neon URL 우선 (.env file:./dev.db 덮어쓰기 방지)
+    // with-pg-env / --neon: 쉘의 Neon URL 우선
     if (process.env.PRISMA_USE_SHELL_DATABASE_URL === "1" && fromProcess) {
       return fromProcess;
     }
-    const url = resolveLocalDevDatabaseUrl(fromProcess, fromFile);
-    if (
-      url === fromFile &&
-      fromFile.startsWith("file:") &&
-      isPostgresDatabaseUrl(fromProcess)
-    ) {
-      console.warn(
-        "[prisma-generate] 쉘 DATABASE_URL(Postgres) → .env SQLite 사용 (로컬 dev)"
-      );
-    }
-    return url;
+    return resolveLocalDevDatabaseUrl(fromProcess, fromFile);
   }
 
   // Vercel: 런타임·CI 빌드는 process env 우선. vercel env pull 로컬 production 빌드는 .env.local SQLite 허용

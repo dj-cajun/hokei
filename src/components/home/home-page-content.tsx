@@ -36,6 +36,28 @@ async function loadHomeFeeds(): Promise<
     return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
   }
 
+  const runLoader = async (index: number): Promise<FeedItem[]> => {
+    const [name, load] = homeFeedLoaders[index];
+    try {
+      return await load();
+    } catch (reason) {
+      log(
+        "error",
+        `home feed ${name} failed: ${formatUnknownError(reason)}`
+      );
+      return emptyFeed;
+    }
+  };
+
+  // dev: Neon 원거리 연결 시 병렬 4쿼리가 풀 타임아웃 유발 → 순차 (연결 재사용)
+  if (process.env.NODE_ENV === "development") {
+    const latest = await runLoader(0);
+    const popular = await runLoader(1);
+    const news = await runLoader(2);
+    const notices = await runLoader(3);
+    return [latest, popular, news, notices];
+  }
+
   const results = await Promise.allSettled(
     homeFeedLoaders.map(([, load]) => load())
   );

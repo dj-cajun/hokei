@@ -20,6 +20,7 @@ interface NewsArchivePageProps {
   totalPages: number;
   initialCursor?: string | null;
   flatItems?: FeedItem[];
+  loadError?: string | null;
 }
 
 export function NewsArchivePage({
@@ -30,6 +31,7 @@ export function NewsArchivePage({
   totalPages,
   initialCursor = null,
   flatItems = [],
+  loadError = null,
 }: NewsArchivePageProps) {
   const flatCount = dateGroups.reduce((n, g) => n + g.items.length, 0);
 
@@ -51,7 +53,12 @@ export function NewsArchivePage({
             </h2>
           </header>
 
-          {flatCount === 0 ? (
+          {loadError ? (
+            <EmptyState
+              title="뉴스를 불러오지 못했습니다"
+              description={`DB 연결을 확인하세요. Neon 첫 조회는 10초 이상 걸릴 수 있습니다. (${loadError})`}
+            />
+          ) : flatCount === 0 ? (
             <EmptyState
               title="아직 뉴스가 없습니다"
               description="호치민·베트남 관련 소식이 올라오면 여기에 표시됩니다."

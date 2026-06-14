@@ -9,11 +9,16 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { THEME_COOKIE } from "@/lib/theme-cookie";
 
 export type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "hokei-theme";
 const THEME_EVENT = "hokei-theme-change";
+
+function writeThemeCookie(theme: Theme) {
+  document.cookie = `${THEME_COOKIE}=${theme};path=/;max-age=31536000;SameSite=Lax`;
+}
 
 type ThemeContextValue = {
   theme: Theme;
@@ -74,11 +79,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  }, [resolvedTheme]);
+    try {
+      writeThemeCookie(theme);
+    } catch {
+      /* ignore */
+    }
+  }, [resolvedTheme, theme]);
 
   const setTheme = useCallback((next: Theme) => {
     try {
       localStorage.setItem(STORAGE_KEY, next);
+      writeThemeCookie(next);
     } catch {
       /* ignore */
     }

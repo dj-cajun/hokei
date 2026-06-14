@@ -23,9 +23,15 @@ export function normalizePostgresConnectionString(
 }
 
 export function createPostgresPrisma(connectionString: string): PrismaClient {
+  const isDev = process.env.NODE_ENV === "development";
+  const connectionTimeoutMillis = isDev ? 60_000 : 15_000;
+
   const pool = new Pool({
     connectionString: normalizePostgresConnectionString(connectionString),
-    connectionTimeoutMillis: 15_000,
+    connectionTimeoutMillis,
+    // dev: 동시 4쿼리가 각각 새 연결을 열면 라오스→Neon에서 타임아웃 — 풀 작게 유지
+    max: isDev ? 3 : 10,
+    idleTimeoutMillis: 30_000,
     ssl: connectionString.includes("neon.tech")
       ? { rejectUnauthorized: false }
       : undefined,

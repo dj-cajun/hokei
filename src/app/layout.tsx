@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { pretendard } from "@/lib/fonts";
@@ -11,12 +12,15 @@ import { LoginErrorHandler } from "@/components/auth/login-error-handler";
 import { SiteSocialAuth } from "@/components/auth/site-social-auth";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { THEME_INIT_SCRIPT } from "@/components/providers/theme-script";
 import { WriteFab } from "@/components/layout/write-fab";
 import { AdSenseScript } from "@/components/ads/adsense-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { resolveSiteUrl } from "@/lib/site-url";
+import {
+  darkClassFromThemeCookie,
+  THEME_COOKIE,
+} from "@/lib/theme-cookie";
 
 const siteUrl = resolveSiteUrl();
 
@@ -77,22 +81,23 @@ export const viewport: Viewport = {
   themeColor: "#c8102e",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeCookie = (await cookies()).get(THEME_COOKIE)?.value;
+  const darkClass = darkClassFromThemeCookie(themeCookie);
+
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} h-full antialiased`}
+      className={`${pretendard.variable} h-full antialiased${darkClass ? ` ${darkClass}` : ""}`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
       <body
         className={`${pretendard.className} flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0`}
+        suppressHydrationWarning
       >
         <SiteJsonLd />
         <ThemeProvider>

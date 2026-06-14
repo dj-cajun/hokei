@@ -29,9 +29,7 @@ function SearchInput({
   const [q, setQ] = useState(initialQ);
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
-  const [recent, setRecent] = useState<string[]>(() =>
-    typeof window === "undefined" ? [] : getRecentSearches()
-  );
+  const [recent, setRecent] = useState<string[]>([]);
   const [popular, setPopular] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const isMobile = variant === "mobile";
