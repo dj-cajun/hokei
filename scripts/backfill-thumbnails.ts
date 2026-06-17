@@ -173,7 +173,7 @@ async function main() {
     const isBrokenVnecdn =
       post.thumbnail.includes("vnecdn") && !isNewsThumbnailBlobUrl(post.thumbnail);
     if (isBrokenVnecdn) {
-      const article = await fetchArticleBody(post.sourceUrl);
+      const { article } = await fetchArticleBody(post.sourceUrl);
       const thumb = await resolveAutomatedNewsThumbnail({
         topic,
         link: post.sourceUrl,
@@ -235,7 +235,7 @@ async function main() {
       continue;
     }
 
-    const article = await fetchArticleBody(post.sourceUrl);
+    const { article } = await fetchArticleBody(post.sourceUrl);
     const thumb = await resolveAutomatedNewsThumbnail({
       topic,
       link: post.sourceUrl,

@@ -1,8 +1,8 @@
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
-import { extractTextWithReadability } from "@/lib/news/article-body-readability";
 import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import { parseOgImageFromHtml } from "@/lib/news/image";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
+import { log } from "@/lib/logger";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
 const USER_AGENT =
@@ -16,6 +16,35 @@ export type ArticleBodyResult = {
   img?: string | null;
   source: "playwright" | "html";
 };
+
+/** 본문 추출 실패 사유 — ingest·로그 공통 */
+export type ArticleBodySkipReason =
+  | "invalid_url"
+  | "playwright_short"
+  | "fetch_http"
+  | "fetch_timeout"
+  | "regex_short"
+  | "fetch_error";
+
+export type ArticleBodySkip = {
+  reason: ArticleBodySkipReason;
+  detail?: string;
+  chars?: number;
+};
+
+export type FetchArticleBodyResult = {
+  article: ArticleBodyResult | null;
+  skip?: ArticleBodySkip;
+};
+
+function logBodySkip(url: string, skip: ArticleBodySkip): void {
+  log("warn", "article-body skip", {
+    url,
+    reason: skip.reason,
+    detail: skip.detail,
+    chars: skip.chars,
+  });
+}
 
 function stripNoiseFromHtml(html: string): string {
   return html
@@ -76,10 +105,10 @@ function extractTitleFromHtml(html: string): string {
   return "";
 }
 
-/** fetch + HTML 파싱 (Playwright 불가 시 폴백) */
+/** fetch + HTML 정규식 파싱 (Playwright 불가 시) */
 async function fetchArticleBodyFromHtml(
   url: string
-): Promise<ArticleBodyResult | null> {
+): Promise<FetchArticleBodyResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -95,7 +124,15 @@ async function fetchArticleBodyFromHtml(
       cache: "no-store",
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const skip: ArticleBodySkip = {
+        reason: "fetch_http",
+        detail: String(res.status),
+      };
+      logBodySkip(url, skip);
+      return { article: null, skip };
+    }
+
     const html = (await res.text()).slice(0, 500_000);
 
     const bodyPatterns = [
@@ -110,29 +147,38 @@ async function fetchArticleBodyFromHtml(
       /<article[^>]+class=["'][^"']*fck_detail[^"']*["'][^>]*>([\s\S]*?)<\/article>/i,
     ];
 
-    let extracted = extractFirst(html, bodyPatterns);
-    let content = cleanArticleBody(extracted);
+    const extracted = extractFirst(html, bodyPatterns);
+    const content = cleanArticleBody(extracted);
 
     if (content.length < MIN_BODY_LENGTH) {
-      const fromReadability = await extractTextWithReadability(html, url);
-      if (fromReadability.length > content.length) {
-        content = fromReadability;
-        extracted = fromReadability;
-      }
+      const skip: ArticleBodySkip = {
+        reason: "regex_short",
+        chars: content.length,
+      };
+      logBodySkip(url, skip);
+      return { article: null, skip };
     }
-
-    if (content.length < MIN_BODY_LENGTH) return null;
 
     const title = extractTitleFromHtml(html);
     const img = parseOgImageFromHtml(html.slice(0, 200_000)) ?? null;
     return {
-      title,
-      content: content.slice(0, 15_000),
-      img,
-      source: "html",
+      article: {
+        title,
+        content: content.slice(0, 15_000),
+        img,
+        source: "html",
+      },
     };
-  } catch {
-    return null;
+  } catch (error) {
+    const isAbort =
+      error instanceof Error &&
+      (error.name === "AbortError" || error.message.includes("aborted"));
+    const skip: ArticleBodySkip = {
+      reason: isAbort ? "fetch_timeout" : "fetch_error",
+      detail: error instanceof Error ? error.message : String(error),
+    };
+    logBodySkip(url, skip);
+    return { article: null, skip };
   } finally {
     clearTimeout(timeout);
   }
@@ -140,30 +186,40 @@ async function fetchArticleBodyFromHtml(
 
 /**
  * 기사 원문 URL에서 본문만 추출 (검색 API 요약문 사용 안 함)
- * 1) Playwright 2) HTML fetch
+ * 1) Playwright 2) HTML fetch + 정규식
  */
 export async function fetchArticleBody(
   url: string
-): Promise<ArticleBodyResult | null> {
-  if (!isHttpOrHttpsUrl(url)) return null;
+): Promise<FetchArticleBodyResult> {
+  if (!isHttpOrHttpsUrl(url)) {
+    const skip: ArticleBodySkip = { reason: "invalid_url" };
+    logBodySkip(url, skip);
+    return { article: null, skip };
+  }
 
   if (await isNaverScraperAvailable()) {
     const scraped = await scrapeArticleFromUrl(url);
     const cleaned = cleanArticleBody(scraped?.content ?? "");
     if (cleaned.length >= MIN_BODY_LENGTH) {
       return {
-        title: scraped?.title?.trim() ?? "",
-        content: cleaned.slice(0, 15_000),
-        img: scraped?.img,
-        source: "playwright",
+        article: {
+          title: scraped?.title?.trim() ?? "",
+          content: cleaned.slice(0, 15_000),
+          img: scraped?.img,
+          source: "playwright",
+        },
       };
+    }
+    if (scraped?.content) {
+      const skip: ArticleBodySkip = {
+        reason: "playwright_short",
+        chars: cleaned.length,
+      };
+      logBodySkip(url, skip);
     }
   }
 
-  const fromHtml = await fetchArticleBodyFromHtml(url);
-  if (fromHtml) return fromHtml;
-
-  return null;
+  return fetchArticleBodyFromHtml(url);
 }
 
 /** 본문이 제목과 어느 정도 관련 있는지 (완화된 휴리스틱) */
@@ -175,9 +231,7 @@ export function isBodyLikelyMatchingTitle(
   const c = content.replace(/\s+/g, "");
   if (t.length < 8) return true;
   if (c.includes(t.slice(0, Math.min(20, t.length)))) return true;
-  // 제목 핵심 단어 2개 이상 본문에 포함
   const words = title.split(/\s+/).filter((w) => w.length >= 2).slice(0, 6);
   const hits = words.filter((w) => content.includes(w)).length;
   return hits >= Math.min(2, words.length);
 }
-

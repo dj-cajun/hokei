@@ -223,12 +223,17 @@ export async function ingestDailyNews(
   for (const raw of toProcess) {
     if (result.inserted >= remaining) break;
     try {
-      const { title, content, thumbnail } =
+      const { title, content, thumbnail, bodySkip } =
         await buildPostFromArticlePage(raw);
 
       if (!hasSubstantialNewsBody(content)) {
         result.skipped++;
-        result.errors.push(`${raw.link}: 본문 없음(80자 미만) — 저장 안 함`);
+        const reason = bodySkip?.reason ?? "no_body";
+        const chars = bodySkip?.chars ?? (content ?? "").replace(/\s+/g, "").trim().length;
+        const detail = bodySkip?.detail ? ` (${bodySkip.detail})` : "";
+        result.errors.push(
+          `${raw.link}: [${reason}] 본문 ${chars}자${detail} — 저장 안 함`
+        );
         continue;
       }
 

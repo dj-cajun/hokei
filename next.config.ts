@@ -6,12 +6,7 @@ const isDev = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = buildContentSecurityPolicy(isDev);
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: [
-    "jsdom",
-    "@mozilla/readability",
-    "@prisma/adapter-pg",
-    "pg",
-  ],
+  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
   async headers() {
     return [
       {

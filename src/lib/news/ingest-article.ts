@@ -3,6 +3,7 @@ import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import {
   fetchArticleBody,
   isBodyLikelyMatchingTitle,
+  type ArticleBodySkip,
 } from "@/lib/news/article-body";
 import { resolveAutomatedNewsThumbnail } from "@/lib/news/resolve-post-thumbnail";
 import { isMostlyKorean } from "@/lib/news/language";
@@ -16,8 +17,13 @@ export async function buildPostFromArticlePage(
     RawNewsItem,
     "title" | "link" | "topic" | "sourceName" | "thumbnail" | "description"
   >
-): Promise<{ title: string; content: string | null; thumbnail: string }> {
-  const article = await fetchArticleBody(raw.link);
+): Promise<{
+  title: string;
+  content: string | null;
+  thumbnail: string;
+  bodySkip?: ArticleBodySkip;
+}> {
+  const { article, skip: bodySkip } = await fetchArticleBody(raw.link);
 
   let title = raw.title.trim();
   let content = "";
@@ -67,5 +73,6 @@ export async function buildPostFromArticlePage(
     title: decodeHtmlEntities(title.trim()),
     content: body ? decodeHtmlEntities(body) : null,
     thumbnail,
+    bodySkip: body ? undefined : bodySkip,
   };
 }
