@@ -16,14 +16,17 @@ export async function buildPostFromArticlePage(
   raw: Pick<
     RawNewsItem,
     "title" | "link" | "topic" | "sourceName" | "thumbnail" | "description"
-  >
+  >,
+  options?: { fetchTimeoutMs?: number }
 ): Promise<{
   title: string;
   content: string | null;
   thumbnail: string;
   bodySkip?: ArticleBodySkip;
 }> {
-  const { article, skip: bodySkip } = await fetchArticleBody(raw.link);
+  const { article, skip: bodySkip } = await fetchArticleBody(raw.link, {
+    fetchTimeoutMs: options?.fetchTimeoutMs,
+  });
 
   let title = raw.title.trim();
   let content = "";

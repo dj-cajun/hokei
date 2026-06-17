@@ -3,11 +3,11 @@ import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import { parseOgImageFromHtml } from "@/lib/news/image";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { log } from "@/lib/logger";
+import { getIngestFetchTimeoutMs } from "@/lib/news/ingest-budget";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
 const USER_AGENT =
   "Mozilla/5.0 (compatible; HokeiNewsBot/1.0; +https://hokei.vn)";
-const FETCH_TIMEOUT_MS = 12_000;
 const MIN_BODY_LENGTH = 80;
 
 export type ArticleBodyResult = {
@@ -30,6 +30,10 @@ export type ArticleBodySkip = {
   reason: ArticleBodySkipReason;
   detail?: string;
   chars?: number;
+};
+
+export type FetchArticleBodyOptions = {
+  fetchTimeoutMs?: number;
 };
 
 export type FetchArticleBodyResult = {
@@ -107,10 +111,11 @@ function extractTitleFromHtml(html: string): string {
 
 /** fetch + HTML 정규식 파싱 (Playwright 불가 시) */
 async function fetchArticleBodyFromHtml(
-  url: string
+  url: string,
+  fetchTimeoutMs: number
 ): Promise<FetchArticleBodyResult> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), fetchTimeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -189,8 +194,10 @@ async function fetchArticleBodyFromHtml(
  * 1) Playwright 2) HTML fetch + 정규식
  */
 export async function fetchArticleBody(
-  url: string
+  url: string,
+  options?: FetchArticleBodyOptions
 ): Promise<FetchArticleBodyResult> {
+  const fetchTimeoutMs = options?.fetchTimeoutMs ?? getIngestFetchTimeoutMs();
   if (!isHttpOrHttpsUrl(url)) {
     const skip: ArticleBodySkip = { reason: "invalid_url" };
     logBodySkip(url, skip);
@@ -219,7 +226,7 @@ export async function fetchArticleBody(
     }
   }
 
-  return fetchArticleBodyFromHtml(url);
+  return fetchArticleBodyFromHtml(url, fetchTimeoutMs);
 }
 
 /** 본문이 제목과 어느 정도 관련 있는지 (완화된 휴리스틱) */

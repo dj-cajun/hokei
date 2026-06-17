@@ -23,6 +23,13 @@ import { hasSubstantialNewsBody } from "@/lib/news/news-body-quality";
 import { pruneEmptyContentAutomatedNews } from "@/lib/news/prune-empty-content-news";
 import { resolveNewsCategorySlug } from "@/lib/news/resolve-news-category";
 import { indexPostInSearch } from "@/lib/search/index-post";
+import {
+  computeBodyAttemptBudget,
+  getIngestFetchTimeoutMs,
+  isBodyPhasePastDeadline,
+  isVercelRuntime,
+  VERCEL_BODY_PHASE_DEADLINE_MS,
+} from "@/lib/news/ingest-budget";
 
 export type IngestResult = {
   inserted: number;
@@ -130,7 +137,7 @@ export async function ingestDailyNews(
     );
   }
 
-  const onVercel = process.env.VERCEL === "1";
+  const onVercel = isVercelRuntime();
   const topicSources = await loadNewsTopicSourcesFromDb();
   const maxPerFeed = onVercel ? 5 : 8;
 
@@ -208,10 +215,10 @@ export async function ingestDailyNews(
       );
     });
 
-  const attemptMultiplier = onVercel ? 2 : 4;
-  const attemptBudget = Math.min(
+  const attemptBudget = computeBodyAttemptBudget(
     candidates.length,
-    Math.max(remaining, remaining * attemptMultiplier)
+    remaining,
+    onVercel
   );
   const toProcess = pickByIngestMix(candidates, attemptBudget);
 
@@ -220,11 +227,24 @@ export async function ingestDailyNews(
     content: p.content,
   }));
 
+  const bodyPhaseStartedAt = Date.now();
+  const fetchTimeoutMs = getIngestFetchTimeoutMs();
+  let bodyAttempts = 0;
+
   for (const raw of toProcess) {
     if (result.inserted >= remaining) break;
+
+    if (isBodyPhasePastDeadline(bodyPhaseStartedAt, Date.now(), onVercel)) {
+      result.errors.push(
+        `[ingest] cron deadline (${VERCEL_BODY_PHASE_DEADLINE_MS}ms) — 본문 추출 중단 (시도 ${bodyAttempts}/${toProcess.length})`
+      );
+      break;
+    }
+
+    bodyAttempts++;
     try {
       const { title, content, thumbnail, bodySkip } =
-        await buildPostFromArticlePage(raw);
+        await buildPostFromArticlePage(raw, { fetchTimeoutMs });
 
       if (!hasSubstantialNewsBody(content)) {
         result.skipped++;
@@ -304,9 +324,12 @@ export async function ingestDailyNews(
   const ingestMeta = {
     poolSize: dedupedPool.length,
     candidates: candidates.length,
-    attempted: toProcess.length,
+    attempted: bodyAttempts,
+    attemptBudget,
     remainingQuota: remaining,
     maxPerFeed,
+    fetchTimeoutMs,
+    bodyPhaseDeadlineMs: onVercel ? VERCEL_BODY_PHASE_DEADLINE_MS : null,
   };
   result.errors.unshift(
     `[ingest] pool=${ingestMeta.poolSize} candidates=${ingestMeta.candidates} attempt=${ingestMeta.attempted} quota=${ingestMeta.remainingQuota}`
