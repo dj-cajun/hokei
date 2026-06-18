@@ -31,6 +31,8 @@ export function CommentEditForm({
     <form onSubmit={onSubmit} className="mt-2 space-y-2">
       {comment.isGuestComment && !comment.isOwner && (
         <input
+          id="comment-edit-guest-password"
+          name="guestPassword"
           type="password"
           placeholder="댓글 비밀번호"
           value={guestPassword}
@@ -39,6 +41,8 @@ export function CommentEditForm({
         />
       )}
       <textarea
+        id="comment-edit-content"
+        name="content"
         value={editContent}
         onChange={(e) => onEditContentChange(e.target.value)}
         rows={2}

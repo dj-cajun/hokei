@@ -382,6 +382,8 @@ export function WriteForm({
         ) : (
           <div className="relative border-b border-border-light py-3 px-4">
             <select
+              id="write-category"
+              name="categoryId"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full appearance-none bg-transparent text-sm text-gray-700 focus-ring"
@@ -418,6 +420,8 @@ export function WriteForm({
         {!isLoggedIn && !isEdit && (
           <div className="grid grid-cols-2 gap-4 border-b border-border-light py-3 px-4">
             <input
+              id="write-guest-name"
+              name="guestName"
               type="text"
               placeholder="이름"
               value={guestName}
@@ -426,6 +430,8 @@ export function WriteForm({
               autoComplete="name"
             />
             <input
+              id="write-guest-password"
+              name="guestPassword"
               type="password"
               placeholder="비밀번호"
               value={guestPassword}
@@ -439,6 +445,8 @@ export function WriteForm({
         {!isLoggedIn && isEdit && (
           <div className="border-b border-border-light py-3 px-4">
             <input
+              id="write-edit-password"
+              name="editPassword"
               type="password"
               placeholder="글 비밀번호"
               value={editPassword}
@@ -453,6 +461,8 @@ export function WriteForm({
             지역 (선택)
           </label>
           <select
+            id="write-region"
+            name="region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
             className="w-full appearance-none bg-transparent text-sm text-gray-700 focus-ring"
@@ -468,6 +478,8 @@ export function WriteForm({
 
         <div className="border-b border-border-light py-3 px-4">
           <input
+            id="write-title"
+            name="title"
             type="text"
             placeholder="제목을 입력해 주세요."
             value={title}

@@ -44,6 +44,7 @@ function SelectField({
     <div className="relative">
       <select
         id={id}
+        name={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
@@ -91,6 +92,7 @@ export function WriteCascadeCategorySelects({
           </label>
           <select
             id="cascade-main"
+            name="cascadeMain"
             value={mainCategory}
             onChange={(e) => {
               onMainChange(e.target.value as CascadeMainCategory | "");
@@ -137,6 +139,8 @@ export function WriteCascadeCategorySelects({
             />
           ) : (
             <select
+              id="cascade-sub-placeholder"
+              name="cascadeSubPlaceholder"
               disabled
               className={selectClass}
               aria-hidden

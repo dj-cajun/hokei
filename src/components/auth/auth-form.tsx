@@ -142,6 +142,7 @@ export function AuthForm({
           <Label htmlFor="name">이름</Label>
           <Input
             id="name"
+            name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="홍길동"
@@ -155,6 +156,7 @@ export function AuthForm({
         <Label htmlFor="email">이메일</Label>
         <Input
           id="email"
+          name="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -168,6 +170,7 @@ export function AuthForm({
         <Label htmlFor="password">비밀번호</Label>
         <Input
           id="password"
+          name="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -185,6 +188,7 @@ export function AuthForm({
           <Label htmlFor="confirmPassword">비밀번호 확인</Label>
           <Input
             id="confirmPassword"
+            name="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

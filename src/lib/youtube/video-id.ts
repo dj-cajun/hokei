@@ -76,6 +76,11 @@ export function buildYouTubeEmbedSrc(
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
 }
 
+/** 임베드 전 썸네일(클릭 재생·오프라인 폴백) */
+export function buildYouTubeThumbnailUrl(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
 export type ContentPart =
   | { type: "text"; value: string }
   | { type: "youtube"; videoId: string; startSeconds?: number };

@@ -37,11 +37,14 @@ export function ExchangeCalculator({ vndPerKrw }: ExchangeCalculatorProps) {
   return (
     <div className="mt-3 space-y-2 border-t border-border-light pt-3">
       <p className="text-xs font-semibold text-foreground">환율 계산기</p>
-      <label className="block text-[11px] text-muted-foreground">
+      <label htmlFor="exchange-krw" className="block text-[11px] text-muted-foreground">
         KRW (원)
         <input
+          id="exchange-krw"
+          name="exchangeKrw"
           type="text"
           inputMode="decimal"
+          autoComplete="off"
           value={krw}
           onChange={(e) => {
             setLastEdited("krw");
@@ -51,11 +54,14 @@ export function ExchangeCalculator({ vndPerKrw }: ExchangeCalculatorProps) {
           placeholder="1000"
         />
       </label>
-      <label className="block text-[11px] text-muted-foreground">
+      <label htmlFor="exchange-vnd" className="block text-[11px] text-muted-foreground">
         VND (동)
         <input
+          id="exchange-vnd"
+          name="exchangeVnd"
           type="text"
           inputMode="decimal"
+          autoComplete="off"
           value={vnd}
           onChange={(e) => {
             setLastEdited("vnd");

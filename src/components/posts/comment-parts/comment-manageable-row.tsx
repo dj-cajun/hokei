@@ -107,6 +107,8 @@ export function CommentManageableRow({
           </p>
           {comment.isGuestComment && !comment.isOwner && (
             <input
+              id={`comment-guest-password-${comment.id}`}
+              name="guestPassword"
               type="password"
               placeholder="수정·삭제 시 비밀번호"
               value={guestPassword}

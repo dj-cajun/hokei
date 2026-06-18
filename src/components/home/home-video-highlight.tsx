@@ -52,7 +52,7 @@ export function HomeVideoHighlight() {
         호치민 교민 커뮤니티 하이라이트
       </h2>
       <p className="mt-0.5 text-[11px] text-muted-foreground">
-        YouTube · 음소거 자동 반복 재생
+        YouTube · 온라인 시 음소거 자동 재생
       </p>
     </section>
   );

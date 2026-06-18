@@ -95,6 +95,8 @@ export function WriteAttachmentBar({
       <div className="flex items-center space-x-4 border-b border-t border-border bg-muted px-4 py-2">
         <input
           ref={imageInputRef}
+          id="write-attach-image"
+          name="attachImages"
           type="file"
           accept="image/*"
           multiple
@@ -107,6 +109,8 @@ export function WriteAttachmentBar({
         />
         <input
           ref={fileInputRef}
+          id="write-attach-file"
+          name="attachFiles"
           type="file"
           multiple
           className="hidden"

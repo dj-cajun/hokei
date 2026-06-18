@@ -36,6 +36,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
         </label>
         <input
           id="contact-name"
+          name="name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -49,6 +50,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
         </label>
         <input
           id="contact-email"
+          name="email"
           type="email"
           required
           value={email}
@@ -63,6 +65,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
         </label>
         <input
           id="contact-subject"
+          name="subject"
           required
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
@@ -75,6 +78,7 @@ export function ContactForm({ contactEmail }: ContactFormProps) {
         </label>
         <textarea
           id="contact-body"
+          name="body"
           required
           rows={5}
           value={body}

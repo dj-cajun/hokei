@@ -105,6 +105,7 @@ function SearchInput({
         />
         <input
           type="search"
+          id={isMobile ? "header-search-mobile" : "header-search-desktop"}
           name="q"
           value={q}
           onChange={(e) => {

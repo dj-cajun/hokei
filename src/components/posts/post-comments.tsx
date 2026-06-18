@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type { CommentItem } from "@/components/posts/comment-types";
+import { useLoginModal } from "@/components/auth/login-modal-context";
 import { CommentForm } from "@/components/posts/comment-form";
 import { CommentList } from "@/components/posts/comment-list";
 import { groupCommentsToThreads } from "@/lib/comment-tree";
@@ -14,6 +17,9 @@ type PostCommentsProps = {
 };
 
 export function PostComments({ postId, initialComments }: PostCommentsProps) {
+  const pathname = usePathname();
+  const { status } = useSession();
+  const { openLogin } = useLoginModal();
   const [comments, setComments] = useState(initialComments);
   const [replyTo, setReplyTo] = useState<{
     parentId: string;
@@ -46,9 +52,13 @@ export function PostComments({ postId, initialComments }: PostCommentsProps) {
         postId={postId}
         threads={threads}
         replyToParentId={replyTo?.parentId ?? null}
-        onReply={(parentId, authorName) =>
-          setReplyTo({ parentId, authorName })
-        }
+        onReply={(parentId, authorName) => {
+          if (status !== "authenticated") {
+            openLogin(pathname || `/posts/${postId}`);
+            return;
+          }
+          setReplyTo({ parentId, authorName });
+        }}
         onCancelReply={() => setReplyTo(null)}
         onUpdate={(updated) =>
           setComments((prev) =>

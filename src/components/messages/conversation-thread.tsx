@@ -187,6 +187,8 @@ export function ConversationThread({
         className="sticky bottom-12 flex gap-2 border-t border-border bg-surface p-3 lg:bottom-0"
       >
         <input
+          id="dm-message"
+          name="message"
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}

@@ -85,6 +85,8 @@ export function PostOwnerActions({
         <div className="w-full space-y-2 rounded-sm bg-red-50 p-3">
           {isGuestPost && !canEditAsUser && (
             <input
+              id="post-delete-guest-password"
+              name="guestPassword"
               type="password"
               placeholder="글 비밀번호"
               value={guestPassword}

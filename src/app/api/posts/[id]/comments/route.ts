@@ -5,25 +5,16 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import {
   COMMENT_MAX_LENGTH,
-  GUEST_NAME_MAX_LENGTH,
-  GUEST_PASSWORD_MAX_LENGTH,
-  GUEST_PASSWORD_MIN_LENGTH,
 } from "@/lib/constants";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { hashGuestPassword, isCommentOwner } from "@/lib/post-permissions";
+import { isCommentOwner } from "@/lib/post-permissions";
 import { visibleCommentWhere } from "@/lib/moderation";
 import { notifyPostComment } from "@/lib/notifications";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
   parentId: z.string().optional(),
-  guestName: z.string().min(1).max(GUEST_NAME_MAX_LENGTH).optional(),
-  guestPassword: z
-    .string()
-    .min(GUEST_PASSWORD_MIN_LENGTH)
-    .max(GUEST_PASSWORD_MAX_LENGTH)
-    .optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -92,11 +83,11 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const { content, guestName, guestPassword, parentId } = parsed.data;
+    const { content, parentId } = parsed.data;
     const userId = session?.user?.id;
 
-    if (!userId && (!guestName?.trim() || !guestPassword?.trim())) {
-      return apiError("로그인하거나 이름·비밀번호를 입력해 주세요.", 401);
+    if (!userId) {
+      return apiError("댓글을 작성하려면 로그인이 필요합니다.", 401);
     }
 
     if (parentId) {
@@ -117,11 +108,7 @@ export async function POST(request: Request, context: RouteContext) {
         postId: id,
         parentId: parentId ?? null,
         content: content.trim(),
-        authorId: userId ?? null,
-        guestName: userId ? null : guestName!.trim(),
-        guestPasswordHash: userId
-          ? null
-          : await hashGuestPassword(guestPassword!),
+        authorId: userId,
       },
       include: { author: { select: { name: true } } },
     });
@@ -134,7 +121,7 @@ export async function POST(request: Request, context: RouteContext) {
     void notifyPostComment({
       postAuthorId: post.authorId,
       actorUserId: userId,
-      actorName: comment.author?.name ?? guestName?.trim() ?? "익명",
+      actorName: comment.author?.name ?? "회원",
       postId: id,
       postTitle: post.title,
     });

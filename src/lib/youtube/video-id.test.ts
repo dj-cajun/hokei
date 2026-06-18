@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildYouTubeEmbedSrc,
+  buildYouTubeThumbnailUrl,
   convertYoutubeLinks,
   parseYouTubeFromUrl,
 } from "@/lib/youtube/video-id";
@@ -41,6 +42,14 @@ describe("buildYouTubeEmbedSrc", () => {
     expect(src).toContain("youtube-nocookie.com/embed/d-fY16xMeT4");
     expect(src).toContain("mute=1");
     expect(src).not.toContain("/watch");
+  });
+});
+
+describe("buildYouTubeThumbnailUrl", () => {
+  it("returns hqdefault thumbnail", () => {
+    expect(buildYouTubeThumbnailUrl("d-fY16xMeT4")).toBe(
+      "https://i.ytimg.com/vi/d-fY16xMeT4/hqdefault.jpg"
+    );
   });
 });
 
