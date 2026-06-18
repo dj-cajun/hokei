@@ -7,11 +7,18 @@
     {
       "path": "/api/cron/news",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/news-prune",
+      "schedule": "0 6 * * 0"
     }
   ],
   "functions": {
     "src/app/api/cron/news/route.ts": {
       "maxDuration": 120
+    },
+    "src/app/api/cron/news-prune/route.ts": {
+      "maxDuration": 60
     },
     "src/app/api/admin/news-ingest/route.ts": {
       "maxDuration": 120

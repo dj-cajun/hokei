@@ -23,6 +23,8 @@ import { hasSubstantialNewsBody } from "@/lib/news/news-body-quality";
 import { pruneEmptyContentAutomatedNews } from "@/lib/news/prune-empty-content-news";
 import { resolveNewsCategorySlug } from "@/lib/news/resolve-news-category";
 import { indexPostInSearch } from "@/lib/search/index-post";
+import { warnIfConsecutiveZeroCronIngests } from "@/lib/news/ingest-alerts";
+import { aggregateSkipReasons } from "@/lib/news/ingest-skip-stats";
 import {
   computeBodyAttemptBudget,
   getIngestFetchTimeoutMs,
@@ -81,7 +83,12 @@ export type IngestOptions = {
   ignoreDailyCap?: boolean;
   /** cron | admin:{userId} */
   triggeredBy?: string;
+  /** 수집 후 빈 본문 자동 뉴스 정리 (기본 false — 주간 Cron `/api/cron/news-prune`) */
+  runPruneEmpty?: boolean;
 };
+
+/** 제목·본문 유사 중복 비교 기간 (일) */
+const DEDUP_LOOKBACK_DAYS = 30;
 
 export async function ingestDailyNews(
   options?: IngestOptions
@@ -178,17 +185,38 @@ export async function ingestDailyNews(
 
   const dedupedPool = dedupeRawNewsItems([...uniqueByLink.values()]);
 
-  const existingPosts = await prisma.post.findMany({
-    where: { isAutomated: true, status: "PUBLISHED" },
-    select: { sourceUrl: true, title: true, content: true },
-  });
-  const existingSet = new Set(existingPosts.map((e) => e.sourceUrl));
+  const candidateLinks = dedupedPool.map((item) => item.link);
+  const dedupSince = new Date(
+    Date.now() - DEDUP_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  const [existingUrlRows, recentPosts] = await Promise.all([
+    candidateLinks.length > 0
+      ? prisma.post.findMany({
+          where: {
+            status: "PUBLISHED",
+            sourceUrl: { in: candidateLinks },
+          },
+          select: { sourceUrl: true },
+        })
+      : Promise.resolve([]),
+    prisma.post.findMany({
+      where: {
+        isAutomated: true,
+        status: "PUBLISHED",
+        ingestedAt: { gte: dedupSince },
+      },
+      select: { sourceUrl: true, title: true, content: true },
+    }),
+  ]);
+
+  const existingSet = new Set(existingUrlRows.map((e) => e.sourceUrl));
 
   const candidates = dedupedPool
     .filter((item) => !existingSet.has(item.link))
     .filter(
       (item) =>
-        !existingPosts.some((p) =>
+        !recentPosts.some((p) =>
           areDuplicateNews(
             { title: item.title, description: item.description },
             { title: p.title, content: p.content }
@@ -222,7 +250,7 @@ export async function ingestDailyNews(
   );
   const toProcess = pickByIngestMix(candidates, attemptBudget);
 
-  const knownNews = existingPosts.map((p) => ({
+  const knownNews = recentPosts.map((p) => ({
     title: p.title,
     content: p.content,
   }));
@@ -318,8 +346,10 @@ export async function ingestDailyNews(
     }
   }
 
-  const prune = await pruneEmptyContentAutomatedNews();
-  result.prunedEmpty = prune.removed;
+  if (options?.runPruneEmpty) {
+    const prune = await pruneEmptyContentAutomatedNews();
+    result.prunedEmpty = prune.removed;
+  }
 
   const ingestMeta = {
     poolSize: dedupedPool.length,
@@ -330,12 +360,23 @@ export async function ingestDailyNews(
     maxPerFeed,
     fetchTimeoutMs,
     bodyPhaseDeadlineMs: onVercel ? VERCEL_BODY_PHASE_DEADLINE_MS : null,
+    dedupLookbackDays: DEDUP_LOOKBACK_DAYS,
   };
   result.errors.unshift(
     `[ingest] pool=${ingestMeta.poolSize} candidates=${ingestMeta.candidates} attempt=${ingestMeta.attempted} quota=${ingestMeta.remainingQuota}`
   );
 
   const errorSlice = result.errors.slice(0, 50);
+  const issueMessages = errorSlice
+    .filter((m) => !m.startsWith("[ingest]"))
+    .map((message) => ({
+      message,
+      at: new Date().toISOString(),
+    }));
+  const skipStats = aggregateSkipReasons(
+    issueMessages.map((issue) => issue.message)
+  );
+
   try {
     await prisma.newsIngestRun.create({
       data: {
@@ -345,17 +386,17 @@ export async function ingestDailyNews(
           errorSlice.length > 0 ? errorSlice.join("\n") : null,
         errorDetails: JSON.stringify({
           meta: { ...ingestMeta, rssOnly, rssReason },
-          issues: errorSlice
-            .filter((m) => !m.startsWith("[ingest]"))
-            .map((message) => ({
-              message,
-              at: new Date().toISOString(),
-            })),
+          issues: issueMessages,
+          skipStats,
         }),
         durationMs: Date.now() - startedAt,
         triggeredBy: options?.triggeredBy ?? null,
       },
     });
+    await warnIfConsecutiveZeroCronIngests(
+      result.inserted,
+      options?.triggeredBy
+    );
   } catch (logErr) {
     const msg = logErr instanceof Error ? logErr.message : String(logErr);
     result.errors.push(`NewsIngestRun 기록 실패(수집 결과는 유지): ${msg}`);

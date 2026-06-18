@@ -85,3 +85,16 @@ npm run news:check:prod
 스크립트 목록: [SCRIPTS.md](./SCRIPTS.md)
 
 마이그레이션 lock·PG 이중 운영: [prisma/migrations/README.md](../prisma/migrations/README.md)
+
+## 뉴스 수집 운영 (Cron vs CLI)
+
+| 통로 | 환경 | 소스 | DB |
+|------|------|------|-----|
+| Vercel Cron `/api/cron/news` | production | RSS-only | production Neon |
+| `npm run news:prod:update` | 로컬 CLI | 네이버+Playwright 가능 | `.env.production.pg` |
+| `npm run news:ingest` | 로컬 dev | 혼합 | `.env` (dev Neon) |
+
+- Cron은 **일 2회**(07:00·12:00 ICT), 본문 추출 **최대 10건·90초 budget**
+- 빈 본문 정리: 주간 Cron `/api/cron/news-prune` (일요일 13:00 ICT)
+- Cron **3회 연속 0건**이면 서버 로그 `error` (Sentry 연동 가능)
+- 품질 우선 수집은 `news:prod:update` 권장

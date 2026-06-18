@@ -4,6 +4,7 @@ import { parseOgImageFromHtml } from "@/lib/news/image";
 import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { log } from "@/lib/logger";
 import { getIngestFetchTimeoutMs } from "@/lib/news/ingest-budget";
+import { extractTextWithCheerio } from "@/lib/news/article-body-cheerio";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
 const USER_AGENT =
@@ -24,6 +25,7 @@ export type ArticleBodySkipReason =
   | "fetch_http"
   | "fetch_timeout"
   | "regex_short"
+  | "extract_short"
   | "fetch_error";
 
 export type ArticleBodySkip = {
@@ -153,11 +155,18 @@ async function fetchArticleBodyFromHtml(
     ];
 
     const extracted = extractFirst(html, bodyPatterns);
-    const content = cleanArticleBody(extracted);
+    let content = cleanArticleBody(extracted);
+
+    if (content.length < MIN_BODY_LENGTH) {
+      const fromCheerio = extractTextWithCheerio(html);
+      if (fromCheerio.length > content.length) {
+        content = fromCheerio;
+      }
+    }
 
     if (content.length < MIN_BODY_LENGTH) {
       const skip: ArticleBodySkip = {
-        reason: "regex_short",
+        reason: "extract_short",
         chars: content.length,
       };
       logBodySkip(url, skip);
@@ -191,7 +200,7 @@ async function fetchArticleBodyFromHtml(
 
 /**
  * 기사 원문 URL에서 본문만 추출 (검색 API 요약문 사용 안 함)
- * 1) Playwright 2) HTML fetch + 정규식
+ * 1) Playwright 2) HTML fetch + 정규식 + cheerio
  */
 export async function fetchArticleBody(
   url: string,

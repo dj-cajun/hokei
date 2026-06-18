@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseIngestErrorDetails } from "@/lib/news/ingest-skip-stats";
 
 type IngestRun = {
   id: string;
@@ -41,14 +42,15 @@ export function IngestRunsPanel({ initialRuns }: Props) {
     }
   }, []);
 
-  function parseDetails(raw: string | null): { message: string; at?: string }[] {
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw) as { message: string; at?: string }[];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+  function parseDetails(raw: string | null): {
+    issues: { message: string; at?: string }[];
+    skipStats: Record<string, number>;
+  } {
+    const parsed = parseIngestErrorDetails(raw);
+    return {
+      issues: parsed?.issues ?? [],
+      skipStats: parsed?.skipStats ?? {},
+    };
   }
 
   return (
@@ -146,16 +148,41 @@ export function IngestRunsPanel({ initialRuns }: Props) {
               {detail.errors}
             </pre>
           )}
-          {parseDetails(detail.errorDetails).length > 0 && (
-            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-              {parseDetails(detail.errorDetails).map((e, i) => (
-                <li key={i}>
-                  {e.at ? `[${e.at}] ` : ""}
-                  {e.message}
-                </li>
-              ))}
-            </ul>
-          )}
+          {(() => {
+            const { issues, skipStats } = parseDetails(detail.errorDetails);
+            const entries = Object.entries(skipStats).sort(
+              (a, b) => b[1] - a[1]
+            );
+            return (
+              <>
+                {entries.length > 0 && (
+                  <div className="mt-3 rounded-xl bg-secondary/40 p-3 text-xs">
+                    <p className="font-medium text-foreground">스킵 사유</p>
+                    <ul className="mt-2 space-y-1 text-muted-foreground">
+                      {entries.map(([reason, count]) => (
+                        <li key={reason}>
+                          <span className="font-mono text-foreground">
+                            {reason}
+                          </span>
+                          : {count}건
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {issues.length > 0 && (
+                  <ul className="mt-3 max-h-40 space-y-1 overflow-auto text-xs text-muted-foreground">
+                    {issues.map((e, i) => (
+                      <li key={i}>
+                        {e.at ? `[${e.at}] ` : ""}
+                        {e.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

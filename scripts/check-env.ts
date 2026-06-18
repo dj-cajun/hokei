@@ -90,6 +90,16 @@ if (hasProdEnv) {
 }
 
 for (const key of required) {
+  if (
+    production &&
+    !inProdEnv(key) &&
+    (key === "AUTH_SECRET" || key === "CRON_SECRET")
+  ) {
+    console.log(
+      `[env:check] ${key}은 Vercel 환경변수에서 관리 (로컬 점검 생략)`
+    );
+    continue;
+  }
   if (!keys.has(key)) {
     console.error(`[env:check] 필수 누락: ${key}`);
     failed = true;

@@ -57,6 +57,8 @@ async function main(): Promise<void> {
 
   await warmupDatabase();
 
+  console.log("[dev] .next 오류(/news 500) 시: npm run dev:clean");
+
   process.exit(run("npx", ["next", "dev", "-p", "3001"]));
 }
 
