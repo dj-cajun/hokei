@@ -158,7 +158,7 @@ async function fetchArticleBodyFromHtml(
     let content = cleanArticleBody(extracted);
 
     if (content.length < MIN_BODY_LENGTH) {
-      const fromCheerio = extractTextWithCheerio(html);
+      const fromCheerio = extractTextWithCheerio(html, url);
       if (fromCheerio.length > content.length) {
         content = fromCheerio;
       }

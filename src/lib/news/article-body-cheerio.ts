@@ -1,27 +1,32 @@
 import { load, type CheerioAPI } from "cheerio";
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
 import { applyArticleRegexFilters } from "@/lib/news/article-body-regex";
+import { extractArticleBodyFromJsonLd } from "@/lib/news/article-body-jsonld";
+import { resolveSiteBodySelectors } from "@/lib/news/article-body-site-rules";
 import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 
-/** 국내·교민 매체 본문 영역 (우선순위 순) */
-const BODY_SELECTORS = [
+/** 공통 본문 영역 (사이트 규칙 다음) */
+const GENERIC_BODY_SELECTORS = [
   "#articleViewCon",
   "#article-view-content-div",
   "#articleBody",
+  "#article-body",
+  "#articleContent",
   "#dic_area",
   "article#dic_area",
   ".article-view-content",
+  ".article-view-body",
   ".article_body",
   ".article-body",
   "#news_body_area",
   ".news_body",
   ".view_con",
+  ".view_contents",
   ".article_view",
   '[itemprop="articleBody"]',
   ".fck_detail",
   "article.fck_detail",
   "#articeBody",
-  "#article-body",
   ".story-news",
   "#textBody",
   ".article-text",
@@ -36,7 +41,7 @@ const BODY_SELECTORS = [
 ] as const;
 
 const NOISE_SELECTORS =
-  "script, style, nav, aside, iframe, svg, video, figure, figcaption, .related, .relation, .tag_group, .journalist, .byline";
+  "script, style, nav, aside, iframe, svg, video, figure, figcaption, .related, .relation, .tag_group, .journalist, .byline, .article-more, .article-social, .article_share, .banner, .ad-area";
 
 function elementToPlainText($: CheerioAPI, selector: string): string {
   const el = $(selector).first();
@@ -54,15 +59,9 @@ function elementToPlainText($: CheerioAPI, selector: string): string {
     .trim();
 }
 
-/**
- * cheerio로 HTML 본문 추출 (정규식 폴백)
- */
-export function extractTextWithCheerio(html: string): string {
-  const $ = load(html);
-  $(NOISE_SELECTORS).remove();
-
+function trySelectors($: CheerioAPI, selectors: readonly string[]): string {
   let best = "";
-  for (const selector of BODY_SELECTORS) {
+  for (const selector of selectors) {
     const el = $(selector).first();
     if (!el.length) continue;
     const text = cleanArticleBody(
@@ -70,6 +69,27 @@ export function extractTextWithCheerio(html: string): string {
     );
     if (text.length > best.length) best = text;
   }
+  return best;
+}
+
+/**
+ * cheerio + JSON-LD로 HTML 본문 추출
+ * 1) 사이트별 셀렉터  2) 공통 셀렉터  3) JSON-LD articleBody
+ */
+export function extractTextWithCheerio(html: string, pageUrl?: string): string {
+  const $ = load(html);
+
+  const siteSelectors = pageUrl ? resolveSiteBodySelectors(pageUrl) : [];
+  let best = trySelectors($, siteSelectors);
+  if (best.length >= 80) return best;
+
+  best = trySelectors($, GENERIC_BODY_SELECTORS);
+  if (best.length >= 80) return best;
+
+  const fromJsonLd = cleanArticleBody(
+    applyArticleRegexFilters(extractArticleBodyFromJsonLd(html))
+  );
+  if (fromJsonLd.length > best.length) best = fromJsonLd;
 
   return best;
 }
