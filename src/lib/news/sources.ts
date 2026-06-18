@@ -102,7 +102,10 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
   },
 ];
 
-export const MAX_DAILY_NEWS = 15;
+export { LEGACY_DEFAULT_DAILY_CAP } from "@/lib/news/daily-cap";
+
+/** @deprecated getMaxDailyNews() / NEWS_DAILY_CAP 사용 */
+export { LEGACY_DEFAULT_DAILY_CAP as MAX_DAILY_NEWS } from "@/lib/news/daily-cap";
 
 export const TOPIC_LABELS: Record<PostTopic, string> = {
   KOREA: "한국",

@@ -5,7 +5,11 @@ import {
   resolveIngestRssOnly,
 } from "@/lib/news/ingest-runtime";
 import { loadNewsTopicSourcesFromDb } from "@/lib/news/load-sources-config";
-import { MAX_DAILY_NEWS } from "@/lib/news/sources";
+import {
+  getMaxDailyNews,
+  getPerRunIngestQuota,
+  isDailyNewsCapEnabled,
+} from "@/lib/news/daily-cap";
 import { VNEXPRESS_RSS_FALLBACK_FEEDS } from "@/lib/news/vnexpress-feeds";
 import type { RawNewsItem } from "@/lib/news/rss";
 import { pickByIngestMix } from "@/lib/news/ingest-mix";
@@ -102,14 +106,19 @@ export async function ingestDailyNews(
     items: [],
   };
 
+  const onVercel = isVercelRuntime();
+  const dailyCap = getMaxDailyNews();
+  const perRunQuota = getPerRunIngestQuota(onVercel);
+
   const alreadyToday = await countTodayIngested();
-  const remaining = options?.ignoreDailyCap
-    ? MAX_DAILY_NEWS
-    : Math.max(0, MAX_DAILY_NEWS - alreadyToday);
+  const remaining =
+    options?.ignoreDailyCap || !isDailyNewsCapEnabled()
+      ? perRunQuota
+      : Math.max(0, (dailyCap ?? 0) - alreadyToday);
 
   if (remaining === 0) {
     result.errors.push(
-      `오늘(호치민 기준) 이미 ${MAX_DAILY_NEWS}건 수집 완료 — 건너뜀`
+      `오늘(호치민 기준) 이미 ${dailyCap}건 수집 완료 — 건너뜀`
     );
     try {
       await prisma.newsIngestRun.create({
@@ -144,7 +153,6 @@ export async function ingestDailyNews(
     );
   }
 
-  const onVercel = isVercelRuntime();
   const topicSources = await loadNewsTopicSourcesFromDb();
   const maxPerFeed = onVercel ? 5 : 8;
 
@@ -361,6 +369,9 @@ export async function ingestDailyNews(
     fetchTimeoutMs,
     bodyPhaseDeadlineMs: onVercel ? VERCEL_BODY_PHASE_DEADLINE_MS : null,
     dedupLookbackDays: DEDUP_LOOKBACK_DAYS,
+    dailyCap: dailyCap ?? "unlimited",
+    perRunQuota,
+    alreadyToday,
   };
   result.errors.unshift(
     `[ingest] pool=${ingestMeta.poolSize} candidates=${ingestMeta.candidates} attempt=${ingestMeta.attempted} quota=${ingestMeta.remainingQuota}`

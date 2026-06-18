@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
 
-export function NewsIngestPanel() {
+type NewsIngestPanelProps = {
+  dailyCapLabel?: string;
+};
+
+export function NewsIngestPanel({ dailyCapLabel = "무제한" }: NewsIngestPanelProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -54,7 +58,8 @@ export function NewsIngestPanel() {
             <h2 className="font-semibold">뉴스 자동 수집</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            네이버 뉴스 API + VnExpress(Int&apos;l RSS→Gemini) · 하루 최대 15건
+            네이버 뉴스 API + VnExpress(Int&apos;l RSS→Gemini) · 일일 상한{" "}
+            {dailyCapLabel}
             <br />
             스케줄: 매일 07:00·12:00 (Asia/Ho_Chi_Minh)
           </p>

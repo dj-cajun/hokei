@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { NewsIngestPanel } from "@/components/admin/news-ingest-panel";
 import { SearchReindexPanel } from "@/components/admin/search-reindex-panel";
 import { StatsCards } from "@/components/admin/stats-cards";
-import { MAX_DAILY_NEWS } from "@/lib/news/sources";
+import { formatDailyCapLabel } from "@/lib/news/daily-cap";
 import { getDatabaseKind, prisma } from "@/lib/prisma";
 
 export default async function AdminDashboardPage() {
@@ -47,7 +47,7 @@ export default async function AdminDashboardPage() {
         todaySignups={todaySignups}
       />
 
-      <NewsIngestPanel />
+      <NewsIngestPanel dailyCapLabel={formatDailyCapLabel()} />
 
       <SearchReindexPanel databaseKind={getDatabaseKind()} />
 
@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
       </p>
 
       <p className="text-xs text-muted-foreground">
-        오늘 자동 수집된 뉴스: {newsToday} / {MAX_DAILY_NEWS}건
+        오늘 자동 수집된 뉴스: {newsToday}건 (일일 상한 {formatDailyCapLabel()})
       </p>
 
       <section className="rounded-2xl bg-surface">

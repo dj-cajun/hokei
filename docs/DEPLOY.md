@@ -56,7 +56,7 @@ npx vercel env add DATABASE_URL production   # Vercel에 동일 URL 등록
 
 ## 4. Cron (뉴스 수집)
 
-`vercel.json`: 매일 **07:00·12:00 ICT** (`0 0 * * *` · `0 5 * * *` UTC, 일 15건 상한)
+`vercel.json`: 매일 **07:00·12:00 ICT** (`0 0 * * *` · `0 5 * * *` UTC). 일일 상한은 `NEWS_DAILY_CAP`로 설정 (미설정·`0` = **무제한**, Cron 1회당 기본 ~10건은 120초 budget).
 
 Vercel Cron 요청 시 헤더:
 
