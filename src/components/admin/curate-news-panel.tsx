@@ -97,6 +97,7 @@ export function CurateNewsPanel({
         error?: string;
         title?: string;
         content?: string;
+        provider?: string;
       };
       if (!res.ok) {
         showToast(parseApiError(data) ?? "재가공 실패", "error");
@@ -104,7 +105,13 @@ export function CurateNewsPanel({
       }
       setTitle(data.title ?? title);
       setContent(data.content ?? content);
-      showToast("AI 재가공을 적용했습니다.");
+      const via =
+        data.provider === "zai"
+          ? "Z.AI"
+          : data.provider === "gemini"
+            ? "Gemini"
+            : "AI";
+      showToast(`${via} 재가공을 적용했습니다.`);
     } catch {
       showToast("요청 실패", "error");
     } finally {
@@ -208,12 +215,12 @@ export function CurateNewsPanel({
             ) : (
               <Sparkles className="h-4 w-4" />
             )}
-            <span className="ml-2">AI 재가공 (Gemini)</span>
+            <span className="ml-2">AI 재가공</span>
           </Button>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          직접 붙여넣어도 됩니다. AI는 요약·재구성만 돕고, 사실 확인은 직접
-          해주세요.
+          직접 붙여넣어도 됩니다. AI(Gemini → Z.AI)는 요약·재구성만 돕고, 사실
+          확인은 직접 해주세요.
         </p>
         <div className="mt-4 space-y-3">
           <div>

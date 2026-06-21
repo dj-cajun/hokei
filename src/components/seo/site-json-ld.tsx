@@ -1,5 +1,21 @@
 import { resolveSiteUrl } from "@/lib/site-url";
 
+const SITE_ICON = {
+  png512: "/icons/hokei-icon-512.png",
+  png192: "/icons/hokei-icon-192.png",
+  svg: "/icons/hokei-icon.svg",
+} as const;
+
+function siteLogoImageObject(siteUrl: string) {
+  return {
+    "@type": "ImageObject" as const,
+    url: `${siteUrl}${SITE_ICON.png512}`,
+    contentUrl: `${siteUrl}${SITE_ICON.png512}`,
+    width: 512,
+    height: 512,
+  };
+}
+
 /** 홈·레이아웃 WebSite 구조화 데이터 */
 export function SiteJsonLd() {
   const siteUrl = resolveSiteUrl();
@@ -11,7 +27,12 @@ export function SiteJsonLd() {
         "@type": "Organization",
         name: "호케이 Hokei",
         url: siteUrl,
-        logo: `${siteUrl}/icons/hokei-icon-512.png`,
+        logo: siteLogoImageObject(siteUrl),
+        image: [
+          `${siteUrl}${SITE_ICON.png512}`,
+          `${siteUrl}${SITE_ICON.png192}`,
+          `${siteUrl}${SITE_ICON.svg}`,
+        ],
       },
       {
         "@type": "WebSite",
