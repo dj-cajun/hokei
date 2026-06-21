@@ -82,7 +82,7 @@
     "news:clean-content": "tsx scripts/clean-post-content.ts",
     "news:dedupe": "tsx scripts/dedupe-posts.ts",
     "news:prune-travel": "tsx scripts/prune-travel-non-korea.ts",
-    "news:prune-off-topic": "tsx scripts/prune-off-topic-posts.ts",
+    "news:prune-off-topic": "tsx scripts/prune-off-topic-posts.ts --neon",
     "news:prune-labor": "tsx scripts/prune-labor-news.ts --neon",
     "news:prune-empty": "tsx scripts/prune-empty-content-news.ts",
     "news:prune-no-thumbnail": "tsx scripts/prune-no-thumbnail-news.ts",

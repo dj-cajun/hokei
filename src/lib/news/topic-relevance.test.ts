@@ -97,15 +97,15 @@ describe("passesTopicRelevanceFilter", () => {
     ).toBe(false);
   });
 
-  it("accepts real VnExpress article by URL", () => {
+  it("keeps insidevina expat living articles", () => {
     expect(
       passesTopicRelevanceFilter(
-        "VIETNAM_POLICY",
-        "Vietnam visa rules for foreign workers",
-        "Ho Chi Minh immigration",
+        "KOREA",
+        "[베트남 송금 가계부] 환율 올라도 물가가 슥삭",
+        "호치민 생활비",
         {
-          link: "https://vnexpress.net/article-1",
-          sourceName: "네이버 뉴스",
+          link: "https://www.insidevina.com/news/articleView.html?idxno=1",
+          sourceName: "인사이드비나",
         }
       )
     ).toBe(true);

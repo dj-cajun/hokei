@@ -1,11 +1,12 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import { isKoreanPublisherArticleLink } from "@/lib/news/korean-news-publishers";
+import { isOffTopicAirlineIndustryNews } from "@/lib/news/off-topic-airline-news";
 import { isOffTopicLaborNews } from "@/lib/news/off-topic-labor-news";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
 
 /** 호치민·베트남 현지 연관 (수집 대상 지역) */
 const VIETNAM_LOCAL_PATTERN =
-  /베트남|호치민|사이공|HCMC|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|나트랑|푸꾸옥|달랏|하롱|7군|1군|VnExpress|vnexpress|익스프레스|Báo|Tuổi Trẻ|tuoitre|Việt Nam|Việt nam/i;
+  /베트남|호치민|사이공|HCMC|TP\.HCM|Ho Chi Minh|Saigon|Hồ Chí Minh|푸미흥|Thủ Đức|다낭|하노이|나트랑|푸꾸옥|달랏|하롱|7군|1군|VnExpress|vnexpress|익스프레스|Báo|Tuổi Trẻ|tuoitre|Việt Nam|Việt nam/i;
 
 /** 현지어 제목·요약 (한국인·투자·안전) */
 const VIETNAMESE_TOPIC_PATTERN =
@@ -130,12 +131,9 @@ function matchesTravelTopic(title: string, description: string): boolean {
   );
 }
 
-/** 베트남 방문 여행객 — 현지 관광·안전·입국 (한국인 키워드 필수 아님) */
+/** 베트남 방문 여행객 — 현지 관광·안전·입국 */
 function matchesTouristTopic(title: string, description: string): boolean {
   const text = normalizeTextForTopicMatch(title, description);
-  if (isKoreaRelatedNews(title, description) && TRAVEL_PATTERN.test(text)) {
-    return true;
-  }
   return (
     TOURIST_INFO_PATTERN.test(text) &&
     /호치민|사이공|다낭|나트랑|푸꾸옥|베트남/i.test(text)
@@ -157,8 +155,10 @@ function matchesPolicyTopic(title: string, description: string): boolean {
 }
 
 function matchesKoreaTopic(title: string, description: string): boolean {
-  if (isKoreaRelatedNews(title, description)) return true;
   const text = normalizeTextForTopicMatch(title, description);
+  if (VIETNAMESE_TOPIC_PATTERN.test(text) && VIETNAM_LOCAL_PATTERN.test(text)) {
+    return true;
+  }
   return (
     /한인|교민|교포|한국인|한인회|한국\s*기업/i.test(text) &&
     /호치민|사이공|베트남|하노이|다낭|나트랑|푸미흥|7군|1군/i.test(text)
@@ -176,12 +176,21 @@ export function passesTopicRelevanceFilter(
     return false;
   }
 
+  if (isOffTopicAirlineIndustryNews(title, description)) {
+    return false;
+  }
+
   if (isOffTopicDomesticRoundup(title, description)) {
     return false;
   }
 
   if (!isVietnamLocalRelevant(title, description, meta)) {
     return false;
+  }
+
+  // 인사이드비나·Vietnam.vn·라오동 — 베트남 현지 한국어 매체는 교민 실용 정보 우선
+  if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) {
+    return true;
   }
 
   switch (topic) {
