@@ -15,7 +15,8 @@ export function PostSourceAttribution({
 }: PostSourceAttributionProps) {
   if (!sourceUrl.startsWith("http")) return null;
 
-  const label = formatPostSourceAttribution(sourceName) ?? "원문";
+  const label = formatPostSourceAttribution(sourceName, sourceUrl);
+  if (!label) return null;
 
   return (
     <p
