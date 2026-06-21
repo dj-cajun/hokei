@@ -1,5 +1,6 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import { isKoreanPublisherArticleLink } from "@/lib/news/korean-news-publishers";
+import { isOffTopicLaborNews } from "@/lib/news/off-topic-labor-news";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
 
 /** 호치민·베트남 현지 연관 (수집 대상 지역) */
@@ -171,6 +172,10 @@ export function passesTopicRelevanceFilter(
   description = "",
   meta?: { link?: string; sourceName?: string }
 ): boolean {
+  if (isOffTopicLaborNews(title, description)) {
+    return false;
+  }
+
   if (isOffTopicDomesticRoundup(title, description)) {
     return false;
   }
