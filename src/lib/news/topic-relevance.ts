@@ -30,6 +30,34 @@ const POLICY_PATTERN =
 const OFF_TOPIC_DIASPORA_PATTERN =
   /뉴저지|보스턴컵|보스턴[^민]|LA 한인|캀이프타운|뉴욕 한인|실리콘밸리|토론토|시카고 한인|조지아 한인/i;
 
+/** 국내 언론 위클리 칼럼·소비자 행사 묶음 (베트남 교민과 무관) */
+const OFF_TOPIC_WEEKLY_COLUMN_PATTERN =
+  /\[(하늘길|PC방|주차장|와이파이|알림장|가전&?쿡커)\]|위클리\s*시리즈|슬기로운\s*시간/i;
+
+function isOffTopicDomesticRoundup(title: string, description = ""): boolean {
+  const text = normalizeTextForTopicMatch(title, description);
+  if (OFF_TOPIC_WEEKLY_COLUMN_PATTERN.test(text)) return true;
+
+  const airlinePromo =
+    /국제선\s*프로모션|여름휴가\s*국제선|여름\s*성수기\s*국제선|할인코드/i.test(
+      text
+    );
+  const multiAirline =
+    [/(?:^|[^가-힣])파라타/i, /티웨이/i, /진에어/i, /제주항공/i].filter((p) =>
+      p.test(text)
+    ).length >= 2;
+
+  if (
+    airlinePromo &&
+    multiAirline &&
+    !/호치민|사이공|HCMC|교민|한국인\s*여행|베트남\s*여행/i.test(text)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 /** 수집 시 붙는 `[한국]`·`VnExpress ·` 접두사 제거 후 본문 판별 */
 export function normalizeTextForTopicMatch(title: string, description = ""): string {
   const stripped = title
@@ -93,7 +121,12 @@ export function isKoreaRelatedNews(title: string, description = ""): boolean {
 /** 한국인·교민이 베트남을 방문·이동할 때 검색하는 뉴스 */
 function matchesTravelTopic(title: string, description: string): boolean {
   const text = normalizeTextForTopicMatch(title, description);
-  return isKoreaRelatedNews(title, description) && TRAVEL_PATTERN.test(text);
+  if (!isKoreaRelatedNews(title, description) || !TRAVEL_PATTERN.test(text)) {
+    return false;
+  }
+  return /호치민|사이공|HCMC|다낭|나트랑|푸꾸옥|하노이|베트남|한국인\s*여행|교민.*여행/i.test(
+    text
+  );
 }
 
 /** 베트남 방문 여행객 — 현지 관광·안전·입국 (한국인 키워드 필수 아님) */
@@ -138,6 +171,10 @@ export function passesTopicRelevanceFilter(
   description = "",
   meta?: { link?: string; sourceName?: string }
 ): boolean {
+  if (isOffTopicDomesticRoundup(title, description)) {
+    return false;
+  }
+
   if (!isVietnamLocalRelevant(title, description, meta)) {
     return false;
   }

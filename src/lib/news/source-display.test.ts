@@ -38,6 +38,15 @@ describe("formatPostSourceAttribution", () => {
   it("falls back to hostname for unknown sites", () => {
     expect(
       formatPostSourceAttribution(null, "https://www.chosun.com/article/1")
-    ).toBe("chosun");
+    ).toBe("조선일보");
+  });
+
+  it("uses URL publisher when source name is generic 뉴스", () => {
+    expect(
+      formatPostSourceAttribution(
+        "네이버 뉴스",
+        "https://www.shinailbo.co.kr/news/article.html"
+      )
+    ).toBe("신아일보");
   });
 });

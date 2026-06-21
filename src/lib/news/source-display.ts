@@ -5,6 +5,19 @@ const SCRAPE_TAG = /\s*\(스크래핑\)\s*/gi;
 const FEED_AGGREGATOR =
   /^(네이버(\s*뉴스)?(\s*[·\/|.]\s*)?(VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스)?|VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스)$/i;
 
+const GENERIC_SOURCE_LABEL = /^(뉴스|news|뉴스1)$/i;
+
+const HOST_PUBLISHER_LABELS: Record<string, string> = {
+  "shinailbo.co.kr": "신아일보",
+  "chosun.com": "조선일보",
+  "joongang.co.kr": "중앙일보",
+  "hani.co.kr": "한겨레",
+  "mk.co.kr": "매일경제",
+  "hankyung.com": "한국경제",
+  "yna.co.kr": "연합뉴스",
+  "news1.kr": "뉴스1",
+};
+
 function cleanSourceNameForDisplay(name: string): string {
   return name
     .replace(SCRAPE_TAG, " ")
@@ -24,6 +37,8 @@ function publisherLabelFromUrl(sourceUrl: string): string | null {
     if (/vietnam\.vn$/.test(host)) return "Vietnam.vn";
     if (/vnexpress\.net$/.test(host)) return "VnExpress";
     if (/news\.naver\.com$/.test(host)) return "네이버 뉴스";
+
+    if (HOST_PUBLISHER_LABELS[host]) return HOST_PUBLISHER_LABELS[host];
 
     const base = host.split(".").slice(0, -1).join(".") || host;
     if (base && base !== host) return base;
@@ -48,7 +63,13 @@ export function formatPostSourceAttribution(
   sourceUrl?: string
 ): string | null {
   const cleaned = name?.trim() ? cleanSourceNameForDisplay(name) : "";
-  if (cleaned && !FEED_AGGREGATOR.test(cleaned)) return cleaned;
+  if (
+    cleaned &&
+    !FEED_AGGREGATOR.test(cleaned) &&
+    !GENERIC_SOURCE_LABEL.test(cleaned)
+  ) {
+    return cleaned;
+  }
 
   if (sourceUrl?.startsWith("http")) {
     return publisherLabelFromUrl(sourceUrl);

@@ -51,6 +51,13 @@ const BRACKET_BYLINE_PREFIX = /^\[[^\]=\[\]]{1,48}=[^\]]{1,96}\]\s*/;
 const REPORTER_LINE =
   /^[가-힣A-Za-z.\s]{1,24}\s*(특파원|기자|인턴\s*기자|수습\s*기자|논설위원|편집인|통신원)(\s*[|｜·]\s*)?(\S+@\S+)?\s*$/;
 
+/** [신아일보] 우현명 기자 email@domain */
+const BRACKET_MEDIA_REPORTER_LINE =
+  /^\[[^\]]{1,24}\]\s*[가-힣A-Za-z.\s]{1,24}\s*기자(\s+\S+@\S+)?\s*$/;
+
+const REPORTER_CUTOFF_INLINE =
+  /\n\s*\[[^\]\n]{1,24}\]\s*[가-힣A-Za-z.\s]{1,24}\s*기자(?:\s+\S+@\S+)?\s*(?:\n|$)/i;
+
 const EMAIL_LINE = /^\S+@\S+\.\S+\s*$/;
 
 const RELATED_ONE_LINER =
@@ -108,6 +115,7 @@ function isNoiseLine(line: string): boolean {
   if (DROP_LINE_PATTERNS.some((p) => p.test(s))) return true;
   if (PHOTO_CAPTION.test(s)) return true;
   if (REPORTER_LINE.test(s)) return true;
+  if (BRACKET_MEDIA_REPORTER_LINE.test(s)) return true;
   if (EMAIL_LINE.test(s)) return true;
   if (RELATED_ONE_LINER.test(s)) return true;
   if (/^https?:\/\/\S+$/i.test(s)) return true;
@@ -145,6 +153,7 @@ function trimEdgeLines(lines: string[]): string[] {
     if (
       isNoiseLine(line) ||
       REPORTER_LINE.test(line) ||
+      BRACKET_MEDIA_REPORTER_LINE.test(line) ||
       EMAIL_LINE.test(line) ||
       SECTION_CUTOFF.test(line) ||
       /다른\s*기사|이\s*기사|추천|구독|newsletter/i.test(line)
@@ -175,8 +184,14 @@ export function cleanArticleBody(raw: string): string {
   const sectionMatch = raw.search(
     /\n\s*(관련\s*기사|관련\s*뉴스|많이\s*본\s*뉴스|다른\s*기사\s*보기|이\s*기사도|◆\s*태그|태그\s*[:：])/i
   );
-  if (sectionMatch > 150) {
-    cutAtSection = raw.slice(0, sectionMatch);
+  const reporterMatch = raw.search(REPORTER_CUTOFF_INLINE);
+  let cutIndex = -1;
+  if (sectionMatch > 150) cutIndex = sectionMatch;
+  if (reporterMatch > 150 && (cutIndex < 0 || reporterMatch < cutIndex)) {
+    cutIndex = reporterMatch;
+  }
+  if (cutIndex > 150) {
+    cutAtSection = raw.slice(0, cutIndex);
   }
 
   const allLines: string[] = [];

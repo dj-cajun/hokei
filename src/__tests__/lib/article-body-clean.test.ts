@@ -49,4 +49,17 @@ describe("cleanArticleBody", () => {
     const filtered = applyArticleRegexFilters(raw);
     expect(filtered).not.toMatch(/뉴스1\)/);
   });
+
+  it("[신아일보] 기자 바이라인 이후는 제거한다", () => {
+    const raw = `파라타항공은 여름 휴가철을 앞두고 국제선 특가 프로모션을 진행한다. 베트남 노선은 가족 단위 여행객을 겨냥했다. 할인 혜택은 6월23일까지 진행된다.
+
+[신아일보] 우현명 기자 wisewoo@shinailbo.co.kr
+
+관련 기사 더보기
+다른 항공사 뉴스 묶음`;
+
+    const out = cleanArticleBody(raw);
+    expect(out).toContain("파라타항공은 여름 휴가철");
+    expect(out).not.toMatch(/신아일보|wisewoo@|관련\s*기사/);
+  });
 });

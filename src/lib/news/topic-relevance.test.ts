@@ -86,6 +86,17 @@ describe("passesTopicRelevanceFilter", () => {
     ).toBe(true);
   });
 
+  it("rejects domestic weekly airline promo roundup", () => {
+    expect(
+      passesTopicRelevanceFilter(
+        "TRAVEL",
+        "[하늘길] 6월 4주, 여름휴가 국제선 프로모션…파라타 외 2가지 항공",
+        "파라타항공 베트남 노선 할인, 티웨이항공 진에어 프로모션",
+        { link: "https://www.shinailbo.co.kr/news/article.html" }
+      )
+    ).toBe(false);
+  });
+
   it("accepts real VnExpress article by URL", () => {
     expect(
       passesTopicRelevanceFilter(

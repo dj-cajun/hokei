@@ -298,6 +298,18 @@ export async function ingestDailyNews(
       const { title, content, thumbnail, bodySkip } =
         await buildPostFromArticlePage(raw, { fetchTimeoutMs });
 
+      if (
+        content &&
+        !passesTopicRelevanceFilter(raw.topic, title, content.slice(0, 800), {
+          link: raw.link,
+          sourceName: raw.sourceName,
+        })
+      ) {
+        result.skipped++;
+        result.errors.push(`${raw.link}: [off_topic] 본문 기준 주제 불일치 — 저장 안 함`);
+        continue;
+      }
+
       if (!hasSubstantialNewsBody(content)) {
         result.skipped++;
         const reason = bodySkip?.reason ?? "no_body";

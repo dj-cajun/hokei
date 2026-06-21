@@ -15,6 +15,7 @@ const TRAILING_LINE_CHECKS: RegExp[] = [
   /Copyright|All\s*rights\s*reserved/i,
   /기사\s*원문\s*[:：]?\s*https?:\/\//i,
   /^▶\s*/,
+  /^\[[^\]]{1,24}\]\s*[가-힣A-Za-z.\s]{1,24}\s*기자(?:\s+\S+@\S+)?\s*$/,
 ];
 
 function isTrailingNoiseLine(line: string): boolean {
