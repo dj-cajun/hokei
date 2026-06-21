@@ -5,6 +5,7 @@ import { curatePublishSchema } from "@/lib/admin/curate-schemas";
 import { publishCuratedNews } from "@/lib/admin/publish-curated-news";
 import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { log } from "@/lib/logger";
+import { revalidatePostCaches } from "@/lib/revalidate-content";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,8 @@ export async function POST(request: Request) {
       ...parsed.data,
       authorId: session!.user.id,
     });
+
+    revalidatePostCaches(id, { categoryHref: "/news" });
 
     await writeAdminAudit({
       actorId: session!.user.id,

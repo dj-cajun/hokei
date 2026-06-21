@@ -256,6 +256,36 @@ export function CurateNewsPanel({
               )}
             />
           </div>
+          <div>
+            <Label htmlFor="thumbnail">썸네일 URL (선택)</Label>
+            <Input
+              id="thumbnail"
+              type="url"
+              placeholder="https://... (비우면 URL 가져오기·자동 추출)"
+              value={thumbnail ?? ""}
+              onChange={(e) =>
+                setThumbnail(e.target.value.trim() || null)
+              }
+              className="mt-1"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              게시 시 Blob에 복사됩니다. 직접 올린 이미지 URL을 넣어도 됩니다.
+            </p>
+            {thumbnail ? (
+              <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>미리보기</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbnail}
+                  alt=""
+                  className="h-10 w-16 rounded border border-border object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 

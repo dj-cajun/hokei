@@ -28,7 +28,7 @@ export function isDailyNewsCapEnabled(): boolean {
 
 /**
  * 일일 상한이 없을 때 1회 수집(run)당 시도·삽입 상한 — `NEWS_PER_RUN_CAP`
- * Vercel Cron은 120초 budget 때문에 기본 10건.
+ * Vercel Cron은 120초 budget 때문에 기본 15건.
  */
 export function getPerRunIngestQuota(onVercel: boolean): number {
   const raw = process.env.NEWS_PER_RUN_CAP?.trim();

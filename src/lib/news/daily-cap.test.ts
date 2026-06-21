@@ -27,7 +27,7 @@ describe("daily-cap", () => {
 
   it("uses per-run quota on Vercel", () => {
     vi.stubEnv("NEWS_PER_RUN_CAP", "");
-    expect(getPerRunIngestQuota(true)).toBe(10);
+    expect(getPerRunIngestQuota(true)).toBe(15);
   });
 
   it("respects NEWS_PER_RUN_CAP locally", () => {

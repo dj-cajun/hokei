@@ -9,7 +9,8 @@ import { isZaiConfigured } from "@/lib/ai/zai";
 /**
  * 수집 소스 모드
  *
- * - **프로덕션(Vercel)**: 네이버 API·Python 스크래퍼 없음 → RSS 우회만 (처음 설계)
+ * - **프로덕션(Vercel)**: NAVER_CLIENT_ID/SECRET 있으면 REST API + RSS 혼합 (Playwright 불가)
+ * - **프로덕션(Vercel), 네이버 없음**: RSS 우회만
  * - **로컬**: 네이버 API 또는 Python 스크래퍼(requests/Playwright) + RSS 혼합
  */
 export async function resolveIngestRssOnly(): Promise<{
@@ -40,13 +41,20 @@ export async function resolveIngestRssOnly(): Promise<{
     };
   }
 
-  // Vercel = RSS 우회 수집 고정 (네이버 API·Playwright 미사용)
   if (process.env.VERCEL === "1") {
+    if (naverConfigured) {
+      return {
+        rssOnly: false,
+        naverConfigured,
+        naverScraperOk,
+        reason: "vercel-naver-api (REST + RSS, no Playwright)",
+      };
+    }
     return {
       rssOnly: true,
       naverConfigured,
       naverScraperOk,
-      reason: "vercel-rss-only (production bypass)",
+      reason: "vercel-rss-only (no naver keys)",
     };
   }
 

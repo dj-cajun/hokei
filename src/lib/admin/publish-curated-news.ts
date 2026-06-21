@@ -56,13 +56,12 @@ export async function publishCuratedNews(
     })();
 
   let thumbnail = input.thumbnail?.trim() || null;
-  if (!thumbnail) {
-    thumbnail = await resolveAutomatedNewsThumbnail({
-      topic,
-      link: sourceUrl,
-      rssDescription: summary,
-    });
-  }
+  thumbnail = await resolveAutomatedNewsThumbnail({
+    topic,
+    link: sourceUrl,
+    rssDescription: summary,
+    rssThumbnail: thumbnail ?? undefined,
+  });
 
   const now = new Date();
   const post = await prisma.post.create({

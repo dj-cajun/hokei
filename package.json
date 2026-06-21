@@ -85,6 +85,7 @@
     "news:prune-off-topic": "tsx scripts/prune-off-topic-posts.ts",
     "news:prune-empty": "tsx scripts/prune-empty-content-news.ts",
     "news:prune-no-thumbnail": "tsx scripts/prune-no-thumbnail-news.ts",
+    "news:analyze-ingest": "tsx scripts/analyze-ingest-runs.ts",
     "news:queries": "tsx -e \"import { listNaverSearchQueries } from './src/lib/news/naver-search-queries.ts'; console.log(JSON.stringify(listNaverSearchQueries(), null, 2))\""
   },
   "prisma": {
