@@ -92,11 +92,11 @@ export default async function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} h-full antialiased${darkClass ? ` ${darkClass}` : ""}`}
+      className={`${pretendard.variable} ${pretendard.className} h-full antialiased${darkClass ? ` ${darkClass}` : ""}`}
       suppressHydrationWarning
     >
       <body
-        className={`${pretendard.className} flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0`}
+        className="flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0"
         suppressHydrationWarning
       >
         <SiteJsonLd />
