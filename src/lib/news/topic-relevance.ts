@@ -1,5 +1,6 @@
 import type { PostTopic } from "@/generated/prisma/client";
 import { isKoreanPublisherArticleLink } from "@/lib/news/korean-news-publishers";
+import { matchesExpatPriorityNews } from "@/lib/news/expat-priority-keywords";
 import { isOffTopicAirlineIndustryNews } from "@/lib/news/off-topic-airline-news";
 import { isOffTopicLaborNews } from "@/lib/news/off-topic-labor-news";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
@@ -190,6 +191,11 @@ export function passesTopicRelevanceFilter(
 
   // 인사이드비나·Vietnam.vn·라오동 — 베트남 현지 한국어 매체는 교민 실용 정보 우선
   if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) {
+    return true;
+  }
+
+  // 송금·물가·한·베 협력·베트남항공·한국 기업 베트남 투자 등 교민 실익 뉴스
+  if (matchesExpatPriorityNews(title, description)) {
     return true;
   }
 
