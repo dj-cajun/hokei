@@ -15,7 +15,16 @@ export function sanitizeStoredSourceName(
   return s;
 }
 
-/** 기사 상단(썸네일 아래) — 수집용 매체명은 표시하지 않음 */
+/** 기사 상단(썸네일 아래) — 출처 표기 */
+export function formatPostSourceAttribution(
+  name?: string | null
+): string | null {
+  if (!name?.trim()) return null;
+  const s = name.replace(SCRAPE_TAG, " ").replace(/\s+/g, " ").trim();
+  return s || null;
+}
+
+/** 메타 줄 — 수집용 매체명은 표시하지 않음 (레거시) */
 export function formatPostSourceLabel(
   name?: string | null
 ): string | null {

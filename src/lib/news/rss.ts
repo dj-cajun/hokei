@@ -3,6 +3,11 @@ import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
 import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import { extractImageFromHtml } from "@/lib/news/image";
+import {
+  isKoreanPublisherArticleUrl,
+  shouldUseKoreanPublisherFeed,
+  toKoreanPublisherArticleUrl,
+} from "@/lib/news/korean-publisher-url";
 import type { NewsIngestTier } from "@/lib/news/news-ingest-tier";
 
 export type RawNewsItem = {
@@ -19,7 +24,7 @@ export type RawNewsItem = {
 type MediaNode = { $?: { url?: string; type?: string; medium?: string } };
 
 const parser = new Parser({
-  timeout: 15000,
+  timeout: 20_000,
   headers: {
     "User-Agent": "HokeiNewsBot/1.0 (+https://hokei.vn)",
   },
@@ -114,7 +119,10 @@ export async function fetchFeedItems(
         const description = stripHtml(
           item.contentSnippet ?? rawContent ?? ""
         ).slice(0, 2000);
-        const link = item.link ?? item.guid ?? "";
+        const link = toKoreanPublisherArticleUrl(
+          item.link ?? item.guid ?? "",
+          sourceName
+        );
         const publishedAt = parseDate(item);
 
         return {
@@ -133,7 +141,9 @@ export async function fetchFeedItems(
         (item) =>
           item.title.length > 4 &&
           item.link.startsWith("http") &&
-          item.publishedAt.getTime() >= cutoff
+          item.publishedAt.getTime() >= cutoff &&
+          (!shouldUseKoreanPublisherFeed(feedUrl) ||
+            isKoreanPublisherArticleUrl(item.link))
       );
   } catch (error) {
     log("error", "[rss] fetch failed", { url, error: String(error) });

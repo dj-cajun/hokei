@@ -88,6 +88,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.insidevina.com" },
       { protocol: "https", hostname: "vphoto.vietnam.vn" },
       { protocol: "https", hostname: "**.vietnam.vn" },
+      { protocol: "https", hostname: "**.laodong.vn" },
       { protocol: "https", hostname: "**.naver.com" },
       { protocol: "https", hostname: "**.naver.net" },
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },

@@ -1,7 +1,7 @@
 import { imageUrlVariants, isHttpOrHttpsUrl } from "@/lib/news/image-url";
 
 const NEWS_CDN_HOST_RE =
-  /(?:^|\.)((?:vnecdn|insidevina|vietnam)\.(?:net|com|vn)|vphoto\.vietnam\.vn|naver\.(?:net|com))$/i;
+  /(?:^|\.)((?:vnecdn|insidevina|vietnam|laodong)\.(?:net|com|vn)|vphoto\.vietnam\.vn|naver\.(?:net|com))$/i;
 
 const USER_AGENT =
   "Mozilla/5.0 (compatible; HokeiNewsBot/1.0; +https://hokei.vn)";
@@ -138,7 +138,8 @@ export function isLikelyNewsCdnImageUrl(url: string): boolean {
   return (
     lower.includes("vnecdn") ||
     lower.includes("cdn.insidevina.com/news/") ||
-    lower.includes("vphoto.vietnam.vn")
+    lower.includes("vphoto.vietnam.vn") ||
+    lower.includes("media-cdn-v2.laodong.vn")
   );
 }
 

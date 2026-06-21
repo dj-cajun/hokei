@@ -2,6 +2,7 @@
 
 import { NewsThumbnail } from "@/components/news/thumbnail";
 import { PostActionBar } from "@/components/posts/post-action-bar";
+import { PostSourceAttribution } from "@/components/posts/post-source-attribution";
 import type { PostTopic } from "@/lib/post-topic";
 
 type NewsPostClientBlocksProps = {
@@ -10,6 +11,7 @@ type NewsPostClientBlocksProps = {
   likeCount: number;
   thumbnail?: string | null;
   sourceUrl: string;
+  sourceName?: string | null;
   topic: PostTopic;
   showThumbnail: boolean;
 };
@@ -21,6 +23,7 @@ export function NewsPostClientBlocks({
   likeCount,
   thumbnail,
   sourceUrl,
+  sourceName,
   topic,
   showThumbnail,
 }: NewsPostClientBlocksProps) {
@@ -36,6 +39,11 @@ export function NewsPostClientBlocks({
           />
         </div>
       )}
+
+      <PostSourceAttribution
+        sourceName={sourceName}
+        sourceUrl={sourceUrl}
+      />
 
       <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
         <PostActionBar postId={postId} title={title} likeCount={likeCount} />

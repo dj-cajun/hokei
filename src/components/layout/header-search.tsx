@@ -15,13 +15,20 @@ type HeaderSearchProps = {
   variant?: "mobile" | "desktop";
 };
 
+const SEARCH_INPUT_ID = {
+  mobile: "header-search-mobile",
+  desktop: "header-search-desktop",
+} as const;
+
 type SuggestItem = { id: string; title: string; category: string };
 
 function SearchInput({
+  inputId,
   initialQ,
   variant,
   onSearch,
 }: {
+  inputId: string;
   initialQ: string;
   variant: "mobile" | "desktop";
   onSearch: (query: string) => void;
@@ -105,7 +112,7 @@ function SearchInput({
         />
         <input
           type="search"
-          id={isMobile ? "header-search-mobile" : "header-search-desktop"}
+          id={inputId}
           name="q"
           value={q}
           onChange={(e) => {
@@ -206,6 +213,7 @@ export function HeaderSearch({ variant = "mobile" }: HeaderSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const inputId = SEARCH_INPUT_ID[variant];
 
   const isSearchPage = pathname === "/search";
   const urlQ = isSearchPage ? (searchParams.get("q") ?? "") : "";
@@ -214,6 +222,7 @@ export function HeaderSearch({ variant = "mobile" }: HeaderSearchProps) {
   return (
     <SearchInput
       key={inputKey}
+      inputId={inputId}
       initialQ={urlQ}
       variant={variant}
       onSearch={(query) => {

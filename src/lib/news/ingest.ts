@@ -22,6 +22,10 @@ import {
 import { sanitizeStoredSourceName } from "@/lib/news/source-display";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
 import { isVietnamKoreanMediaArticle } from "@/lib/news/vietnam-korean-media";
+import {
+  isKoreanPublisherArticleUrl,
+  toKoreanPublisherArticleUrl,
+} from "@/lib/news/korean-publisher-url";
 import type { PostTopic } from "@/generated/prisma/client";
 import { hasSubstantialNewsBody } from "@/lib/news/news-body-quality";
 import { pruneEmptyContentAutomatedNews } from "@/lib/news/prune-empty-content-news";
@@ -188,7 +192,19 @@ export async function ingestDailyNews(
 
   const uniqueByLink = new Map<string, RawNewsItem>();
   for (const item of pool) {
-    if (!uniqueByLink.has(item.link)) uniqueByLink.set(item.link, item);
+    const normalized: RawNewsItem = {
+      ...item,
+      link: toKoreanPublisherArticleUrl(item.link, item.sourceName),
+    };
+    if (
+      /vietnam\.vn/i.test(normalized.link) &&
+      !isKoreanPublisherArticleUrl(normalized.link)
+    ) {
+      continue;
+    }
+    if (!uniqueByLink.has(normalized.link)) {
+      uniqueByLink.set(normalized.link, normalized);
+    }
   }
 
   const dedupedPool = dedupeRawNewsItems([...uniqueByLink.values()]);

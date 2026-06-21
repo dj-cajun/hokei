@@ -5,6 +5,7 @@ import { naverFeedsForTopic } from "@/lib/news/naver-search-queries";
 import { OFFICIAL_NOTICE_FEEDS } from "@/lib/news/official-notice-feeds";
 import {
   INSIDEVINA_RSS_FEEDS,
+  LAODONG_KO_FEEDS,
   VIETNAM_VN_RSS_FEEDS,
 } from "@/lib/news/vietnam-korean-feeds";
 import {
@@ -61,6 +62,7 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
       ...VIETNAM_LOCAL_NAVER_FEEDS.filter((f) => f.tier !== "SAFETY_VISA"),
       ...INSIDEVINA_RSS_FEEDS.korea,
       ...VIETNAM_VN_RSS_FEEDS.korea,
+      ...LAODONG_KO_FEEDS.korea,
     ]),
   },
   {
@@ -73,6 +75,7 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
       ...VIETNAM_LOCAL_RSS_FEEDS.TRAVEL,
       ...INSIDEVINA_RSS_FEEDS.travel,
       ...VIETNAM_VN_RSS_FEEDS.travel,
+      ...LAODONG_KO_FEEDS.travel,
     ]),
   },
   {
@@ -87,6 +90,7 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
       ...VIETNAM_LOCAL_NAVER_FEEDS.filter((f) => f.tier === "SAFETY_VISA"),
       ...INSIDEVINA_RSS_FEEDS.policy,
       ...VIETNAM_VN_RSS_FEEDS.policy,
+      ...LAODONG_KO_FEEDS.policy,
     ]),
   },
   {
@@ -98,6 +102,7 @@ export const NEWS_TOPIC_SOURCES: NewsTopicConfig[] = [
       ...VIETNAM_LOCAL_RSS_FEEDS.TOURIST,
       ...INSIDEVINA_RSS_FEEDS.tourist,
       ...VIETNAM_VN_RSS_FEEDS.tourist,
+      ...LAODONG_KO_FEEDS.tourist,
     ]),
   },
 ];

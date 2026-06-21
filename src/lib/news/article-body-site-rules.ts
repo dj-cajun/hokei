@@ -35,6 +35,10 @@ export const ARTICLE_SITE_RULES: readonly ArticleSiteRule[] = [
     selectors: [".article-content", ".entry-content", "article .content"],
   },
   {
+    host: /ko\.laodong\.vn/i,
+    selectors: [".article-content", ".article-detail", "article .content"],
+  },
+  {
     host: /(?:^|\.)vnexpress\.net$/i,
     selectors: [
       ".fck_detail",

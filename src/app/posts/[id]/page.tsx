@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ViewCounter } from "@/components/posts/view-counter";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
@@ -10,7 +10,6 @@ import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { isCommunityPost } from "@/lib/community";
 import { getPostById } from "@/lib/posts";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
-import { formatPostSourceLabel } from "@/lib/news/source-display";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 import type { PostTopic } from "@/lib/post-topic";
@@ -119,9 +118,6 @@ export default async function PostPage({ params }: PageProps) {
                 timeZone: "Asia/Ho_Chi_Minh",
               })}{" "}
               · 조회 {post.views}
-              {formatPostSourceLabel(post.sourceName)
-                ? ` · ${formatPostSourceLabel(post.sourceName)}`
-                : ""}
             </p>
 
             <NewsPostClientBlocks
@@ -130,6 +126,7 @@ export default async function PostPage({ params }: PageProps) {
               likeCount={post.likeCount ?? 0}
               thumbnail={post.thumbnail}
               sourceUrl={post.sourceUrl}
+              sourceName={post.sourceName}
               topic={post.topic as PostTopic}
               showThumbnail={Boolean(post.thumbnail || post.isAutomated)}
             />
@@ -144,16 +141,6 @@ export default async function PostPage({ params }: PageProps) {
                 주세요.
               </p>
             ) : null}
-
-            <a
-              href={post.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-            >
-              원문 보기
-              <ExternalLink className="h-4 w-4" />
-            </a>
 
             <AdSenseUnit slotKind="article" />
             <PostCommentsSession postId={post.id} comments={comments} />

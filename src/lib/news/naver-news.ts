@@ -2,6 +2,7 @@ import type { PostTopic } from "@/generated/prisma/client";
 import { log } from "@/lib/logger";
 import { decodeHtmlEntities } from "@/lib/news/decode-html-entities";
 import type { RawNewsItem } from "@/lib/news/rss";
+import { toKoreanPublisherArticleUrl } from "@/lib/news/korean-publisher-url";
 import { scrapeNaverNewsSearch } from "@/lib/news/naver-scrape";
 
 type NaverNewsItem = {
@@ -61,7 +62,10 @@ function mapApiItems(
     .map((item) => {
       const title = stripNaverHtml(item.title ?? "").slice(0, 300);
       const description = stripNaverHtml(item.description ?? "").slice(0, 2000);
-      const link = (item.originallink || item.link || "").trim();
+      const link = toKoreanPublisherArticleUrl(
+        (item.originallink || item.link || "").trim(),
+        sourceName
+      );
       const publishedAt = parseNaverDate(item.pubDate);
 
       return {

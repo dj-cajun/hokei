@@ -40,10 +40,10 @@ export function normalizeTextForTopicMatch(title: string, description = ""): str
 }
 
 function isTrustedKoreanVietnamSource(sourceName?: string, link?: string): boolean {
-  if (sourceName && /insidevina|인사이드비나|vietnam\.vn/i.test(sourceName)) {
+  if (sourceName && /insidevina|인사이드비나|vietnam\.vn|laodong|라오동/i.test(sourceName)) {
     return true;
   }
-  if (link && /insidevina\.com|vietnam\.vn/i.test(link)) return true;
+  if (link && /insidevina\.com|vietnam\.vn|ko\.laodong\.vn/i.test(link)) return true;
   return false;
 }
 
