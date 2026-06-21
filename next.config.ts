@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), compute-pressure=(self)",
+            value:
+              'camera=(), microphone=(), geolocation=(), compute-pressure=(self "https://www.youtube.com" "https://www.youtube-nocookie.com")',
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
           {

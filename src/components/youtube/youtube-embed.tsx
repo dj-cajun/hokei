@@ -122,7 +122,7 @@ export function YouTubeEmbed({
         title={title}
         src={src}
         loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; compute-pressure"
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       />
