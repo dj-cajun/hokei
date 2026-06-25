@@ -7,8 +7,9 @@ import { CommunityPostArticle } from "@/components/posts/community-post-article"
 import { NewsPostClientBlocks } from "@/components/posts/news-post-client-blocks";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
-import { isCommunityPost } from "@/lib/community";
+import { isCommunityPost, isUserBoardPost } from "@/lib/community";
 import { getPostById } from "@/lib/posts";
+import { sanitizeNewsPostTitle } from "@/lib/news/source-display";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
@@ -31,14 +32,20 @@ export async function generateMetadata({ params }: PageProps) {
     .slice(0, 160);
   const ogImage =
     post.thumbnail?.trim() || getFallbackThumbnail(post.topic);
+  const displayTitle = isCommunityPost(post.sourceUrl)
+    ? post.title
+    : sanitizeNewsPostTitle(post.title, {
+        sourceName: post.sourceName,
+        sourceUrl: post.sourceUrl,
+      });
   return {
-    title: `${post.title} - 호케이 Hokei`,
+    title: `${displayTitle} - 호케이 Hokei`,
     description,
     openGraph: {
-      title: post.title,
+      title: displayTitle,
       description,
       type: "article",
-      images: [{ url: ogImage, alt: post.title }],
+      images: [{ url: ogImage, alt: displayTitle }],
     },
   };
 }
@@ -69,13 +76,19 @@ export default async function PostPage({ params }: PageProps) {
     .replace(/\n/g, " ")
     .slice(0, 160);
   const comments = serializeComments(post.comments);
-  const community = isCommunityPost(post.sourceUrl);
+  const community = isUserBoardPost(post.sourceUrl);
+  const displayTitle = community
+    ? post.title
+    : sanitizeNewsPostTitle(post.title, {
+        sourceName: post.sourceName,
+        sourceUrl: post.sourceUrl,
+      });
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <ArticleJsonLd
         id={post.id}
-        title={post.title}
+        title={displayTitle}
         description={description}
         publishedAt={post.publishedAt}
         thumbnail={post.thumbnail}
@@ -110,7 +123,7 @@ export default async function PostPage({ params }: PageProps) {
             </nav>
 
             <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
-              {post.title}
+              {displayTitle}
             </h1>
 
             <p className="mt-1.5 text-[11px] text-muted-foreground">
@@ -122,7 +135,7 @@ export default async function PostPage({ params }: PageProps) {
 
             <NewsPostClientBlocks
               postId={post.id}
-              title={post.title}
+              title={displayTitle}
               likeCount={post.likeCount ?? 0}
               thumbnail={post.thumbnail}
               sourceUrl={post.sourceUrl}

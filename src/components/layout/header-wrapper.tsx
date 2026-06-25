@@ -1,7 +1,9 @@
 import { getCategoryTree } from "@/lib/categories";
+import { buildHeaderNavSections } from "@/lib/site-navigation";
 import { Header } from "@/components/layout/header";
 
 export async function HeaderWrapper() {
   const categoryTree = await getCategoryTree();
-  return <Header categoryTree={categoryTree} />;
+  const navSections = buildHeaderNavSections(categoryTree);
+  return <Header categoryTree={categoryTree} navSections={navSections} />;
 }

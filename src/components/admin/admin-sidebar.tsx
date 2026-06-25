@@ -1,15 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
+  BookOpen,
   FolderTree,
   LayoutDashboard,
   Newspaper,
   PenLine,
   Shield,
   ShieldAlert,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +22,8 @@ const navItems = [
   { href: "/admin/moderation", label: "모더레이션", icon: Shield },
   { href: "/admin/categories", label: "카테고리", icon: FolderTree },
   { href: "/admin/curate", label: "콘텐츠 재가공", icon: PenLine },
+  { href: "/admin/ai-curate", label: "AI 카톡 큐레이션", icon: Sparkles },
+  { href: "/admin/life", label: "생활 가이드", icon: BookOpen },
   { href: "/admin/ingest", label: "뉴스 수집", icon: Newspaper },
   { href: "/admin/security", label: "보안·감사", icon: ShieldAlert },
   { href: "/admin/users", label: "회원 관리", icon: Users },
@@ -26,6 +31,11 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <aside className="w-full shrink-0 lg:w-56">
@@ -44,9 +54,10 @@ export function AdminSidebar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.href === "/admin"
+              mounted &&
+              (item.href === "/admin"
                 ? pathname === "/admin"
-                : pathname.startsWith(item.href);
+                : pathname.startsWith(item.href));
 
             return (
               <Link

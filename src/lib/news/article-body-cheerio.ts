@@ -41,7 +41,7 @@ const GENERIC_BODY_SELECTORS = [
 ] as const;
 
 const NOISE_SELECTORS =
-  "script, style, nav, aside, iframe, svg, video, figure, figcaption, .related, .relation, .tag_group, .journalist, .byline, .article-more, .article-social, .article_share, .banner, .ad-area";
+  "script, style, nav, aside, iframe, svg, video, figure, figcaption, .related, .relation, .tag_group, .journalist, .byline, .article-more, .article-social, .article_share, .banner, .ad-area, .art-recommend, .art-report-slide, .article-side, .article-sticky-wrap, .copyright, .swiper, .comment-wrap, .horizontal-ad, .vertical-ad";
 
 function elementToPlainText($: CheerioAPI, selector: string): string {
   const el = $(selector).first();

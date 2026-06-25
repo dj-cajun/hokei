@@ -9,17 +9,20 @@ import {
   getPostsBySectionSlug,
 } from "@/lib/posts";
 import { parseRegionParam } from "@/lib/regions";
+import { mapSectionCategoryTabs } from "@/lib/section-category-tabs";
 
 export const revalidate = 60;
+
+const DEDICATED_SECTION_ROUTES = new Set(["news", "promo", "community"]);
+
+export async function generateStaticParams() {
+  const slugs = await getSectionSlugs();
+  return slugs.filter((s) => !DEDICATED_SECTION_ROUTES.has(s.section));
+}
 
 interface PageProps {
   params: Promise<{ section: string }>;
   searchParams: Promise<{ page?: string; region?: string }>;
-}
-
-export async function generateStaticParams() {
-  const slugs = await getSectionSlugs();
-  return slugs.filter((s) => s.section !== "news");
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -54,7 +57,8 @@ export default async function SectionRoutePage({
   const { page: pageParam, region: regionParam } = await searchParams;
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const communityOnly = sectionSlug === "community";
-  const region = parseRegionParam(regionParam);
+  const region =
+    communityOnly ? parseRegionParam(regionParam) : undefined;
   const listOptions = {
     ...(communityOnly ? { communityOnly: true as const } : {}),
     region,
@@ -73,6 +77,10 @@ export default async function SectionRoutePage({
     : [[], 0];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
+  const children =
+    "children" in section && Array.isArray(section.children)
+      ? section.children
+      : [];
 
   return (
     <SectionArchivePage
@@ -87,6 +95,7 @@ export default async function SectionRoutePage({
       currentPage={Math.min(currentPage, totalPages)}
       totalPages={totalPages}
       region={region}
+      categoryTabs={mapSectionCategoryTabs(children)}
     />
   );
 }

@@ -51,8 +51,28 @@ export function stripTrailingBoilerplate(text: string): string {
   return lines.join("\n").trim();
 }
 
+/** 본문 끝·줄바꿈 없이 붙는 관련기사 제목·구독 영상 (서울경제 등) */
+export function stripAppendedRelatedHeadlines(text: string): string {
+  let s = text.trim();
+  if (!s) return s;
+
+  const subIdx = s.search(/\+구독/);
+  if (subIdx > 80) s = s.slice(0, subIdx).trim();
+
+  s = s.replace(/\n\s*영상[“"][^"\n]+[”"][^\n]*/g, "\n");
+  s = s.replace(
+    /(?<=[.!?…])\s*(?:[“"][^”"]{8,120}[”"]…[^.?!]{3,80}\?\s*)+$/u,
+    ""
+  );
+  s = s.replace(/\s*ⓒ\s*[^\n]+(?:무단|AI\s*학습)[^\n]*$/i, "");
+
+  return s.trim();
+}
+
 /** 저장·표시 직전 1차 정규식 정제 */
 export function applyArticleRegexFilters(raw: string): string {
   if (!raw?.trim()) return "";
-  return stripTrailingBoilerplate(stripLeadingBylines(raw));
+  return stripAppendedRelatedHeadlines(
+    stripTrailingBoilerplate(stripLeadingBylines(raw))
+  );
 }

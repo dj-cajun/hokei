@@ -24,6 +24,7 @@ import {
   isCascadeWriteSection,
   parseCascadeTitle,
   resolveCategoryIdFromCascade,
+  resolveMidFromCategorySlug,
   type CascadeMainCategory,
   type CascadeWriteSection,
 } from "@/lib/write-cascade-categories";
@@ -99,6 +100,7 @@ export function WriteForm({
     categories
   );
   const useCascade = Boolean(cascadeSection);
+  const isPromoSection = sectionSlug === "promo" || cascadeSection === "promo";
 
   const parsedInitialTitle = useMemo(
     () => (initial?.title ? parseCascadeTitle(initial.title) : null),
@@ -125,6 +127,29 @@ export function WriteForm({
   const [subCategory, setSubCategory] = useState(
     parsedInitialTitle?.subCategory ?? ""
   );
+
+  useEffect(() => {
+    if (!useCascade || !cascadeSection || midCategory || parsedInitialTitle) {
+      return;
+    }
+    const initialId = initial?.categoryId ?? defaultCategoryId;
+    const cat = categories.find((c) => c.id === initialId);
+    if (!cat) return;
+    const mid = resolveMidFromCategorySlug(cascadeSection, cat.slug);
+    if (mid) {
+      setMidCategory(mid);
+      setCategoryId(cat.id);
+    }
+  }, [
+    useCascade,
+    cascadeSection,
+    midCategory,
+    parsedInitialTitle,
+    initial?.categoryId,
+    defaultCategoryId,
+    categories,
+  ]);
+
   const [guestName, setGuestName] = useState("");
   const [guestPassword, setGuestPassword] = useState("");
   const [editPassword, setEditPassword] = useState("");
@@ -132,6 +157,8 @@ export function WriteForm({
     parsedInitialTitle?.rawTitle ?? initial?.title ?? ""
   );
   const [region, setRegion] = useState(initial?.region ?? "");
+  const [storeName, setStoreName] = useState("");
+  const [kakaoLink, setKakaoLink] = useState("");
   const [body, setBody] = useState(initial?.body ?? "");
   const [attachments, setAttachments] = useState<PendingAttachment[]>(() =>
     (initial?.attachments ?? []).map((a, i) => ({
@@ -220,6 +247,10 @@ export function WriteForm({
       setError("수정하려면 글 작성 시 입력한 비밀번호가 필요합니다.");
       return;
     }
+    if (isPromoSection && !storeName.trim()) {
+      setError("업소명을 입력해 주세요.");
+      return;
+    }
 
     const finalTitle = useCascade
       ? buildCascadeTitle(midCategory, subCategory, title)
@@ -274,6 +305,8 @@ export function WriteForm({
           guestPassword: isLoggedIn ? undefined : guestPassword,
           attachments: uploaded,
           region: region || undefined,
+          storeName: isPromoSection ? storeName.trim() : undefined,
+          kakaoLink: isPromoSection ? kakaoLink.trim() || undefined : undefined,
         }),
       });
       const data = (await res.json()) as { error?: string; id?: string };
@@ -414,6 +447,46 @@ export function WriteForm({
               className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden
             />
+          </div>
+        )}
+
+        {isPromoSection && (
+          <div className="space-y-3 border-b border-border-light py-3 px-4">
+            <div>
+              <label
+                htmlFor="write-store-name"
+                className="mb-1 block text-[11px] text-muted-foreground"
+              >
+                업체명 (필수)
+              </label>
+              <input
+                id="write-store-name"
+                name="storeName"
+                type="text"
+                placeholder="예: 7군 OO반찬"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                className="w-full text-sm text-gray-800 focus-ring"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="write-kakao-link"
+                className="mb-1 block text-[11px] text-muted-foreground"
+              >
+                카카오톡 링크 (선택)
+              </label>
+              <input
+                id="write-kakao-link"
+                name="kakaoLink"
+                type="url"
+                placeholder="https://open.kakao.com/o/..."
+                value={kakaoLink}
+                onChange={(e) => setKakaoLink(e.target.value)}
+                className="w-full text-sm text-gray-800 focus-ring"
+              />
+            </div>
           </div>
         )}
 

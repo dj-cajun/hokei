@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "글쓰기 - 호케이 Hokei",
-  description: "구인, 부동산, 중고, 커뮤니티 글을 등록하세요.",
+  description: "구인, 부동산, 중고, 업소 홍보, 커뮤니티 글을 등록하세요.",
   robots: { index: false, follow: true },
 };
 

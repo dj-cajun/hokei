@@ -5,26 +5,34 @@ import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getSectionBySlug } from "@/lib/categories";
+import { MOBILE_COMMUNITY_LIST_HREF } from "@/lib/mobile-nav-config";
 import { parseRegionParam } from "@/lib/regions";
 import {
-  countPostsBySectionSlug,
+  countCommunityPosts,
+  getCommunityArchivePosts,
   getPopularUserPosts,
-  getPostsBySectionSlug,
 } from "@/lib/posts";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "커뮤니티 - 호케이 Hokei",
-  description:
-    "호치민 한국 교민 커뮤니티. 자유게시판, 생활정보, Q&A를 나눠 보세요.",
-  openGraph: {
-    title: "커뮤니티 - 호케이 Hokei",
-    description: "호치민 한국 교민 커뮤니티",
-    locale: "ko_KR",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const section = await getSectionBySlug("community");
+  if (!section) {
+    return { title: "소통 커뮤니티 - 호케이 Hokei" };
+  }
+  return {
+    title: `${section.label} - 호케이 Hokei`,
+    description:
+      section.description ??
+      "호치민 한국 교민 자유게시판·질문방 전체 글을 모아 둡니다.",
+    openGraph: {
+      title: `${section.label} - 호케이 Hokei`,
+      description: section.description ?? section.label,
+      locale: "ko_KR",
+      type: "website",
+    },
+  };
+}
 
 interface PageProps {
   searchParams: Promise<{ page?: string; region?: string }>;
@@ -37,12 +45,11 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const currentPage = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const region = parseRegionParam(params.region);
-  const listOptions = { communityOnly: true as const, region };
 
   const [posts, totalCount, popular] = isDatabaseAvailable()
     ? await Promise.all([
-        getPostsBySectionSlug("community", LIST_PAGE_SIZE, currentPage, listOptions),
-        countPostsBySectionSlug("community", listOptions),
+        getCommunityArchivePosts(LIST_PAGE_SIZE, currentPage, region),
+        countCommunityPosts(region),
         getPopularUserPosts(8),
       ])
     : [[], 0, []];
@@ -60,7 +67,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
         description={section.description}
         colorClass={section.colorClass}
         icon={section.icon}
-        basePath="/community"
+        basePath={MOBILE_COMMUNITY_LIST_HREF}
         posts={posts}
         totalCount={totalCount}
         currentPage={Math.min(currentPage, totalPages)}

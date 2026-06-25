@@ -65,6 +65,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: "/promo/write",
+        destination: "/write?section=promo",
+        permanent: false,
+      },
+      {
         source: "/community/write",
         destination: "/write?section=community",
         permanent: false,

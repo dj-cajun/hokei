@@ -3,6 +3,7 @@ export const WRITABLE_SECTION_SLUGS = [
   "jobs",
   "real-estate",
   "classifieds",
+  "promo",
   "community",
 ] as const;
 
@@ -24,11 +25,15 @@ export const WRITE_SECTION_META: Record<
   },
   "real-estate": {
     title: "부동산 글쓰기",
-    defaultCategorySlug: "real-estate-apartment-rent",
+    defaultCategorySlug: "real-estate-tenant-seeking",
   },
   classifieds: {
-    title: "중고·홍보 글쓰기",
-    defaultCategorySlug: "classifieds-buy-sell",
+    title: "중고 글쓰기",
+    defaultCategorySlug: "classifieds-selling",
+  },
+  promo: {
+    title: "여기 어때 글쓰기",
+    defaultCategorySlug: "promo-store-hungry",
   },
   community: {
     title: "커뮤니티 글쓰기",

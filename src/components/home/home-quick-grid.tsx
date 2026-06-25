@@ -17,8 +17,8 @@ const linkItems = [
   { href: "/real-estate", label: "부동산", emoji: "🏠" },
   { href: "/jobs", label: "구인구직", emoji: "💼" },
   { href: "/classifieds", label: "중고거래", emoji: "♻️" },
-  { href: "/community", label: "커뮤니티", emoji: "💬" },
-  { href: "/community", label: "생활정보", emoji: "🌏" },
+  { href: "/promo", label: "업소홍보", emoji: "🔥" },
+  { href: "/life", label: "생활가이드", emoji: "📚" },
 ] as const;
 
 export function HomeQuickGrid() {

@@ -50,14 +50,19 @@ export function YouTubeEmbed({
   loop = false,
 }: YouTubeEmbedProps) {
   const online = useIsOnline();
+  const [mounted, setMounted] = useState(false);
   const [activated, setActivated] = useState(false);
   const [offlineHint, setOfflineHint] = useState(false);
 
   useEffect(() => {
-    if (autoplay && online) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && autoplay && online) {
       setActivated(true);
     }
-  }, [autoplay, online]);
+  }, [mounted, autoplay, online]);
 
   const src = buildYouTubeEmbedSrc(videoId, {
     autoplay: autoplay || activated,
@@ -75,7 +80,9 @@ export function YouTubeEmbed({
     setActivated(true);
   }
 
-  if (!activated) {
+  const showIframe = mounted && activated;
+
+  if (!showIframe) {
     return (
       <div
         className={cn(
@@ -114,7 +121,7 @@ export function YouTubeEmbed({
   return (
     <div
       className={cn(
-        "video-container my-3 border border-border shadow-sm",
+        "video-container my-3 overflow-hidden border border-border shadow-sm",
         className
       )}
     >

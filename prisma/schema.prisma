@@ -72,6 +72,7 @@ model User {
   conversationsA    Conversation[]     @relation("ConversationParticipantA")
   conversationsB    Conversation[]     @relation("ConversationParticipantB")
   sentMessages      DirectMessage[]
+  lifeGuides        LifeGuide[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
@@ -134,6 +135,9 @@ model Post {
   moderatedById       String?
   moderationNote      String?
   isAutomated         Boolean          @default(true)
+  isCrawl             Boolean          @default(false)
+  storeName           String?
+  kakaoLink           String?
   ingestedAt          DateTime         @default(now())
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
@@ -152,6 +156,8 @@ model Post {
   @@index([ingestedAt])
   @@index([authorId])
   @@index([isAutomated])
+  @@index([storeName])
+  @@index([isCrawl])
 }
 
 model PostAttachment {
@@ -341,6 +347,49 @@ model StorageSnapshot {
   attachmentBytes   Int      @default(0)
   attachmentCount   Int      @default(0)
   blobEstimateBytes Int?
+}
+
+enum LifeGuideKind {
+  PHRASE
+  DOC
+}
+
+enum LifeDomain {
+  CLOTHES
+  FOOD
+  HOUSING
+  ADMIN
+  TRANSPORT
+  EDUCATION
+  STUDY
+}
+
+/// 의식주 위키 + 오피셜 자료실 + 교민 베트남어 공부 (v2.0)
+model LifeGuide {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  kind        LifeGuideKind
+  domain      LifeDomain
+  title       String
+  vnText      String?
+  body        String        @db.Text
+  audioUrl    String?
+  fileUrl     String?
+  imageUrl    String?
+  sourceLabel String?
+  externalUrl String?
+  isCrawl     Boolean       @default(false)
+  authorId    String?
+  author      User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  sortOrder   Int           @default(0)
+  publishedAt DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([domain, kind])
+  @@index([sortOrder])
+  @@index([publishedAt])
+  @@index([authorId])
 }
 
 /// 일별 자동 수집 로그 (하루 10건 제한 추적)

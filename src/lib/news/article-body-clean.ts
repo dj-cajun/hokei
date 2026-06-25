@@ -30,6 +30,9 @@ const DROP_LINE_PATTERNS: RegExp[] = [
   /한\s*줄\s*요약|핵심\s*요약|기사\s*요약|AI\s*요약|요약\s*[:：]/i,
   /^▶\s*|^☞\s*/,
   /더보기\s*→|기사\s*원문|원문\s*보기|전체\s*보기|다른\s*기사\s*보기/i,
+  /^\+구독/,
+  /^영상[“"]/,
+  /^이\s*기사를\s*추천/,
   /^#[\w가-힣]{2,}(\s+#[\w가-힣]{2,})+\s*$/,
   /^태그\s*[:：]/i,
   /기자\s*=\s*@/i,
@@ -59,6 +62,9 @@ const REPORTER_CUTOFF_INLINE =
   /\n\s*\[[^\]\n]{1,24}\]\s*[가-힣A-Za-z.\s]{1,24}\s*기자(?:\s+\S+@\S+)?\s*(?:\n|$)/i;
 
 const EMAIL_LINE = /^\S+@\S+\.\S+\s*$/;
+
+const RELATED_TEASER_HEADLINE =
+  /^[“"][^”"]{8,120}[”"]…[^.?!]{3,80}\?\s*$/;
 
 const RELATED_ONE_LINER =
   /^.{5,90}(\.\.\.|…)?\s*(\d{1,2}\.\d{1,2}|\d+시간\s*전|어제|오늘)\s*$/;
@@ -117,6 +123,7 @@ function isNoiseLine(line: string): boolean {
   if (REPORTER_LINE.test(s)) return true;
   if (BRACKET_MEDIA_REPORTER_LINE.test(s)) return true;
   if (EMAIL_LINE.test(s)) return true;
+  if (RELATED_TEASER_HEADLINE.test(s)) return true;
   if (RELATED_ONE_LINER.test(s)) return true;
   if (/^https?:\/\/\S+$/i.test(s)) return true;
   if (/^#[\w가-힣]+\s*$/.test(s)) return true;

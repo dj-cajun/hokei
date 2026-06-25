@@ -37,6 +37,8 @@ export const postCreateBodySchema = z.object({
     .string()
     .optional()
     .refine((v) => !v || isValidRegion(v), "올바른 지역을 선택해 주세요."),
+  storeName: z.string().max(120).optional(),
+  kakaoLink: z.string().max(500).optional(),
 });
 
 export const postRegionSchema = z.enum(

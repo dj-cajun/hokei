@@ -2,27 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCategoryIcon } from "@/lib/category-icons";
 import {
-  Briefcase,
-  Building2,
-  Home,
-  MessageCircle,
-  Newspaper,
-  User,
-} from "lucide-react";
+  isMobileNavItemActive,
+  MOBILE_NAV_ITEMS,
+} from "@/lib/mobile-nav-config";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/", label: "홈", icon: Home },
-  { href: "/news", label: "뉴스", icon: Newspaper },
-  { href: "/real-estate", label: "부동산", icon: Building2 },
-  { href: "/jobs", label: "구인", icon: Briefcase },
-  { href: "/community", label: "커뮤니티", icon: MessageCircle },
-  { href: "/profile", label: "내 정보", icon: User },
-] as const;
 
 export function MobileNav() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (
     pathname === "/write" ||
@@ -33,18 +27,27 @@ export function MobileNav() {
     return null;
   }
 
+  // 서버 HTML과 클라이언트 첫 렌더를 동일하게 — HMR/캐시 불일치 시 하이드레이션 오류 방지
+  if (!mounted) {
+    return (
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/80 bg-surface/90 backdrop-blur-md supports-[backdrop-filter]:bg-surface/85 lg:hidden"
+        aria-hidden
+      >
+        <ul className="mx-auto flex h-12 max-w-[480px] items-stretch justify-around pb-[env(safe-area-inset-bottom)]" />
+      </nav>
+    );
+  }
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/80 bg-surface/90 backdrop-blur-md supports-[backdrop-filter]:bg-surface/85 lg:hidden"
       aria-label="모바일 하단 메뉴"
     >
       <ul className="mx-auto flex h-12 max-w-[480px] items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+        {MOBILE_NAV_ITEMS.map((item) => {
+          const Icon = getCategoryIcon(item.icon);
+          const isActive = isMobileNavItemActive(item, pathname);
 
           return (
             <li key={item.href} className="flex flex-1">

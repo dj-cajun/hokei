@@ -33,19 +33,24 @@ function BoardPreviewTitle({ item }: { item: BoardPreviewItem }) {
 }
 
 export function BoardPreviewSectionBox({ section }: { section: BoardPreviewSection }) {
-  const tabs = section.tabs ?? [{ id: "all", label: "전체" }];
-  const [activeTab, setActiveTab] = useState(tabs[0]!.id);
+  const tabs = section.tabs ?? [];
+  const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "all");
+
+  const activeTabDef = tabs.find((tab) => tab.id === activeTab);
+  const displayItems = activeTabDef?.items?.length
+    ? activeTabDef.items
+    : section.items;
+
+  const writeSlug =
+    section.writeSectionSlug ?? section.href.replace(/^\//, "").split("/")[0];
 
   return (
     <section className="bg-surface lg:rounded-xl lg:border lg:border-border">
       <header className="flex items-center justify-between border-b border-border-light px-3 py-2">
         <h2 className="text-sm font-bold text-foreground">{section.title}</h2>
         <div className="flex shrink-0 items-center gap-2">
-          {isWritableSection(section.href.replace(/^\//, "")) && (
-            <SectionWriteLink
-              sectionSlug={section.href.replace(/^\//, "")}
-              compact
-            />
+          {writeSlug && isWritableSection(writeSlug) && (
+            <SectionWriteLink sectionSlug={writeSlug} compact />
           )}
           <Link
             href={section.href}
@@ -81,7 +86,7 @@ export function BoardPreviewSectionBox({ section }: { section: BoardPreviewSecti
 
       {/* 모바일 — 리스트 */}
       <ul className="lg:hidden">
-        {section.items.map((item) => (
+        {displayItems.map((item) => (
           <li key={item.id} className="border-b border-border-light last:border-b-0">
             <Link
               href={item.href}
@@ -98,7 +103,7 @@ export function BoardPreviewSectionBox({ section }: { section: BoardPreviewSecti
 
       {/* 데스크톱 — 그리드 카드 */}
       <ul className="hidden gap-3 p-3 lg:grid lg:grid-cols-2">
-        {section.items.map((item) => (
+        {displayItems.map((item) => (
           <li key={item.id}>
             <Link href={item.href} className={cardLinkClass}>
               <p className="line-clamp-2 font-medium leading-snug">

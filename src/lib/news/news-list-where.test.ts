@@ -2,14 +2,18 @@ import { describe, expect, it } from "vitest";
 import { newsAutomatedWhere } from "@/lib/news/news-list-where";
 
 describe("newsAutomatedWhere", () => {
-  it("includes automated and curated http-source posts", () => {
+  it("includes automated and curated http-source posts with visibility", () => {
     expect(newsAutomatedWhere).toMatchObject({
-      status: "PUBLISHED",
-      OR: expect.arrayContaining([
-        expect.objectContaining({ isAutomated: true }),
+      AND: expect.arrayContaining([
+        expect.objectContaining({ status: "PUBLISHED" }),
         expect.objectContaining({
-          isAutomated: false,
-          sourceUrl: { startsWith: "http" },
+          OR: expect.arrayContaining([
+            expect.objectContaining({ isAutomated: true }),
+            expect.objectContaining({
+              isAutomated: false,
+              sourceUrl: { startsWith: "http" },
+            }),
+          ]),
         }),
       ]),
     });

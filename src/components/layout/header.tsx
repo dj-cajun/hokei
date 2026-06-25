@@ -24,9 +24,11 @@ import type { CategoryNavItem } from "@/lib/categories";
 
 interface HeaderProps {
   categoryTree: CategoryNavItem[];
+  navSections?: CategoryNavItem[];
 }
 
-export function Header({ categoryTree }: HeaderProps) {
+export function Header({ categoryTree, navSections }: HeaderProps) {
+  const scrollSections = navSections ?? categoryTree;
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [menuOpenedAt, setMenuOpenedAt] = useState<string | null>(null);
@@ -92,7 +94,7 @@ export function Header({ categoryTree }: HeaderProps) {
         </div>
       </div>
 
-      {!isHome && <CategoryScrollNav sections={categoryTree} />}
+      {!isHome && <CategoryScrollNav sections={scrollSections} />}
     </header>
   );
 }

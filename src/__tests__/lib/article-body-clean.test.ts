@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { cleanArticleBody } from "@/lib/news/article-body-clean";
 import {
   applyArticleRegexFilters,
+  stripAppendedRelatedHeadlines,
   stripLeadingBylines,
   stripTrailingBoilerplate,
 } from "@/lib/news/article-body-regex";
@@ -20,6 +21,17 @@ describe("article-body-regex", () => {
       "본문 첫 문장입니다. 두 번째 문장도 충분히 깁니다.\n\nabc@news.com\n무단전재 및 재배포 금지";
     expect(stripTrailingBoilerplate(raw)).not.toMatch(/무단전재|abc@news/);
     expect(stripTrailingBoilerplate(raw)).toContain("본문 첫 문장");
+  });
+
+  it("서울경제식 관련기사·구독 영상 꼬리를 제거한다", () => {
+    const raw = `숙박 선택 기준 자체도 변화하고 있다. Z세대 여행객은 4성급을 선호했다. “호텔방 욕조에 들어갔다가 온몸이 부풀어 올랐다”…20대 英여성에 생긴 일, 왜? “변기보다 더러워”…장갑 낀 채 사용해야 할 수준이라는 호텔 객실, 확인할 부분은?
+
++구독 영상“매일 이렇게만 해도 몰라보게 달라진다”…의사들 꼽은 ‘심장 관리법’
+
+영상“미국인 정말 큰일났는데요?”…기름값·밥값·항공권 다 오른 이유는 ‘이것’이었다`;
+    const out = stripAppendedRelatedHeadlines(raw);
+    expect(out).toContain("Z세대 여행객");
+    expect(out).not.toMatch(/욕조|변기보다|구독|심장 관리법/);
   });
 });
 

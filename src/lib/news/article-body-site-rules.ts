@@ -19,7 +19,11 @@ export const ARTICLE_SITE_RULES: readonly ArticleSiteRule[] = [
   },
   {
     host: /sedaily\.com/i,
-    selectors: ["#article-body", ".article-content", '[itemprop="articleBody"]'],
+    selectors: [
+      "section.article-area .view",
+      "#article-body",
+      '[itemprop="articleBody"]',
+    ],
   },
   {
     host: /insidevina\.com/i,
@@ -75,6 +79,14 @@ export const ARTICLE_SITE_RULES: readonly ArticleSiteRule[] = [
       "#article-view-content-div",
       ".article-view-content",
       ".article-body",
+    ],
+  },
+  {
+    host: /hyundaimotorgroup\.com/i,
+    selectors: [
+      ".page-detail__contents",
+      ".component-content",
+      ".page-detail--news .contents",
     ],
   },
   {

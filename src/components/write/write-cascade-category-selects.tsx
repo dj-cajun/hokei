@@ -2,6 +2,8 @@
 
 import { ChevronDown } from "lucide-react";
 import {
+  CASCADE_MID_PLACEHOLDER,
+  CASCADE_SUB_PLACEHOLDER,
   WRITE_CASCADE_CATEGORIES,
   type CascadeMainCategory,
   getMidOptions,
@@ -82,6 +84,12 @@ export function WriteCascadeCategorySelects({
   const subOptions = getSubOptions(mainCategory, midCategory);
   const showMid = Boolean(mainCategory);
   const showSub = Boolean(mainCategory && midCategory);
+  const midPlaceholder = mainCategory
+    ? CASCADE_MID_PLACEHOLDER[mainCategory]
+    : "중분류";
+  const subPlaceholder = mainCategory
+    ? CASCADE_SUB_PLACEHOLDER[mainCategory]
+    : "소분류";
 
   return (
     <div className="space-y-0 border-b border-border-light py-3 px-4">
@@ -125,7 +133,7 @@ export function WriteCascadeCategorySelects({
             value={midCategory}
             onChange={onMidChange}
             required
-            placeholder="중분류"
+            placeholder={midPlaceholder}
             options={midOptions}
           />
           {showSub ? (
@@ -134,7 +142,7 @@ export function WriteCascadeCategorySelects({
               value={subCategory}
               onChange={onSubChange}
               required
-              placeholder="소분류"
+              placeholder={subPlaceholder}
               options={subOptions}
             />
           ) : (
@@ -146,7 +154,7 @@ export function WriteCascadeCategorySelects({
               aria-hidden
               tabIndex={-1}
             >
-              <option value="">소분류</option>
+              <option value="">{subPlaceholder}</option>
             </select>
           )}
         </div>

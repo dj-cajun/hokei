@@ -10,7 +10,9 @@ import { FeedListClient } from "@/components/home/feed-list-client";
 import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
+import { HomeLifeStrip } from "@/components/home/home-life-strip";
 import { isDatabaseAvailable } from "@/lib/database-available";
+import { getFeaturedLifeGuide } from "@/lib/life/guides";
 import { formatUnknownError, log } from "@/lib/logger";
 import {
   getAutomatedNewsPosts,
@@ -22,58 +24,36 @@ import type { FeedItem } from "@/types/feed";
 
 const emptyFeed: FeedItem[] = [];
 
-const homeFeedLoaders = [
-  ["latest", () => getLatestCommunityPosts(12)],
-  ["popular", () => getPopularUserPosts(12)],
-  ["news", () => getAutomatedNewsPosts(10)],
-  ["notices", () => getCommunityNotices(8)],
-] as const;
-
-async function loadHomeFeeds(): Promise<
-  [FeedItem[], FeedItem[], FeedItem[], FeedItem[]]
-> {
-  if (!isDatabaseAvailable()) {
-    return [emptyFeed, emptyFeed, emptyFeed, emptyFeed];
+async function safeLoad<T>(name: string, load: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await load();
+  } catch (reason) {
+    log("error", `home ${name} failed: ${formatUnknownError(reason)}`);
+    return fallback;
   }
-
-  const runLoader = async (index: number): Promise<FeedItem[]> => {
-    const [name, load] = homeFeedLoaders[index];
-    try {
-      return await load();
-    } catch (reason) {
-      log(
-        "error",
-        `home feed ${name} failed: ${formatUnknownError(reason)}`
-      );
-      return emptyFeed;
-    }
-  };
-
-  // dev: Neon 원거리 연결 시 병렬 4쿼리가 풀 타임아웃 유발 → 순차 (연결 재사용)
-  if (process.env.NODE_ENV === "development") {
-    const latest = await runLoader(0);
-    const popular = await runLoader(1);
-    const news = await runLoader(2);
-    const notices = await runLoader(3);
-    return [latest, popular, news, notices];
-  }
-
-  const results = await Promise.allSettled(
-    homeFeedLoaders.map(([, load]) => load())
-  );
-
-  return results.map((result, index) => {
-    if (result.status === "fulfilled") return result.value;
-    log(
-      "error",
-      `home feed ${homeFeedLoaders[index][0]} failed: ${formatUnknownError(result.reason)}`
-    );
-    return emptyFeed;
-  }) as [FeedItem[], FeedItem[], FeedItem[], FeedItem[]];
 }
 
 export async function HomePageContent() {
-  const [latest, popular, news, notices] = await loadHomeFeeds();
+  if (!isDatabaseAvailable()) {
+    return (
+      <p className="px-3 py-8 text-center text-sm text-muted-foreground">
+        DATABASE_URL을 설정하면 뉴스·게시판을 불러옵니다.
+      </p>
+    );
+  }
+
+  // 1) 뉴스·v2 생활 — 우선 로드 (뉴스가 홈에서 가장 먼저 보이도록)
+  const [news, featuredLife] = await Promise.all([
+    safeLoad("news", () => getAutomatedNewsPosts(12), emptyFeed),
+    safeLoad("featuredLife", () => getFeaturedLifeGuide(), null),
+  ]);
+
+  // 2) 커뮤니티 피드 — 뉴스 다음
+  const [latest, popular, notices] = await Promise.all([
+    safeLoad("latest", () => getLatestCommunityPosts(12), emptyFeed),
+    safeLoad("popular", () => getPopularUserPosts(12), emptyFeed),
+    safeLoad("notices", () => getCommunityNotices(8), emptyFeed),
+  ]);
 
   const latestItems = latest;
   const sliderSource = news.length > 0 ? news : latestItems;
@@ -81,11 +61,12 @@ export async function HomePageContent() {
 
   return (
     <>
-      {/* 모바일 — 보스턴코리아형 밀도 */}
+      {/* 모바일 — 뉴스 우선 */}
       <div className="block lg:hidden">
         <SafeWeatherQuickGrid />
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
+        <HomeLifeStrip featuredLife={featuredLife} />
         <HomeVideoHighlight />
         <PopularPostsStrip items={popular} />
         <AdSenseUnit slotKind="home" className="px-3" />
@@ -100,7 +81,6 @@ export async function HomePageContent() {
       {/* 데스크톱 */}
       <div className="hidden space-y-4 lg:block">
         <WelcomeBanner />
-        <HomeVideoHighlight />
         <div className="space-y-0">
           <div className="flex items-center border-b border-[#f3f4f6] bg-surface px-2 py-1.5">
             <h2 className="border-l-4 border-l-red-500 pl-2 text-sm font-bold text-red-600">
@@ -113,6 +93,8 @@ export async function HomePageContent() {
             notices={notices}
           />
         </div>
+        <HomeLifeStrip featuredLife={featuredLife} />
+        <HomeVideoHighlight />
         <SafeBoardPreviewList />
       </div>
     </>

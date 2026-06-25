@@ -86,6 +86,16 @@ describe("passesTopicRelevanceFilter", () => {
     ).toBe(true);
   });
 
+  it("rejects [시론] editorials", () => {
+    expect(
+      passesTopicRelevanceFilter(
+        "KOREA",
+        "[시론] 체코 두코바니 원전 수주 1년…",
+        "원전 산업 전망"
+      )
+    ).toBe(false);
+  });
+
   it("rejects domestic weekly airline promo roundup", () => {
     expect(
       passesTopicRelevanceFilter(

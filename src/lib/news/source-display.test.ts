@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { formatPostSourceAttribution } from "@/lib/news/source-display";
+import {
+  formatPostSourceAttribution,
+  sanitizeNewsPostTitle,
+} from "@/lib/news/source-display";
 
 describe("formatPostSourceAttribution", () => {
   it("shows stored publisher name", () => {
@@ -48,5 +51,30 @@ describe("formatPostSourceAttribution", () => {
         "https://www.shinailbo.co.kr/news/article.html"
       )
     ).toBe("신아일보");
+  });
+});
+
+describe("sanitizeNewsPostTitle", () => {
+  it("strips insidevina suffix from scraped title", () => {
+    expect(
+      sanitizeNewsPostTitle(
+        "[베트남 송금 가계부] 환율 올라도 물가가 슥삭… - 인사이드비나",
+        {
+          sourceUrl: "https://www.insidevina.com/news/articleView.html?idxno=1",
+        }
+      )
+    ).toBe("[베트남 송금 가계부] 환율 올라도 물가가 슥삭…");
+  });
+
+  it("strips national paper suffix", () => {
+    expect(
+      sanitizeNewsPostTitle("호치민 한인회 행사 개최 | 조선일보")
+    ).toBe("호치민 한인회 행사 개최");
+  });
+
+  it("leaves title unchanged when no publisher suffix", () => {
+    expect(sanitizeNewsPostTitle("베트남항공 정시운항률 상승")).toBe(
+      "베트남항공 정시운항률 상승"
+    );
   });
 });

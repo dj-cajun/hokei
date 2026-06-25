@@ -1,5 +1,6 @@
 import { getDatabaseKind, prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { postsInSectionWhere } from "@/lib/category-tree";
 import type { PostTopic } from "@/generated/prisma/client";
 import type { FeedItem, ListCommentPreview } from "@/types/feed";
 import { COMMUNITY_SOURCE_PREFIX } from "@/lib/community";
@@ -14,7 +15,9 @@ import {
   isTodayInHoChiMinh,
 } from "@/lib/format/date";
 import { visibleCommentWhere, visiblePostWhere } from "@/lib/moderation";
+import { lifeInfoSectionSlugsForHub } from "@/lib/life-info-hub";
 import { getRegionLabel } from "@/lib/regions";
+import { sanitizeNewsPostTitle } from "@/lib/news/source-display";
 
 export type PostListOptions = {
   communityOnly?: boolean;
@@ -89,6 +92,23 @@ function resolveCommentCount(post: {
   return post._count?.comments ?? post.commentCount ?? 0;
 }
 
+function newsDisplayTitle(post: {
+  title: string;
+  sourceUrl: string;
+  sourceName?: string | null;
+}): string {
+  if (
+    !post.sourceUrl.startsWith("http") ||
+    post.sourceUrl.startsWith(COMMUNITY_SOURCE_PREFIX)
+  ) {
+    return post.title;
+  }
+  return sanitizeNewsPostTitle(post.title, {
+    sourceName: post.sourceName,
+    sourceUrl: post.sourceUrl,
+  });
+}
+
 function toFeedItem(post: {
   id: string;
   title: string;
@@ -97,6 +117,7 @@ function toFeedItem(post: {
   likeCount?: number;
   commentCount: number;
   region?: string | null;
+  sourceName?: string | null;
   _count?: { comments: number };
   thumbnail: string | null;
   sourceUrl: string;
@@ -112,7 +133,7 @@ function toFeedItem(post: {
     id: post.id,
     category: post.category.label,
     categoryColor: post.category.colorClass,
-    title: post.title,
+    title: newsDisplayTitle(post),
     date: formatRelativeTime(post.publishedAt),
     dateLabel: formatDateLabel(post.publishedAt),
     isNew: isTodayInHoChiMinh(post.publishedAt),
@@ -167,23 +188,40 @@ export async function getPopularPosts(limit = 20): Promise<FeedItem[]> {
   return posts.map(toFeedItem);
 }
 
-export async function countCommunityPosts(): Promise<number> {
-  return prisma.post.count({ where: communityWhere });
+export async function countCommunityPosts(region?: string): Promise<number> {
+  return prisma.post.count({
+    where: communityArchiveWhere(region),
+  });
 }
 
-export async function getLatestCommunityPosts(
-  limit = COMMUNITY_PAGE_SIZE,
-  page = 1
+function communityArchiveWhere(region?: string) {
+  return {
+    ...communityWhere,
+    ...(region ? { region } : {}),
+  };
+}
+
+export async function getCommunityArchivePosts(
+  limit = LIST_PAGE_SIZE,
+  page = 1,
+  region?: string
 ): Promise<FeedItem[]> {
   const safePage = Math.max(1, page);
   const posts = await prisma.post.findMany({
-    where: communityWhere,
+    where: communityArchiveWhere(region),
     orderBy: { publishedAt: "desc" },
     skip: (safePage - 1) * limit,
     take: limit,
     include: postInclude,
   });
   return posts.map(toFeedItem);
+}
+
+export async function getLatestCommunityPosts(
+  limit = COMMUNITY_PAGE_SIZE,
+  page = 1
+): Promise<FeedItem[]> {
+  return getCommunityArchivePosts(limit, page);
 }
 
 export async function getPopularCommunityPosts(limit = 20): Promise<FeedItem[]> {
@@ -230,9 +268,20 @@ function publishedBySectionSlug(
   sectionSlug: string,
   options?: PostListOptions
 ) {
+  return publishedBySectionSlugs([sectionSlug], options);
+}
+
+function publishedBySectionSlugs(
+  sectionSlugs: string[],
+  options?: PostListOptions
+) {
   return {
     ...visiblePostWhere,
-    category: { parent: { slug: sectionSlug } },
+    ...(sectionSlugs.length === 1
+      ? postsInSectionWhere(sectionSlugs[0]!)
+      : {
+          OR: sectionSlugs.map((slug) => postsInSectionWhere(slug)),
+        }),
     ...(options?.region ? { region: options.region } : {}),
     ...(options?.communityOnly
       ? {
@@ -258,9 +307,27 @@ export async function getPostsBySectionSlug(
   page = 1,
   options?: PostListOptions
 ): Promise<FeedItem[]> {
+  return getPostsBySectionSlugs([sectionSlug], limit, page, options);
+}
+
+export async function countPostsBySectionSlugs(
+  sectionSlugs: string[],
+  options?: PostListOptions
+): Promise<number> {
+  return prisma.post.count({
+    where: publishedBySectionSlugs(sectionSlugs, options),
+  });
+}
+
+export async function getPostsBySectionSlugs(
+  sectionSlugs: string[],
+  limit = LIST_PAGE_SIZE,
+  page = 1,
+  options?: PostListOptions
+): Promise<FeedItem[]> {
   const safePage = Math.max(1, page);
   const posts = await prisma.post.findMany({
-    where: publishedBySectionSlug(sectionSlug, options),
+    where: publishedBySectionSlugs(sectionSlugs, options),
     orderBy: { publishedAt: "desc" },
     skip: (safePage - 1) * limit,
     take: limit,
@@ -317,10 +384,7 @@ export async function getPostsBySectionCursor(
 export async function getAutomatedNewsPosts(limit = 15): Promise<FeedItem[]> {
   const { newsAutomatedWhere } = await import("@/lib/news/news-list-where");
   const posts = await prisma.post.findMany({
-    where: {
-      ...visiblePostWhere,
-      ...newsAutomatedWhere,
-    },
+    where: newsAutomatedWhere,
     orderBy: { ingestedAt: "desc" },
     take: limit,
     include: postInclude,
@@ -552,11 +616,26 @@ const publishedByCategorySlug = (categorySlug: string) => ({
   category: { slug: categorySlug },
 });
 
+function publishedByCategorySlugs(categorySlugs: string[]) {
+  return {
+    ...visiblePostWhere,
+    category: { slug: { in: categorySlugs } },
+  };
+}
+
 export async function countPostsByCategorySlug(
   categorySlug: string
 ): Promise<number> {
   return prisma.post.count({
     where: publishedByCategorySlug(categorySlug),
+  });
+}
+
+export async function countPostsByCategorySlugs(
+  categorySlugs: string[]
+): Promise<number> {
+  return prisma.post.count({
+    where: publishedByCategorySlugs(categorySlugs),
   });
 }
 
@@ -568,6 +647,22 @@ export async function getPostsByCategorySlug(
   const safePage = Math.max(1, page);
   const posts = await prisma.post.findMany({
     where: publishedByCategorySlug(categorySlug),
+    orderBy: { publishedAt: "desc" },
+    skip: (safePage - 1) * limit,
+    take: limit,
+    include: postInclude,
+  });
+  return posts.map(toFeedItem);
+}
+
+export async function getPostsByCategorySlugs(
+  categorySlugs: string[],
+  limit = LIST_PAGE_SIZE,
+  page = 1
+): Promise<FeedItem[]> {
+  const safePage = Math.max(1, page);
+  const posts = await prisma.post.findMany({
+    where: publishedByCategorySlugs(categorySlugs),
     orderBy: { publishedAt: "desc" },
     skip: (safePage - 1) * limit,
     take: limit,
@@ -630,6 +725,39 @@ export async function getSectionBoardPreview(
     include: postInclude,
   });
 
+  return posts.map(toBoardPreviewRow);
+}
+
+/** 홈 미리보기 — 찐 생활정보(여기어때·부동산·중고·구인) 통합 */
+export async function getLifeInfoBoardPreview(
+  limit = 4
+): Promise<BoardPreviewRow[]> {
+  const sectionSlugs = lifeInfoSectionSlugsForHub();
+  const posts = await prisma.post.findMany({
+    where: publishedBySectionSlugs(sectionSlugs),
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+    include: postInclude,
+  });
+  return posts.map(toBoardPreviewRow);
+}
+
+/** 홈 미리보기 — 커뮤니티 하위 게시판(자유·질문방) */
+export async function getCommunityCategoryBoardPreview(
+  categorySlug: string,
+  limit = 4
+): Promise<BoardPreviewRow[]> {
+  const posts = await prisma.post.findMany({
+    where: {
+      ...visiblePostWhere,
+      category: { slug: categorySlug },
+      isAutomated: false,
+      sourceUrl: { startsWith: COMMUNITY_SOURCE_PREFIX },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+    include: postInclude,
+  });
   return posts.map(toBoardPreviewRow);
 }
 

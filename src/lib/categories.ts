@@ -1,9 +1,10 @@
 import { unstable_cache } from "next/cache";
 import {
+  STATIC_NESTED_LEAF_PARAMS,
   STATIC_SECTION_PARAMS,
   STATIC_SUBCATEGORY_PARAMS,
+  findStaticCategoryByHref,
   findStaticSection,
-  findStaticSubcategory,
   staticCategoryTree,
 } from "@/lib/category-static-params";
 import { isDatabaseAvailable } from "@/lib/database-available";
@@ -12,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 
 export type { CategoryNavItem } from "@/lib/category-types";
 
-function mapChild(child: {
+type DbCategory = {
   id: string;
   slug: string;
   label: string;
@@ -20,18 +21,34 @@ function mapChild(child: {
   href: string;
   icon: string;
   colorClass: string;
-}): CategoryNavItem {
+  children?: DbCategory[];
+};
+
+function mapDbCategory(node: DbCategory): CategoryNavItem {
   return {
-    id: child.id,
-    slug: child.slug,
-    label: child.label,
-    description: child.description,
-    href: child.href,
-    icon: child.icon,
-    colorClass: child.colorClass,
-    children: [],
+    id: node.id,
+    slug: node.slug,
+    label: node.label,
+    description: node.description,
+    href: node.href,
+    icon: node.icon,
+    colorClass: node.colorClass,
+    children: (node.children ?? []).map(mapDbCategory),
   };
 }
+
+const categoryInclude = {
+  children: {
+    where: { isActive: true },
+    orderBy: { sortOrder: "asc" as const },
+    include: {
+      children: {
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" as const },
+      },
+    },
+  },
+};
 
 async function fetchCategoryTree(): Promise<CategoryNavItem[]> {
   if (!isDatabaseAvailable()) return staticCategoryTree();
@@ -40,26 +57,12 @@ async function fetchCategoryTree(): Promise<CategoryNavItem[]> {
     const sections = await prisma.category.findMany({
       where: { parentId: null, isActive: true },
       orderBy: { sortOrder: "asc" },
-      include: {
-        children: {
-          where: { isActive: true },
-          orderBy: { sortOrder: "asc" },
-        },
-      },
+      include: categoryInclude,
     });
 
     if (sections.length === 0) return staticCategoryTree();
 
-    return sections.map((section) => ({
-      id: section.id,
-      slug: section.slug,
-      label: section.label,
-      description: section.description,
-      href: section.href,
-      icon: section.icon,
-      colorClass: section.colorClass,
-      children: section.children.map(mapChild),
-    }));
+    return sections.map(mapDbCategory);
   } catch {
     return staticCategoryTree();
   }
@@ -68,18 +71,13 @@ async function fetchCategoryTree(): Promise<CategoryNavItem[]> {
 export const getCategoryTree = unstable_cache(
   fetchCategoryTree,
   ["category-tree"],
-  { revalidate: 300 }
+  { revalidate: 300, tags: ["category-tree"] }
 );
 
 async function fetchSectionBySlug(slug: string) {
   return prisma.category.findFirst({
     where: { slug, parentId: null, isActive: true },
-    include: {
-      children: {
-        where: { isActive: true },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
+    include: categoryInclude,
   });
 }
 
@@ -92,24 +90,44 @@ export async function getSectionBySlug(slug: string) {
   )();
 }
 
-export async function getSubcategoryByPath(sectionSlug: string, childSlug: string) {
-  if (!isDatabaseAvailable()) return findStaticSubcategory(sectionSlug, childSlug);
+export async function getCategoryByHref(href: string) {
+  if (!isDatabaseAvailable()) return findStaticCategoryByHref(href);
+
   try {
-    return await prisma.category.findFirst({
-      where: {
-        href: `/${sectionSlug}/${childSlug}`,
-        isActive: true,
-        parent: { slug: sectionSlug },
+    const category = await prisma.category.findFirst({
+      where: { href, isActive: true },
+      include: {
+        parent: {
+          include: { parent: true },
+        },
+        children: {
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        },
       },
-      include: { parent: true },
     });
+    if (!category) return findStaticCategoryByHref(href);
+    return category;
   } catch {
-    return findStaticSubcategory(sectionSlug, childSlug);
+    return findStaticCategoryByHref(href);
   }
 }
 
+/** @deprecated getCategoryByHref 사용 */
+export async function getSubcategoryByPath(sectionSlug: string, childSlug: string) {
+  return getCategoryByHref(`/${sectionSlug}/${childSlug}`);
+}
+
+export async function getNestedLeafByPath(
+  sectionSlug: string,
+  midSlug: string,
+  leafSlug: string
+) {
+  return getCategoryByHref(`/${sectionSlug}/${midSlug}/${leafSlug}`);
+}
+
 export async function getSectionSlugs() {
-  if (!isDatabaseAvailable()) return [];
+  if (!isDatabaseAvailable()) return STATIC_SECTION_PARAMS;
   try {
     const sections = await prisma.category.findMany({
       where: { parentId: null, isActive: true },
@@ -123,16 +141,20 @@ export async function getSectionSlugs() {
 }
 
 export async function getSubcategoryParams() {
-  if (!isDatabaseAvailable()) return [];
+  if (!isDatabaseAvailable()) return STATIC_SUBCATEGORY_PARAMS;
   try {
-    const children = await prisma.category.findMany({
-      where: { parentId: { not: null }, isActive: true },
+    const mids = await prisma.category.findMany({
+      where: {
+        isActive: true,
+        parent: { parentId: null },
+        children: { none: {} },
+      },
       include: { parent: { select: { slug: true } } },
     });
 
-    if (children.length === 0) return STATIC_SUBCATEGORY_PARAMS;
+    if (mids.length === 0) return STATIC_SUBCATEGORY_PARAMS;
 
-    return children
+    return mids
       .filter((c) => c.parent)
       .map((c) => {
         const parts = c.href.split("/").filter(Boolean);
@@ -143,6 +165,37 @@ export async function getSubcategoryParams() {
       });
   } catch {
     return STATIC_SUBCATEGORY_PARAMS;
+  }
+}
+
+export async function getNestedLeafParams() {
+  if (!isDatabaseAvailable()) return STATIC_NESTED_LEAF_PARAMS;
+  try {
+    const leaves = await prisma.category.findMany({
+      where: {
+        isActive: true,
+        children: { none: {} },
+        parent: { parentId: { not: null } },
+      },
+      include: {
+        parent: { select: { href: true, parent: { select: { slug: true } } } },
+      },
+    });
+
+    if (leaves.length === 0) return STATIC_NESTED_LEAF_PARAMS;
+
+    return leaves
+      .filter((c) => c.parent?.parent)
+      .map((c) => {
+        const parts = c.href.split("/").filter(Boolean);
+        return {
+          section: parts[0] ?? c.parent!.parent!.slug,
+          slug: parts[1] ?? "",
+          child: parts[2] ?? c.slug,
+        };
+      });
+  } catch {
+    return STATIC_NESTED_LEAF_PARAMS;
   }
 }
 
@@ -162,31 +215,45 @@ export type WritableCategory = {
 };
 
 async function fetchWritableCategories(sectionSlug?: string) {
-  const categories = await prisma.category.findMany({
+  const leaves = await prisma.category.findMany({
     where: {
       isActive: true,
-      parentId: { not: null },
+      children: { none: {} },
+      NOT: { parentId: null },
+    },
+    orderBy: [{ sortOrder: "asc" }],
+    include: {
       parent: {
-        slug: {
-          not: "news",
-          ...(sectionSlug ? { equals: sectionSlug } : {}),
-        },
+        include: { parent: { select: { label: true, slug: true } } },
       },
     },
-    orderBy: [{ parent: { sortOrder: "asc" } }, { sortOrder: "asc" }],
-    include: { parent: { select: { label: true, slug: true, sortOrder: true } } },
   });
 
-  return categories.map((c) => ({
-    id: c.id,
-    slug: c.slug,
-    label: c.parent ? `${c.parent.label} · ${c.label}` : c.label,
-    sectionSlug: c.parent?.slug ?? "",
-    sectionLabel: c.parent?.label ?? "",
-  }));
+  return leaves
+    .map((c) => {
+      const root = c.parent?.parentId
+        ? c.parent.parent
+        : c.parent;
+      const mid = c.parent?.parentId ? c.parent : null;
+      if (!root || root.slug === "news") return null;
+      if (sectionSlug && root.slug !== sectionSlug) return null;
+
+      const label = mid
+        ? `${mid.label} · ${c.label}`
+        : `${root.label} · ${c.label}`;
+
+      return {
+        id: c.id,
+        slug: c.slug,
+        label,
+        sectionSlug: root.slug,
+        sectionLabel: root.label,
+      };
+    })
+    .filter((c): c is WritableCategory => c !== null);
 }
 
-/** 사용자 글쓰기 가능 분류 (뉴스 자동수집 제외) */
+/** 사용자 글쓰기 가능 분류 (leaf만, 뉴스 제외) */
 export async function getWritableCategories(options?: {
   sectionSlug?: string;
 }): Promise<WritableCategory[]> {

@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CategoryNavPopoverTab } from "@/components/layout/category-nav-popover-tab";
-import type { CategoryPopoverItem } from "@/components/layout/category-nav-popover-tab";
-import { isNewsSectionPath } from "@/lib/news-boards-config";
+import {
+  getHeaderDropdownItems,
+  isSiteFeaturePath,
+  normalizeNavPath,
+  resolveActiveHeaderSectionSlug,
+} from "@/lib/site-navigation";
 import { cn } from "@/lib/utils";
 import type { CategoryNavItem } from "@/lib/categories";
 
@@ -13,37 +17,6 @@ const homeTab = { href: "/", label: "홈" } as const;
 
 interface CategoryScrollNavProps {
   sections: CategoryNavItem[];
-}
-
-function getDropdownItems(section: CategoryNavItem): CategoryPopoverItem[] {
-  if (section.slug === "news") {
-    return [
-      { label: "전체 뉴스", href: "/news" },
-      ...section.children.map((c) => ({
-        label: c.label,
-        href: c.href,
-      })),
-    ];
-  }
-  return section.children.map((c) => ({
-    label: c.label,
-    href: c.href,
-  }));
-}
-
-function isSectionActive(
-  pathname: string,
-  section: CategoryNavItem,
-  items: CategoryPopoverItem[]
-): boolean {
-  if (section.slug === "news") return isNewsSectionPath(pathname);
-  if (pathname === section.href || pathname.startsWith(`${section.href}/`)) {
-    return true;
-  }
-  return items.some(
-    (item) =>
-      pathname === item.href || pathname.startsWith(`${item.href}/`)
-  );
 }
 
 function CategoryScrollNavBody({
@@ -54,15 +27,30 @@ function CategoryScrollNavBody({
   pathname: string;
 }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const normalizedPath = normalizeNavPath(pathname);
+
+  useEffect(() => {
+    setOpenSlug(null);
+  }, [normalizedPath]);
 
   const sectionDropdowns = useMemo(
     () =>
       sections.map((section) => ({
         section,
-        items: getDropdownItems(section),
+        items: getHeaderDropdownItems(section),
       })),
     [sections]
   );
+
+  const pathActiveSlug = resolveActiveHeaderSectionSlug(
+    normalizedPath,
+    sections
+  );
+  const highlightedSlug = openSlug ?? pathActiveSlug;
+  const homeActive =
+    !openSlug &&
+    normalizedPath === "/" &&
+    !isSiteFeaturePath(normalizedPath);
 
   return (
     <nav
@@ -79,7 +67,7 @@ function CategoryScrollNavBody({
           href={homeTab.href}
           className={cn(
             "shrink-0 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
-            pathname === "/"
+            homeActive
               ? "border-primary font-bold text-primary"
               : "border-transparent font-medium text-muted-foreground hover:text-foreground"
           )}
@@ -88,7 +76,7 @@ function CategoryScrollNavBody({
         </Link>
 
         {sectionDropdowns.map(({ section, items }) => {
-          const active = isSectionActive(pathname, section, items);
+          const active = highlightedSlug === section.slug;
           const isOpen = openSlug === section.slug;
 
           if (items.length === 0) {
@@ -132,10 +120,6 @@ function CategoryScrollNavBody({
 export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
   const pathname = usePathname();
   return (
-    <CategoryScrollNavBody
-      key={pathname}
-      sections={sections}
-      pathname={pathname}
-    />
+    <CategoryScrollNavBody sections={sections} pathname={pathname} />
   );
 }

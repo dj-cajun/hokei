@@ -1,5 +1,10 @@
 import { Suspense } from "react";
 import { CategoryIcon } from "@/components/category/category-icon";
+import { SectionCategoryTabBar } from "@/components/category/section-category-tab-bar";
+import {
+  usesSectionCategoryTabs,
+  type SectionCategoryTab,
+} from "@/lib/section-category-tabs";
 import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
@@ -23,6 +28,7 @@ interface SectionArchivePageProps {
   currentPage: number;
   totalPages: number;
   region?: string;
+  categoryTabs?: SectionCategoryTab[];
 }
 
 export function SectionArchivePage({
@@ -37,9 +43,13 @@ export function SectionArchivePage({
   currentPage,
   totalPages,
   region,
+  categoryTabs = [],
 }: SectionArchivePageProps) {
   const paginationQuery = region ? { region } : undefined;
-  const showRegionFilter = isWritableSection(sectionSlug);
+  const showRegionFilter =
+    isWritableSection(sectionSlug) && sectionSlug === "community";
+  const showCategoryTabs =
+    usesSectionCategoryTabs(sectionSlug) && categoryTabs.length > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
@@ -77,6 +87,14 @@ export function SectionArchivePage({
               전체 글
             </h2>
           </header>
+          {showCategoryTabs && (
+            <Suspense fallback={null}>
+              <SectionCategoryTabBar
+                sectionHref={basePath}
+                tabs={categoryTabs}
+              />
+            </Suspense>
+          )}
           {showRegionFilter && (
             <Suspense fallback={null}>
               <RegionFilterBar basePath={basePath} />

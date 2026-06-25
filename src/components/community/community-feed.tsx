@@ -37,7 +37,7 @@ export function CommunityFeed({
         <div>
           <h1 className="text-base font-bold text-gray-900">커뮤니티</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            교민 자유게시 · 생존 Q&A · 업소록
+            교민 자유게시 · 생존 Q&A
           </p>
         </div>
         <SectionWriteLink sectionSlug="community" />

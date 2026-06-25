@@ -1,0 +1,106 @@
+[
+  {
+    "slug": "no-coriander",
+    "kind": "PHRASE",
+    "domain": "FOOD",
+    "title": "고수 빼주세요",
+    "vnText": "Đừng cho rau mùi",
+    "body": "쌀국수·반미 주문 시 고수(라우디)를 넣지 말아 달라고 할 때 씁니다. 메뉴에 rau mùi가 보이면 같은 뜻입니다.",
+    "sortOrder": 1
+  },
+  {
+    "slug": "less-spicy",
+    "kind": "PHRASE",
+    "domain": "FOOD",
+    "title": "덜 맵게 해주세요",
+    "vnText": "Ít cay thôi",
+    "body": "베트남 음식은 기본이 맵습니다. 처음 주문할 때 꼭 말하세요.",
+    "sortOrder": 2
+  },
+  {
+    "slug": "ice-cup",
+    "kind": "PHRASE",
+    "domain": "FOOD",
+    "title": "얼음컵 추가",
+    "vnText": "Cho thêm đá",
+    "body": "음료·맥주 주문 시 얼음을 더 달라고 할 때.",
+    "sortOrder": 3
+  },
+  {
+    "slug": "takeaway",
+    "kind": "PHRASE",
+    "domain": "FOOD",
+    "title": "포장해주세요",
+    "vnText": "Mang về",
+    "body": "매장 식사 대신 포장(테이크아웃)을 원할 때.",
+    "sortOrder": 4
+  },
+  {
+    "slug": "laundry",
+    "kind": "PHRASE",
+    "domain": "CLOTHES",
+    "title": "세탁 맡기기",
+    "vnText": "Giặt ủi",
+    "body": "세탁소에서 드라이클리닝·다림질을 맡길 때.",
+    "sortOrder": 5
+  },
+  {
+    "slug": "bargain",
+    "kind": "PHRASE",
+    "domain": "CLOTHES",
+    "title": "깎아주세요",
+    "vnText": "Bớt được không?",
+    "body": "시장·노점에서 흥정할 때. 너무 공격적이면 안 됩니다.",
+    "sortOrder": 6
+  },
+  {
+    "slug": "ac-repair",
+    "kind": "PHRASE",
+    "domain": "HOUSING",
+    "title": "에어컨 고장",
+    "vnText": "Máy lạnh bị hỏng",
+    "body": "아파트 에어컨이 안 나올 때 관리실·수리 기사에게 보여주세요.",
+    "sortOrder": 7
+  },
+  {
+    "slug": "water-leak",
+    "kind": "PHRASE",
+    "domain": "HOUSING",
+    "title": "물이 새요",
+    "vnText": "Bị rò rỉ nước",
+    "body": "천장·파이프 누수 신고 시.",
+    "sortOrder": 8
+  },
+  {
+    "slug": "intl-driving-license",
+    "kind": "DOC",
+    "domain": "ADMIN",
+    "title": "한-베 국제운전면허 (IDP) 안내",
+    "vnText": null,
+    "body": "한국에서 발급한 국제운전면허증(IDP)과 한국 면허증 원본을 함께 지참해야 합니다. 베트남 현지에서 면허 교환 절차는 거주 목적·체류 기간에 따라 다릅니다.\n\n※ 최신 규정은 총영사관 공지를 확인하세요.",
+    "sourceLabel": "참고: 교통안전공단·총영사관",
+    "externalUrl": "https://www.hochiminhcg.mofa.go.kr",
+    "sortOrder": 10
+  },
+  {
+    "slug": "zero-fee-atm",
+    "kind": "DOC",
+    "domain": "TRANSPORT",
+    "title": "수수료 없는 ATM 출금 팁",
+    "vnText": null,
+    "body": "일부 은행 ATM은 해외 카드 수수료가 없거나 낮습니다. 호치민 1·2군 한인 밀집 지역 주변 ATM 위치는 카톡 커뮤니티에서 자주 공유됩니다.\n\n출금 전 화면에 표시되는 수수료를 꼭 확인하세요.",
+    "sourceLabel": "호케이 교민 팁",
+    "sortOrder": 11
+  },
+  {
+    "slug": "busmap-hcm",
+    "kind": "DOC",
+    "domain": "TRANSPORT",
+    "title": "호치민 버스·지하철 앱 (BusMap)",
+    "vnText": null,
+    "body": "호치민 대중교통 노선·실시간 위치는 BusMap 앱으로 확인할 수 있습니다. 한국어는 지원되지 않을 수 있으니 목적지 베트남어 이름을 미리 적어 두세요.",
+    "sourceLabel": "BusMap Vietnam",
+    "externalUrl": "https://busmap.vn",
+    "sortOrder": 12
+  }
+]

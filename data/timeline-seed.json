@@ -1,0 +1,42 @@
+[
+  {
+    "storeName": "사이공 야식",
+    "title": "오늘 밤 11시까지 — 삼겹+소주 세트 199k",
+    "content": "1군 Bui Vien 인근 배달 가능.\n메뉴: 삼겹구이 세트, 치킨, 라면\n카톡으로 주문하면 15분 내 답장.",
+    "kakaoLink": "https://open.kakao.com/o/sexample1",
+    "category": "DELIVERY",
+    "region": "district-1"
+  },
+  {
+    "storeName": "한인 반찬가게",
+    "title": "이번 주 반찬 — 김치·나물·불고기",
+    "content": "수·토 오전 10시 주문 마감.\n2군 픽업 또는 5만동 이상 배달.",
+    "kakaoLink": "https://open.kakao.com/o/sexample2",
+    "category": "GROCERY",
+    "region": "district-2"
+  },
+  {
+    "storeName": "7군 교민 중고",
+    "title": "에어프라이어 + 전자레인지 팝니다",
+    "content": "귀국 정리. 7군 푸미흥 직거래.\n상태 양호, 80만동.",
+    "kakaoLink": "https://open.kakao.com/o/sexample3",
+    "category": "FLEA_MARKET",
+    "region": "district-7"
+  },
+  {
+    "storeName": "빈탄 치킨",
+    "title": "금요일 치킨 1+1 이벤트",
+    "content": "후라이드·양념 선택. 배달 7군·빈탄.\n오후 6시~자정.",
+    "kakaoLink": "https://open.kakao.com/o/sexample4",
+    "category": "DELIVERY",
+    "region": "binh-thanh"
+  },
+  {
+    "storeName": "마트 공동구매",
+    "title": "코스트코 대리구매 — 이번 주 일요일",
+    "content": "견과·치즈·생수 등. 1인당 최소 3만동.\n카톡으로 품목 보내주세요.",
+    "kakaoLink": "https://open.kakao.com/o/sexample5",
+    "category": "GROCERY",
+    "region": "district-7"
+  }
+]

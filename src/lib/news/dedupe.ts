@@ -33,7 +33,7 @@ function jaccardSets(sa: Set<string>, sb: Set<string>): number {
   return union === 0 ? 0 : inter / union;
 }
 
-function jaccardSimilarity(a: string, b: string, gramSize = 2): number {
+export function jaccardSimilarity(a: string, b: string, gramSize = 2): number {
   const na = normalizeForDedup(a);
   const nb = normalizeForDedup(b);
   if (!na || !nb) return 0;
@@ -71,7 +71,7 @@ function contentSnippet(text: string | null | undefined): string {
   return normalizeForDedup(text.slice(0, 500));
 }
 
-function titlesAreSimilar(a: string, b: string): boolean {
+export function titlesAreSimilar(a: string, b: string): boolean {
   if (oneContainsOther(a, b)) return true;
   if (sharedChunkRatio(a, b, 3) >= 0.35) return true;
   if (sharedChunkRatio(a, b, 2) >= 0.52) return true;

@@ -42,11 +42,14 @@ export type BoardPreviewItem = {
 export type BoardPreviewTab = {
   id: string;
   label: string;
+  items?: BoardPreviewItem[];
 };
 
 export type BoardPreviewSection = {
   title: string;
   href: string;
+  /** 글쓰기 링크용 섹션 slug (href와 다를 수 있음) */
+  writeSectionSlug?: string;
   accentClass: string;
   borderAccent: string;
   tabs?: BoardPreviewTab[];

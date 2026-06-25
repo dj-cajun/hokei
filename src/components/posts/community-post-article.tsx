@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
+import { PostCrawlNotice, PostPromoMeta } from "@/components/posts/post-crawl-notice";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostContent } from "@/components/posts/post-content";
@@ -17,7 +18,7 @@ type PostWithRelations = Post & {
     label: string;
     colorClass: string;
     href: string;
-    parent: { label: string; href: string } | null;
+    parent: { label: string; href: string; slug?: string } | null;
   };
   author: Pick<User, "id" | "name"> | null;
   attachments: PostAttachment[];
@@ -33,6 +34,7 @@ export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
   const files = post.attachments.filter((a) => a.kind === "FILE");
   const isGuestPost = Boolean(post.guestPasswordHash && !post.authorId);
+  const sectionSlug = post.category.parent?.slug ?? null;
 
   return (
     <>
@@ -75,6 +77,13 @@ export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
         <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
           {post.title}
         </h1>
+
+        <PostCrawlNotice isCrawl={post.isCrawl} sectionSlug={sectionSlug} />
+        <PostPromoMeta
+          storeName={post.storeName}
+          kakaoLink={post.kakaoLink}
+          sectionSlug={sectionSlug}
+        />
 
         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
           <p>

@@ -6,6 +6,7 @@ import {
   type ArticleBodySkip,
 } from "@/lib/news/article-body";
 import { resolveAutomatedNewsThumbnail } from "@/lib/news/resolve-post-thumbnail";
+import { sanitizeNewsPostTitle } from "@/lib/news/source-display";
 import { isMostlyKorean } from "@/lib/news/language";
 import { processNewsArticle } from "@/lib/news/translate";
 import { NEWS_MIN_BODY_LENGTH } from "@/lib/news/news-body-quality";
@@ -73,7 +74,10 @@ export async function buildPostFromArticlePage(
     content.length >= NEWS_MIN_BODY_LENGTH ? content.slice(0, 15_000) : null;
 
   return {
-    title: decodeHtmlEntities(title.trim()),
+    title: sanitizeNewsPostTitle(decodeHtmlEntities(title.trim()), {
+      sourceName: raw.sourceName,
+      sourceUrl: raw.link,
+    }),
     content: body ? decodeHtmlEntities(body) : null,
     thumbnail,
     bodySkip: body ? undefined : bodySkip,

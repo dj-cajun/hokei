@@ -48,6 +48,56 @@ function publisherLabelFromUrl(sourceUrl: string): string | null {
   }
 }
 
+/** 제목 끝 `- 인사이드비나`, `| 조선일보` 등 신문·매체명 접미사 */
+const TITLE_PUBLISHER_SUFFIX =
+  /\s*[-–—|｜·]\s*(?:인사이드비나(?:\s*[·\/|]\s*[^\s|·\/-]+)?|Vietnam\.vn|라오동(?:신문)?|VnExpress|vnexpress|베트남\s*익스프레스|비나익스프레스|신아일보|조선일보|중앙일보|한겨레|경향신문|매일경제|한국경제|서울(?:경제)?(?:신문)?|연합뉴스|뉴시스|이데일리|아시아경제|오센|디스이즈게임|더퍼블릭|헤럴드경제|머니투데이|서울신문|KBS|SBS|YTN|MBC|JTBC|뉴스1|파이낸셜(?:뉴스|리뷰)?|블로터|ZDNET|전자신문|(?:경|전|충|강|제)?(?:북|남)?도민일보|(?:경|전|충|강|제)?(?:도)?민일보)(?:\s*기자)?\s*\)?\s*$/iu;
+
+function publisherNamesForTitleStrip(
+  meta?: { sourceName?: string | null; sourceUrl?: string | null }
+): string[] {
+  const names = new Set<string>();
+  const stored = meta?.sourceName
+    ? sanitizeStoredSourceName(meta.sourceName)
+    : null;
+  if (stored) {
+    names.add(stored);
+    const base = stored.split(/\s*[·\/|]\s*/)[0]?.trim();
+    if (base && base !== stored) names.add(base);
+  }
+  if (meta?.sourceUrl?.startsWith("http")) {
+    const fromUrl = publisherLabelFromUrl(meta.sourceUrl);
+    if (fromUrl) names.add(fromUrl);
+  }
+  return [...names];
+}
+
+/** 수집·표시용 — 제목에서 매체명 접미사 제거 (출처는 sourceName·링크로 표시) */
+export function sanitizeNewsPostTitle(
+  title: string,
+  meta?: { sourceName?: string | null; sourceUrl?: string | null }
+): string {
+  let t = title.trim();
+  if (!t) return t;
+
+  for (const name of publisherNamesForTitleStrip(meta)) {
+    if (name.length < 2) continue;
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    t = t
+      .replace(
+        new RegExp(
+          `\\s*[-–—|｜·]\\s*${esc}(?:\\s*[·\\/|]\\s*[^-|·\\/\\s]+)?(?:\\s*기자)?\\s*\\)?\\s*$`,
+          "iu"
+        ),
+        ""
+      )
+      .trim();
+  }
+
+  t = t.replace(TITLE_PUBLISHER_SUFFIX, "").trim();
+  t = t.replace(/\(\s*$/, "").trim();
+  return t;
+}
+
 export function sanitizeStoredSourceName(
   name?: string | null
 ): string | null {

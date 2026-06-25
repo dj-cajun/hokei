@@ -4,14 +4,16 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { normalizeKakaoLink, isValidKakaoLink } from "@/lib/kakao-link";
 import { hashGuestPassword } from "@/lib/post-permissions";
 import { indexPostInSearch } from "@/lib/search/index-post";
 import { revalidatePostCaches } from "@/lib/revalidate-content";
-import { postCreateBodySchema } from "@/lib/validation/post-create";
+import { resolveSectionSlugForCategory } from "@/lib/category-tree";
 
 function topicFromSection(sectionSlug: string): PostTopic {
   if (sectionSlug === "news") return "VIETNAM_POLICY";
   if (sectionSlug === "real-estate") return "TRAVEL";
+  if (sectionSlug === "promo") return "KOREA";
   return "KOREA";
 }
 
@@ -39,6 +41,8 @@ export async function POST(request: Request) {
       guestPassword,
       attachments = [],
       region,
+      storeName,
+      kakaoLink,
     } = parsed.data;
 
     const category = await prisma.category.findUnique({
@@ -47,12 +51,23 @@ export async function POST(request: Request) {
         id: true,
         href: true,
         parentId: true,
-        parent: { select: { slug: true } },
       },
     });
 
     if (!category?.parentId) {
       return apiError("선택한 분류를 사용할 수 없습니다.", 400);
+    }
+
+    const sectionSlug = await resolveSectionSlugForCategory(category.id);
+    let normalizedKakao: string | null = null;
+    if (kakaoLink?.trim()) {
+      if (!isValidKakaoLink(kakaoLink)) {
+        return apiError("카카오톡 링크 형식이 올바르지 않습니다.", 400);
+      }
+      normalizedKakao = normalizeKakaoLink(kakaoLink);
+    }
+    if (sectionSlug === "promo" && !storeName?.trim()) {
+      return apiError("업소 홍보 글은 업체명을 입력해 주세요.", 400);
     }
 
     const userId = session?.user?.id;
@@ -84,6 +99,10 @@ export async function POST(request: Request) {
           ? null
           : await hashGuestPassword(guestPassword!),
         region: region || null,
+        isCrawl: false,
+        storeName:
+          sectionSlug === "promo" ? storeName?.trim() || null : null,
+        kakaoLink: sectionSlug === "promo" ? normalizedKakao : null,
         thumbnail: firstImage?.url ?? null,
         attachments: {
           create: attachments.map((a, i) => ({

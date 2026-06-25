@@ -3,6 +3,8 @@ import { isKoreanPublisherArticleLink } from "@/lib/news/korean-news-publishers"
 import { matchesExpatPriorityNews } from "@/lib/news/expat-priority-keywords";
 import { isOffTopicAirlineIndustryNews } from "@/lib/news/off-topic-airline-news";
 import { isOffTopicLaborNews } from "@/lib/news/off-topic-labor-news";
+import { isOffTopicOpinionNews } from "@/lib/news/off-topic-opinion-news";
+import { isOffTopicRegionalKoreaNews } from "@/lib/news/off-topic-regional-korea-news";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
 
 /** 호치민·베트남 현지 연관 (수집 대상 지역) */
@@ -177,6 +179,24 @@ export function passesTopicRelevanceFilter(
     return false;
   }
 
+  if (isOffTopicOpinionNews(title, description)) {
+    return false;
+  }
+
+  if (isOffTopicRegionalKoreaNews(title, description, meta)) {
+    return false;
+  }
+
+  // 인사이드비나·Vietnam.vn·라오동 — 베트남 현지 한국어 매체는 교민 실용 정보 우선
+  if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) {
+    return true;
+  }
+
+  // 송금·물가·베트남항공 운항·한국 기업 베트남 투자 등 (항공사 HR·기념 필터보다 우선)
+  if (matchesExpatPriorityNews(title, description)) {
+    return true;
+  }
+
   if (isOffTopicAirlineIndustryNews(title, description)) {
     return false;
   }
@@ -187,16 +207,6 @@ export function passesTopicRelevanceFilter(
 
   if (!isVietnamLocalRelevant(title, description, meta)) {
     return false;
-  }
-
-  // 인사이드비나·Vietnam.vn·라오동 — 베트남 현지 한국어 매체는 교민 실용 정보 우선
-  if (isTrustedKoreanVietnamSource(meta?.sourceName, meta?.link)) {
-    return true;
-  }
-
-  // 송금·물가·한·베 협력·베트남항공·한국 기업 베트남 투자 등 교민 실익 뉴스
-  if (matchesExpatPriorityNews(title, description)) {
-    return true;
   }
 
   switch (topic) {

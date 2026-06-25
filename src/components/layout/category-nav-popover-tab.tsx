@@ -120,7 +120,7 @@ export function CategoryNavPopoverTab({
         onClick={onToggle}
         className={cn(
           "flex items-center gap-0.5 border-b-2 px-3 py-2 text-sm transition-colors focus-ring",
-          active || open
+          active
             ? "border-primary font-bold text-primary"
             : "border-transparent font-medium text-muted-foreground hover:text-foreground"
         )}

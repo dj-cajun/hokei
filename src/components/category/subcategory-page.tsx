@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CategoryIcon } from "@/components/category/category-icon";
+import { HereHowSubNav } from "@/components/category/here-how-sub-nav";
+import { SectionCategoryTabBar } from "@/components/category/section-category-tab-bar";
+import {
+  usesSectionCategoryTabs,
+  type SectionCategoryTab,
+} from "@/lib/section-category-tabs";
 import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
@@ -22,6 +28,8 @@ interface SubcategoryPageProps {
   currentPage: number;
   totalPages: number;
   isNewsSection: boolean;
+  showHereHowSubNav?: boolean;
+  categoryTabs?: SectionCategoryTab[];
 }
 
 export function SubcategoryPage({
@@ -37,7 +45,11 @@ export function SubcategoryPage({
   currentPage,
   totalPages,
   isNewsSection,
+  showHereHowSubNav = false,
+  categoryTabs = [],
 }: SubcategoryPageProps) {
+  const showCategoryTabs =
+    usesSectionCategoryTabs(sectionSlug) && categoryTabs.length > 0;
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-1 px-2 py-2 lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
@@ -77,6 +89,13 @@ export function SubcategoryPage({
               )}
             </div>
           </div>
+          {showHereHowSubNav && <HereHowSubNav />}
+          {showCategoryTabs && (
+            <SectionCategoryTabBar
+              sectionHref={sectionHref}
+              tabs={categoryTabs}
+            />
+          )}
         </div>
 
         <section className="bg-surface">

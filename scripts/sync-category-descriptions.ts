@@ -21,7 +21,7 @@ async function main() {
   for (const section of CATEGORY_MASTER) {
     const parent = await prisma.category.updateMany({
       where: { slug: section.slug, parentId: null },
-      data: { description: section.description },
+      data: { label: section.label, description: section.description },
     });
     updated += parent.count;
 
@@ -29,7 +29,7 @@ async function main() {
       const childSlug = `${section.slug}-${child.slug}`;
       const childRow = await prisma.category.updateMany({
         where: { slug: childSlug },
-        data: { description: child.description },
+        data: { label: child.label, description: child.description },
       });
       updated += childRow.count;
     }
