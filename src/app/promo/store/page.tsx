@@ -27,7 +27,7 @@ export default async function HereHowRoutePage({ searchParams }: PageProps) {
   const category = await getCategoryByHref(HERE_HOW_HREF);
   if (!category) notFound();
 
-  let slugs = [...HERE_HOW_LEAF_SLUGS];
+  let slugs: string[] = [...HERE_HOW_LEAF_SLUGS];
   if (isDatabaseAvailable() && "id" in category && category.id) {
     const collected = await collectDescendantCategorySlugs(category.id);
     if (collected.length > 0) slugs = collected;

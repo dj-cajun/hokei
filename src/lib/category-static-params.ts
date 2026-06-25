@@ -74,7 +74,7 @@ export function findStaticCategoryByHref(href: string) {
     if (!child) return null;
     const fullSlug = parts.join("-");
     const mappedChildren = (child.children ?? []).map((grand) =>
-      mapSeedChild(sectionSlug, href, section.colorClass, grand)
+      mapSeedChild(section.slug, href, section.colorClass, grand)
     );
     return {
       id: `static-${fullSlug}`,

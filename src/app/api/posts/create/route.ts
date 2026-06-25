@@ -9,6 +9,7 @@ import { hashGuestPassword } from "@/lib/post-permissions";
 import { indexPostInSearch } from "@/lib/search/index-post";
 import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { resolveSectionSlugForCategory } from "@/lib/category-tree";
+import { postCreateBodySchema } from "@/lib/validation/post-create";
 
 function topicFromSection(sectionSlug: string): PostTopic {
   if (sectionSlug === "news") return "VIETNAM_POLICY";
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
         content,
         sourceUrl: `hokei:community:${crypto.randomUUID()}`,
         sourceName: null,
-        topic: topicFromSection(category.parent?.slug ?? "community"),
+        topic: topicFromSection(sectionSlug ?? "community"),
         categoryId: category.id,
         publishedAt: new Date(),
         isAutomated: false,
@@ -126,7 +127,7 @@ export async function POST(request: Request) {
     });
 
     revalidatePostCaches(post.id, {
-      sectionSlug: category.parent?.slug,
+      sectionSlug: sectionSlug ?? undefined,
       categoryHref: category.href,
     });
 

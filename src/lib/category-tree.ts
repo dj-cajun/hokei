@@ -71,10 +71,11 @@ export async function getRootSectionSlug(
   let id: string | null = categoryId;
   let rootSlug: string | null = null;
   while (id) {
-    const row = await prisma.category.findUnique({
-      where: { id },
-      select: { slug: true, parentId: true },
-    });
+    const row: { slug: string; parentId: string | null } | null =
+      await prisma.category.findUnique({
+        where: { id },
+        select: { slug: true, parentId: true },
+      });
     if (!row) break;
     rootSlug = row.slug;
     id = row.parentId;

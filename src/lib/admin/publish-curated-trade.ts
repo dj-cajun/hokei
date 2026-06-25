@@ -56,7 +56,7 @@ export async function publishCuratedTradePost(
     );
   }
 
-  const sectionSlug = await getRootSectionSlug(category.id);
+  const sectionSlug = (await getRootSectionSlug(category.id)) ?? "community";
 
   const title = input.rawItem
     ? enrichCurateTitle(input.rawItem)
@@ -154,7 +154,7 @@ export async function updateCuratedTradePost(
     throw new Error("게시글을 찾을 수 없습니다.");
   }
 
-  const sectionSlug = await getRootSectionSlug(post.categoryId);
+  const sectionSlug = (await getRootSectionSlug(post.categoryId)) ?? "community";
 
   const content = input.body.trim();
   const title = (input.title ?? post.title).trim();

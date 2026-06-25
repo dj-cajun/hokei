@@ -61,7 +61,10 @@ export default async function SubcategoryRoutePage({
     const leafSlugs =
       isDatabaseAvailable() && "id" in category
         ? await collectDescendantCategorySlugs(category.id)
-        : category.children.map((c: { slug: string }) => c.slug);
+        : ("children" in category && category.children
+            ? category.children
+            : []
+          ).map((c: { slug: string }) => c.slug);
 
     const [posts, totalCount] = isDatabaseAvailable()
       ? await Promise.all([
