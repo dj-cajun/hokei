@@ -5,10 +5,12 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { ViewCounter } from "@/components/posts/view-counter";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
 import { NewsPostClientBlocks } from "@/components/posts/news-post-client-blocks";
+import { PostNextPostsSection } from "@/components/posts/post-next-posts-section";
+import { PostTimelineBody } from "@/components/posts/post-timeline-body";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { isCommunityPost, isUserBoardPost } from "@/lib/community";
-import { getPostById } from "@/lib/posts";
+import { getNextPostsInBoard, getPostById } from "@/lib/posts";
 import { sanitizeNewsPostTitle } from "@/lib/news/source-display";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
@@ -77,6 +79,7 @@ export default async function PostPage({ params }: PageProps) {
     .slice(0, 160);
   const comments = serializeComments(post.comments);
   const community = isUserBoardPost(post.sourceUrl);
+  const nextPosts = await getNextPostsInBoard(post.id, post.categoryId);
   const displayTitle = community
     ? post.title
     : sanitizeNewsPostTitle(post.title, {
@@ -98,7 +101,7 @@ export default async function PostPage({ params }: PageProps) {
       <Sidebar />
       <div className="min-w-0 flex-1">
         {community ? (
-          <CommunityPostArticle post={post} />
+          <CommunityPostArticle post={post} nextPosts={nextPosts} />
         ) : (
           <article className="bg-surface px-2 py-3 lg:rounded-2xl lg:p-8">
             <nav className="mb-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
@@ -127,10 +130,7 @@ export default async function PostPage({ params }: PageProps) {
             </h1>
 
             <p className="mt-1.5 text-[11px] text-muted-foreground">
-              {post.publishedAt.toLocaleString("ko-KR", {
-                timeZone: "Asia/Ho_Chi_Minh",
-              })}{" "}
-              · 조회 {post.views}
+              조회 {post.views}
             </p>
 
             <NewsPostClientBlocks
@@ -145,9 +145,10 @@ export default async function PostPage({ params }: PageProps) {
             />
 
             {post.content ? (
-              <div className="mt-3 whitespace-pre-wrap text-sm leading-snug">
-                {post.content}
-              </div>
+              <PostTimelineBody
+                publishedAt={post.publishedAt}
+                content={post.content}
+              />
             ) : isNaverNewsAggregatorLink(post.sourceUrl) ? (
               <p className="mt-3 text-sm text-muted-foreground">
                 네이버 뉴스 요약만 제공됩니다. 원문 링크에서 전체 내용을 확인해
@@ -157,6 +158,11 @@ export default async function PostPage({ params }: PageProps) {
 
             <AdSenseUnit slotKind="article" />
             <PostCommentsSession postId={post.id} comments={comments} />
+            <PostNextPostsSection
+              categoryLabel={post.category.label}
+              categoryHref={post.category.href}
+              items={nextPosts}
+            />
           </article>
         )}
       </div>

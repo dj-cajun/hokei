@@ -46,6 +46,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:kakao": "tsx scripts/seed-kakao-posts.ts",
     "db:seed:categories": "tsx prisma/run-seed-categories.ts",
     "seed:life-v2": "tsx scripts/prisma-generate-for-deploy.ts && tsx scripts/seed-life-v2.ts",
     "db:sync:category-descriptions": "tsx scripts/sync-category-descriptions.ts",

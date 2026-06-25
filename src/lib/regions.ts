@@ -3,6 +3,7 @@ export const HOCHIMINH_REGIONS = [
   { slug: "district-1", label: "1군" },
   { slug: "district-2", label: "2군" },
   { slug: "district-7", label: "7군" },
+  { slug: "district-9", label: "9군" },
   { slug: "binh-thanh", label: "빈탄" },
   { slug: "thu-duc", label: "투덕" },
   { slug: "bien-hoa", label: "비엔호아" },

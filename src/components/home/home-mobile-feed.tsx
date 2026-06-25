@@ -5,8 +5,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SectionWriteLink } from "@/components/layout/section-write-link";
 import { NewsListItem, TextListItem } from "@/components/home/news-list-item";
-import type { FeedItem, FeedTab } from "@/types/feed";
 import { shouldShowFeedThumbnail } from "@/lib/news/feed-thumbnail";
+import type { FeedItem, FeedTab } from "@/types/feed";
 
 const tabs: { id: FeedTab; label: string }[] = [
   { id: "latest", label: "최신글" },

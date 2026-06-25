@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getAuthorDisplayName } from "@/lib/community";
-import { PostCrawlNotice, PostPromoMeta } from "@/components/posts/post-crawl-notice";
+import { PostCrawlContactBar, PostCrawlNotice } from "@/components/posts/post-crawl-notice";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
-import { PostContent } from "@/components/posts/post-content";
+import { PostTimelineBody } from "@/components/posts/post-timeline-body";
 import { PostImageGallery } from "@/components/posts/post-image-gallery";
 import { RegionBadge } from "@/components/region/region-badge";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
+import { PostNextPostsSection } from "@/components/posts/post-next-posts-section";
 import type { Post, PostAttachment, Comment, User } from "@/generated/prisma/client";
+import type { FeedItem } from "@/types/feed";
 
 type PostWithRelations = Post & {
   category: {
@@ -27,9 +29,10 @@ type PostWithRelations = Post & {
 
 type CommunityPostArticleProps = {
   post: PostWithRelations;
+  nextPosts?: FeedItem[];
 };
 
-export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
+export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArticleProps) {
   const authorName = getAuthorDisplayName(post);
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
   const files = post.attachments.filter((a) => a.kind === "FILE");
@@ -79,19 +82,19 @@ export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
         </h1>
 
         <PostCrawlNotice isCrawl={post.isCrawl} sectionSlug={sectionSlug} />
-        <PostPromoMeta
+        <PostCrawlContactBar
+          isCrawl={post.isCrawl}
           storeName={post.storeName}
           kakaoLink={post.kakaoLink}
+          content={post.content}
+          sourceName={post.sourceName}
           sectionSlug={sectionSlug}
         />
 
         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
           <p>
-            {post.publishedAt.toLocaleString("ko-KR", {
-              timeZone: "Asia/Ho_Chi_Minh",
-            })}
-            {authorName && ` · ${authorName}`}
-            {` · 조회 ${post.views + 1}`}
+            {authorName && `${authorName} · `}
+            {`조회 ${post.views + 1}`}
           </p>
           <PostActionBar
             postId={post.id}
@@ -113,9 +116,10 @@ export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
         {images.length > 0 && <PostImageGallery images={images} />}
 
         {post.content && (
-          <PostContent
+          <PostTimelineBody
+            publishedAt={post.publishedAt}
             content={post.content}
-            className="mt-3 text-sm leading-relaxed text-gray-800"
+            authorName={authorName}
           />
         )}
 
@@ -148,6 +152,12 @@ export function CommunityPostArticle({ post }: CommunityPostArticleProps) {
         </div>
 
         <PostCommentsSession postId={post.id} comments={post.comments} />
+
+        <PostNextPostsSection
+          categoryLabel={post.category.label}
+          categoryHref={post.category.href}
+          items={nextPosts}
+        />
       </article>
     </>
   );

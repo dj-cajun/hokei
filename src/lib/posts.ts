@@ -415,6 +415,26 @@ export async function getPostById(
   });
 }
 
+/** 같은 게시판(카테고리)의 다음 글 — 현재 글 제외, 최신순 */
+export async function getNextPostsInBoard(
+  postId: string,
+  categoryId: string,
+  limit = 6
+): Promise<FeedItem[]> {
+  const posts = await prisma.post.findMany({
+    where: {
+      ...visiblePostWhere,
+      categoryId,
+      id: { not: postId },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+    include: postInclude,
+  });
+
+  return posts.map(toFeedItem);
+}
+
 function textContainsFilter(q: string) {
   if (getDatabaseKind() === "postgresql") {
     return [

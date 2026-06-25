@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import type { PrismaClient } from "../src/generated/prisma/client";
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
 import { seedCategories } from "./seed-categories";
+import { seedKakaoPosts } from "./seed-kakao-posts";
 
 function createSeedPrisma(): PrismaClient {
   const connectionString = process.env.DATABASE_URL?.trim() ?? "";
@@ -46,6 +47,11 @@ async function main() {
   });
 
   await seedCategories(prisma);
+
+  if (process.env.SEED_KAKAO_POSTS === "1") {
+    const count = await seedKakaoPosts(prisma);
+    console.log(`   카톡 시드: ${count}건 적재`);
+  }
 
   console.log("✅ 시드 완료");
   console.log("   관리자: admin@hokei.vn / admin1234");
