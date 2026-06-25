@@ -326,6 +326,69 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "Post_region_idx" ON "Post"("region")`
   );
 
+  await exec(`ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "isCrawl" BOOLEAN NOT NULL DEFAULT false`);
+  await exec(`ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "storeName" TEXT`);
+  await exec(`ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "kakaoLink" TEXT`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Post_storeName_idx" ON "Post"("storeName")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Post_isCrawl_idx" ON "Post"("isCrawl")`
+  );
+
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "LifeGuideKind" AS ENUM ('PHRASE', 'DOC');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "LifeDomain" AS ENUM ('CLOTHES', 'FOOD', 'HOUSING', 'ADMIN', 'TRANSPORT', 'EDUCATION');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(`ALTER TYPE "LifeDomain" ADD VALUE IF NOT EXISTS 'STUDY'`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "LifeGuide" (
+      "id" TEXT NOT NULL,
+      "slug" TEXT NOT NULL,
+      "kind" "LifeGuideKind" NOT NULL,
+      "domain" "LifeDomain" NOT NULL,
+      "title" TEXT NOT NULL,
+      "vnText" TEXT,
+      "body" TEXT NOT NULL,
+      "audioUrl" TEXT,
+      "fileUrl" TEXT,
+      "sourceLabel" TEXT,
+      "externalUrl" TEXT,
+      "sortOrder" INTEGER NOT NULL DEFAULT 0,
+      "publishedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "LifeGuide_pkey" PRIMARY KEY ("id")
+    )`);
+  await exec(`ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT`);
+  await exec(
+    `ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "isCrawl" BOOLEAN NOT NULL DEFAULT false`
+  );
+  await exec(`ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "authorId" TEXT`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "LifeGuide_slug_key" ON "LifeGuide"("slug")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "LifeGuide_domain_kind_idx" ON "LifeGuide"("domain", "kind")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "LifeGuide_sortOrder_idx" ON "LifeGuide"("sortOrder")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "LifeGuide_publishedAt_idx" ON "LifeGuide"("publishedAt")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "LifeGuide_authorId_idx" ON "LifeGuide"("authorId")`
+  );
+  await exec(
+    `UPDATE "LifeGuide" SET "updatedAt" = "createdAt" WHERE "updatedAt" IS NULL`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'
@@ -341,16 +404,16 @@ async function main() {
   const tables = await prisma.$queryRaw<{ tablename: string }[]>`
     SELECT tablename FROM pg_tables
     WHERE schemaname = 'public'
-      AND tablename IN ('NewsIngestRun', 'Post', 'Category')`;
+      AND tablename IN ('NewsIngestRun', 'Post', 'Category', 'LifeGuide')`;
   const tableSet = new Set(tables.map((r) => r.tablename));
-  for (const need of ["NewsIngestRun", "Post", "Category"] as const) {
+  for (const need of ["NewsIngestRun", "Post", "Category", "LifeGuide"] as const) {
     if (!tableSet.has(need)) {
       throw new Error(`[pg-patch] 필수 테이블 ${need} 없음`);
     }
   }
 
   await prisma.$disconnect();
-  console.log("[pg-patch] 완료 (Post·NewsIngestRun·Category 검증 OK)");
+  console.log("[pg-patch] 완료 (Post·NewsIngestRun·Category·LifeGuide 검증 OK)");
 }
 
 main().catch((err) => {
