@@ -67,6 +67,8 @@ model User {
   posts             Post[]
   comments          Comment[]
   postLikes         PostLike[]
+  commentLikes      CommentLike[]
+  commentDislikes   CommentDislike[]
   bookmarks         Bookmark[]
   notifications     Notification[]
   conversationsA    Conversation[]     @relation("ConversationParticipantA")
@@ -188,10 +190,14 @@ model Comment {
   guestName         String?
   guestPasswordHash String?
   content           String
+  likeCount         Int       @default(0)
+  dislikeCount      Int       @default(0)
   isHidden          Boolean   @default(false)
   hiddenAt          DateTime?
   hiddenById        String?
   createdAt         DateTime  @default(now())
+  likes             CommentLike[]
+  dislikes          CommentDislike[]
 
   @@index([postId])
   @@index([parentId])
@@ -210,6 +216,32 @@ model PostLike {
 
   @@unique([userId, postId])
   @@index([postId])
+  @@index([createdAt])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@index([createdAt])
+}
+
+model CommentDislike {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+  @@index([commentId])
   @@index([createdAt])
 }
 

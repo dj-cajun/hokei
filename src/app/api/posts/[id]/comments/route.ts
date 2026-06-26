@@ -46,6 +46,9 @@ export async function GET(_request: Request, context: RouteContext) {
       content: c.content,
       createdAt: c.createdAt.toISOString(),
       authorName: c.author?.name ?? c.guestName ?? "익명",
+      authorId: c.authorId,
+      likeCount: c.likeCount,
+      dislikeCount: c.dislikeCount,
       isOwner: isAdmin || isCommentOwner(c, userId),
       isGuestComment: !c.authorId && Boolean(c.guestPasswordHash),
     }))
@@ -133,6 +136,9 @@ export async function POST(request: Request, context: RouteContext) {
         content: comment.content,
         createdAt: comment.createdAt.toISOString(),
         authorName: comment.author?.name ?? comment.guestName ?? "익명",
+        authorId: comment.authorId,
+        likeCount: 0,
+        dislikeCount: 0,
       },
       201
     );

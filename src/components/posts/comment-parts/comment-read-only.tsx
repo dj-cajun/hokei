@@ -1,15 +1,18 @@
 import type { CommentItem } from "@/components/posts/comment-types";
+import { CommentAuthorName } from "@/components/posts/comment-parts/comment-author-name";
+import { CommentReactionBar } from "@/components/posts/comment-parts/comment-reaction-bar";
 import { formatCommentTime } from "@/components/posts/comment-parts/format-comment-time";
 import { PostContent } from "@/components/posts/post-content";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 import { cn } from "@/lib/utils";
 
 type CommentReadOnlyProps = {
+  postId: string;
   comment: CommentItem;
   onReply?: () => void;
 };
 
-export function CommentReadOnly({ comment, onReply }: CommentReadOnlyProps) {
+export function CommentReadOnly({ postId, comment, onReply }: CommentReadOnlyProps) {
   return (
     <div
       className={cn(
@@ -18,9 +21,11 @@ export function CommentReadOnly({ comment, onReply }: CommentReadOnlyProps) {
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-foreground">
-          {comment.authorName}
-        </span>
+        <CommentAuthorName
+          authorId={comment.authorId}
+          authorName={comment.authorName}
+          postId={postId}
+        />
         <div className="flex items-center gap-2">
           {onReply && (
             <button
@@ -39,6 +44,12 @@ export function CommentReadOnly({ comment, onReply }: CommentReadOnlyProps) {
       <PostContent
         content={comment.content}
         className="mt-1 text-sm text-foreground"
+      />
+      <CommentReactionBar
+        commentId={comment.id}
+        initialLikeCount={comment.likeCount ?? 0}
+        initialDislikeCount={comment.dislikeCount ?? 0}
+        disabled={comment.pending}
       />
       {!comment.pending && (
         <ReportContentButton

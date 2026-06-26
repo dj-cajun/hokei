@@ -28,6 +28,7 @@ function CommentRowInner({
   if (!canManage) {
     return (
       <CommentReadOnly
+        postId={postId}
         comment={comment}
         onReply={showReply ? onReply : undefined}
       />

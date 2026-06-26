@@ -4,6 +4,9 @@ export type CommentItem = {
   content: string;
   createdAt: string;
   authorName: string;
+  authorId?: string | null;
+  likeCount?: number;
+  dislikeCount?: number;
   isOwner: boolean;
   isGuestComment: boolean;
   /** optimistic UI 임시 댓글 */

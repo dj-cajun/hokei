@@ -207,6 +207,43 @@ async function main() {
   );
   await exec(`CREATE INDEX IF NOT EXISTS "PostLike_postId_idx" ON "PostLike"("postId")`);
 
+  await exec(`ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "likeCount" INTEGER NOT NULL DEFAULT 0`);
+  await exec(`ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "dislikeCount" INTEGER NOT NULL DEFAULT 0`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "CommentLike" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "commentId" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "CommentLike_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "CommentLike_userId_fkey"
+        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT "CommentLike_commentId_fkey"
+        FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "CommentLike_userId_commentId_key" ON "CommentLike"("userId", "commentId")`
+  );
+  await exec(`CREATE INDEX IF NOT EXISTS "CommentLike_commentId_idx" ON "CommentLike"("commentId")`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "CommentDislike" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "commentId" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "CommentDislike_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "CommentDislike_userId_fkey"
+        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT "CommentDislike_commentId_fkey"
+        FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "CommentDislike_userId_commentId_key" ON "CommentDislike"("userId", "commentId")`
+  );
+  await exec(`CREATE INDEX IF NOT EXISTS "CommentDislike_commentId_idx" ON "CommentDislike"("commentId")`);
+
   await exec(`
     CREATE TABLE IF NOT EXISTS "Conversation" (
       "id" TEXT NOT NULL,

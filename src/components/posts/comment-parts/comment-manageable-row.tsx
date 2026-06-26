@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import type { CommentItem } from "@/components/posts/comment-types";
+import { CommentAuthorName } from "@/components/posts/comment-parts/comment-author-name";
+import { CommentReactionBar } from "@/components/posts/comment-parts/comment-reaction-bar";
 import { CommentEditForm } from "@/components/posts/comment-parts/comment-edit-form";
 import { commentInputClass } from "@/components/posts/comment-parts/constants";
 import { formatCommentTime } from "@/components/posts/comment-parts/format-comment-time";
@@ -43,9 +45,11 @@ export function CommentManageableRow({
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-foreground">
-          {comment.authorName}
-        </span>
+        <CommentAuthorName
+          authorId={comment.authorId}
+          authorName={comment.authorName}
+          postId={postId}
+        />
         <div className="flex items-center gap-2">
           {!editing && (
             <>
@@ -105,6 +109,12 @@ export function CommentManageableRow({
           <p className="mt-1 whitespace-pre-wrap text-sm text-gray-800">
             {comment.content}
           </p>
+          <CommentReactionBar
+            commentId={comment.id}
+            initialLikeCount={comment.likeCount ?? 0}
+            initialDislikeCount={comment.dislikeCount ?? 0}
+            disabled={comment.pending}
+          />
           {comment.isGuestComment && !comment.isOwner && (
             <input
               id={`comment-guest-password-${comment.id}`}

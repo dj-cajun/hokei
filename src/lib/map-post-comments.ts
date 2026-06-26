@@ -9,6 +9,8 @@ type CommentForMap = {
   authorId: string | null;
   guestName: string | null;
   guestPasswordHash: string | null;
+  likeCount?: number;
+  dislikeCount?: number;
   author: { name: string } | null;
 };
 
@@ -26,6 +28,9 @@ export function mapPostComments(
         ? c.createdAt
         : c.createdAt.toISOString(),
     authorName: c.author?.name ?? c.guestName ?? "익명",
+    authorId: c.authorId,
+    likeCount: c.likeCount ?? 0,
+    dislikeCount: c.dislikeCount ?? 0,
     isOwner: Boolean(isAdmin || isCommentOwner(c, sessionUserId)),
     isGuestComment: !c.authorId && Boolean(c.guestPasswordHash),
   }));
