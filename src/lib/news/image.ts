@@ -5,6 +5,9 @@ const NEWS_CDN_HOST_RE =
 
 const USER_AGENT =
   "Mozilla/5.0 (compatible; HokeiNewsBot/1.0; +https://hokei.vn)";
+/** vnecdn 등 뉴스 CDN은 봇 UA를 403/401로 거부 — 이미지 fetch만 브라우저 UA 사용 */
+const IMAGE_FETCH_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const FETCH_TIMEOUT_MS = 10_000;
 const MIN_IMAGE_BYTES_HINT = 80;
 
@@ -143,20 +146,22 @@ export function isLikelyNewsCdnImageUrl(url: string): boolean {
   );
 }
 
-/** ingest 저장용 — 실제 다운로드 가능한 URL만 (vnecdn 403 등 제외) */
+/** ingest 저장용 — 실제 다운로드 가능한 URL만 */
 export function isPlausibleStoredThumbnailUrl(url: string): boolean {
   const trimmed = url.trim();
   if (!trimmed || isUnstableThumbnailUrl(trimmed) || !isHttpOrHttpsUrl(trimmed)) {
     return false;
   }
   if (!isUsableImageUrl(trimmed)) return false;
-  if (isLikelyNewsCdnImageUrl(trimmed) && trimmed.toLowerCase().includes("vnecdn")) {
-    return false;
-  }
   return (
     isLikelyNewsCdnImageUrl(trimmed) ||
     /\.(jpe?g|png|webp)(\?|$)/i.test(trimmed)
   );
+}
+
+function userAgentForImageFetch(url: string): string {
+  if (isLikelyNewsCdnImageUrl(url)) return IMAGE_FETCH_USER_AGENT;
+  return USER_AGENT;
 }
 
 function pickBestImage(urls: string[]): string | undefined {
@@ -304,7 +309,10 @@ export async function fetchImageBytes(
   articleUrl?: string
 ): Promise<{ body: ArrayBuffer; contentType: string } | null> {
   const referer = refererForUrl(url, articleUrl);
-  const headers: Record<string, string> = { "User-Agent": USER_AGENT };
+  const headers: Record<string, string> = {
+    "User-Agent": userAgentForImageFetch(url),
+    Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+  };
   if (referer) headers.Referer = referer;
 
   try {

@@ -10,7 +10,7 @@ describe("news thumbnail display", () => {
     const url =
       "https://i1-english.vnecdn.net/2026/06/08/photo.jpg?w=680";
     expect(isLikelyNewsCdnImageUrl(url)).toBe(true);
-    expect(isPlausibleStoredThumbnailUrl(url)).toBe(false);
+    expect(isPlausibleStoredThumbnailUrl(url)).toBe(true);
     expect(getThumbnailDisplayUrl(url, "https://e.vnexpress.net/a.html")).toContain(
       "/api/news/thumbnail?"
     );

@@ -9,6 +9,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: hokei
+          POSTGRES_PASSWORD: hokei_ci
+          POSTGRES_DB: hokei_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hokei -d hokei_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://hokei:hokei_ci@localhost:5432/hokei_ci
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,15 +40,11 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx tsx scripts/prisma-generate-for-deploy.ts
-        env:
-          DATABASE_URL: file:./ci.db
 
       - name: Prepare CI database
         run: |
           npx prisma db push --schema=prisma/schema.prisma
           npx tsx scripts/seed-e2e.ts
-        env:
-          DATABASE_URL: file:./ci.db
 
       - name: Lint
         run: npm run lint
@@ -47,7 +61,6 @@ jobs:
           AUTH_SECRET: ci-build-secret-min-32-chars-long
           CRON_SECRET: ci-cron-secret-min-32-chars-long
           NEXT_PUBLIC_SITE_URL: http://localhost:3001
-          DATABASE_URL: file:./ci.db
 
       - name: E2E smoke
         run: npm run test:e2e
@@ -55,5 +68,4 @@ jobs:
           AUTH_SECRET: ci-build-secret-min-32-chars-long
           CRON_SECRET: ci-cron-secret-min-32-chars-long
           NEXT_PUBLIC_SITE_URL: http://localhost:3001
-          DATABASE_URL: file:./ci.db
           CI: true

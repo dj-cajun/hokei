@@ -196,7 +196,7 @@ export async function ingestDailyNews(
   for (const item of pool) {
     const normalized: RawNewsItem = {
       ...item,
-      link: toKoreanPublisherArticleUrl(item.link, item.sourceName),
+      link: toKoreanPublisherArticleUrl(item.link),
     };
     if (
       /vietnam\.vn/i.test(normalized.link) &&

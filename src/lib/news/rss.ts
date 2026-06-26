@@ -120,8 +120,7 @@ export async function fetchFeedItems(
           item.contentSnippet ?? rawContent ?? ""
         ).slice(0, 2000);
         const link = toKoreanPublisherArticleUrl(
-          item.link ?? item.guid ?? "",
-          sourceName
+          item.link ?? item.guid ?? ""
         );
         const publishedAt = parseDate(item);
 

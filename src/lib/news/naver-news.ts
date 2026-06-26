@@ -63,8 +63,7 @@ function mapApiItems(
       const title = stripNaverHtml(item.title ?? "").slice(0, 300);
       const description = stripNaverHtml(item.description ?? "").slice(0, 2000);
       const link = toKoreanPublisherArticleUrl(
-        (item.originallink || item.link || "").trim(),
-        sourceName
+        (item.originallink || item.link || "").trim()
       );
       const publishedAt = parseNaverDate(item.pubDate);
 
