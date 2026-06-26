@@ -13,7 +13,6 @@ import { resolveNewsCategorySlug } from "../src/lib/news/resolve-news-category";
 import { sanitizeStoredSourceName } from "../src/lib/news/source-display";
 import { toKoreanPublisherArticleUrl } from "../src/lib/news/korean-publisher-url";
 import { indexPostInSearch } from "../src/lib/search/index-post";
-import type { PostTopic } from "../src/generated/prisma/client";
 import type { RawNewsItem } from "../src/lib/news/rss";
 
 /** prune-off-topic으로 삭제됐으나 교민 가치가 있는 4건 (#8·#15 제외) */

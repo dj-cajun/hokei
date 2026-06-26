@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
@@ -107,13 +107,13 @@ export function WriteForm({
     [initial]
   );
 
+  const initialCategoryId = initial?.categoryId ?? defaultCategoryId ?? "";
+
   const fixedMain: CascadeMainCategory | "" = cascadeSection
     ? SECTION_TO_MAIN[cascadeSection]
     : "";
 
-  const [categoryId, setCategoryId] = useState(
-    initial?.categoryId ?? defaultCategoryId ?? ""
-  );
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [mainCategory, setMainCategory] = useState<CascadeMainCategory | "">(
     () =>
       fixedMain ||
@@ -121,34 +121,16 @@ export function WriteForm({
         ? SECTION_TO_MAIN[cascadeSection]
         : "")
   );
-  const [midCategory, setMidCategory] = useState(
-    parsedInitialTitle?.midCategory ?? ""
-  );
+  const [midCategory, setMidCategory] = useState(() => {
+    if (parsedInitialTitle?.midCategory) return parsedInitialTitle.midCategory;
+    if (!cascadeSection || parsedInitialTitle) return "";
+    const cat = categories.find((c) => c.id === initialCategoryId);
+    if (!cat) return "";
+    return resolveMidFromCategorySlug(cascadeSection, cat.slug) ?? "";
+  });
   const [subCategory, setSubCategory] = useState(
     parsedInitialTitle?.subCategory ?? ""
   );
-
-  useEffect(() => {
-    if (!useCascade || !cascadeSection || midCategory || parsedInitialTitle) {
-      return;
-    }
-    const initialId = initial?.categoryId ?? defaultCategoryId;
-    const cat = categories.find((c) => c.id === initialId);
-    if (!cat) return;
-    const mid = resolveMidFromCategorySlug(cascadeSection, cat.slug);
-    if (mid) {
-      setMidCategory(mid);
-      setCategoryId(cat.id);
-    }
-  }, [
-    useCascade,
-    cascadeSection,
-    midCategory,
-    parsedInitialTitle,
-    initial?.categoryId,
-    defaultCategoryId,
-    categories,
-  ]);
 
   const [guestName, setGuestName] = useState("");
   const [guestPassword, setGuestPassword] = useState("");

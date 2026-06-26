@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Play } from "lucide-react";
 import {
   buildYouTubeEmbedSrc,
   buildYouTubeThumbnailUrl,
 } from "@/lib/youtube/video-id";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/lib/use-mounted";
 
 type YouTubeEmbedProps = {
   videoId: string;
@@ -18,21 +19,21 @@ type YouTubeEmbedProps = {
   loop?: boolean;
 };
 
+function subscribeOnline(onStoreChange: () => void) {
+  window.addEventListener("online", onStoreChange);
+  window.addEventListener("offline", onStoreChange);
+  return () => {
+    window.removeEventListener("online", onStoreChange);
+    window.removeEventListener("offline", onStoreChange);
+  };
+}
+
 function useIsOnline(): boolean {
-  const [online, setOnline] = useState(true);
-
-  useEffect(() => {
-    const sync = () => setOnline(navigator.onLine);
-    sync();
-    window.addEventListener("online", sync);
-    window.addEventListener("offline", sync);
-    return () => {
-      window.removeEventListener("online", sync);
-      window.removeEventListener("offline", sync);
-    };
-  }, []);
-
-  return online;
+  return useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true
+  );
 }
 
 /**
@@ -50,22 +51,14 @@ export function YouTubeEmbed({
   loop = false,
 }: YouTubeEmbedProps) {
   const online = useIsOnline();
-  const [mounted, setMounted] = useState(false);
-  const [activated, setActivated] = useState(false);
+  const mounted = useMounted();
+  const [userActivated, setUserActivated] = useState(false);
   const [offlineHint, setOfflineHint] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && autoplay && online) {
-      setActivated(true);
-    }
-  }, [mounted, autoplay, online]);
+  const activated = userActivated || (mounted && autoplay && online);
 
   const src = buildYouTubeEmbedSrc(videoId, {
-    autoplay: autoplay || activated,
+    autoplay: activated,
     mute: mute || autoplay,
     loop,
     startSeconds,
@@ -77,7 +70,7 @@ export function YouTubeEmbed({
       return;
     }
     setOfflineHint(false);
-    setActivated(true);
+    setUserActivated(true);
   }
 
   const showIframe = mounted && activated;

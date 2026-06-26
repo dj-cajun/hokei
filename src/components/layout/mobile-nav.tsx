@@ -2,21 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { getCategoryIcon } from "@/lib/category-icons";
 import {
   isMobileNavItemActive,
   MOBILE_NAV_ITEMS,
 } from "@/lib/mobile-nav-config";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/lib/use-mounted";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   if (
     pathname === "/write" ||

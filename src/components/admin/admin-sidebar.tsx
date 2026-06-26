@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -16,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/lib/use-mounted";
 
 const navItems = [
   { href: "/admin", label: "대시보드", icon: LayoutDashboard },
@@ -31,11 +31,7 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   return (
     <aside className="w-full shrink-0 lg:w-56">

@@ -3,7 +3,6 @@ import {
   buildSeedSourceUrl,
   expandTimelineStores,
   mapSeedRegion,
-  parsePublishedAtFromDate,
   parsePublishedAtFromSourceKey,
 } from "../../prisma/seed-kakao-posts";
 import type { KakaoSeedTimelineStore } from "../../prisma/seed-kakao-posts";

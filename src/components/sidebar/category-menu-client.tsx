@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCategoryIcon } from "@/lib/category-icons";
@@ -12,6 +11,7 @@ import {
   isLifeInfoPath,
   isSiteFeaturePath,
 } from "@/lib/site-navigation";
+import { useMounted } from "@/lib/use-mounted";
 
 interface CategoryMenuClientProps {
   tree: CategoryNavItem[];
@@ -21,12 +21,8 @@ const EXPANDABLE_SECTION_SLUGS = new Set(["life", "life-info", "news"]);
 
 export function CategoryMenuClient({ tree }: CategoryMenuClientProps) {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const groups = buildSiteNavGroups(tree);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   function isActive(href: string, sectionSlug?: string) {
     if (!mounted) return false;

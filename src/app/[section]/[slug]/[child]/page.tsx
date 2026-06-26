@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { HereHowSubNav } from "@/components/category/here-how-sub-nav";
 import { SubcategoryPage } from "@/components/category/subcategory-page";
 import { getNestedLeafByPath, getNestedLeafParams } from "@/lib/categories";
 import { LIST_PAGE_SIZE } from "@/lib/constants";

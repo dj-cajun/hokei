@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CategoryNavPopoverTab } from "@/components/layout/category-nav-popover-tab";
 import {
   getHeaderDropdownItems,
@@ -28,10 +28,6 @@ function CategoryScrollNavBody({
 }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const normalizedPath = normalizeNavPath(pathname);
-
-  useEffect(() => {
-    setOpenSlug(null);
-  }, [normalizedPath]);
 
   const sectionDropdowns = useMemo(
     () =>
@@ -120,6 +116,10 @@ function CategoryScrollNavBody({
 export function CategoryScrollNav({ sections }: CategoryScrollNavProps) {
   const pathname = usePathname();
   return (
-    <CategoryScrollNavBody sections={sections} pathname={pathname} />
+    <CategoryScrollNavBody
+      key={pathname}
+      sections={sections}
+      pathname={pathname}
+    />
   );
 }

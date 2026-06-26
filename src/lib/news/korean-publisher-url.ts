@@ -22,10 +22,7 @@ export function isLaodongHost(hostname: string): boolean {
 }
 
 /** 수집·본문 fetch 전 — Vietnam.vn은 /ko/ 경로로 통일 */
-export function toKoreanPublisherArticleUrl(
-  url: string,
-  _sourceName?: string
-): string {
+export function toKoreanPublisherArticleUrl(url: string): string {
   try {
     const u = new URL(url);
     if (isVietnamVnHost(u.hostname)) {
