@@ -245,6 +245,14 @@ async function main() {
   await exec(`CREATE INDEX IF NOT EXISTS "CommentDislike_commentId_idx" ON "CommentDislike"("commentId")`);
 
   await exec(`
+    CREATE TABLE IF NOT EXISTS "AppSetting" (
+      "key" TEXT NOT NULL,
+      "value" TEXT NOT NULL,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "AppSetting_pkey" PRIMARY KEY ("key")
+    )`);
+
+  await exec(`
     CREATE TABLE IF NOT EXISTS "Conversation" (
       "id" TEXT NOT NULL,
       "participantAId" TEXT NOT NULL,

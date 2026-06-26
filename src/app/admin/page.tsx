@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { NewsIngestPanel } from "@/components/admin/news-ingest-panel";
+import { HomeYoutubePanel } from "@/components/admin/home-youtube-panel";
 import { SearchReindexPanel } from "@/components/admin/search-reindex-panel";
 import { StatsCards } from "@/components/admin/stats-cards";
 import { formatDailyCapLabel } from "@/lib/news/daily-cap";
@@ -46,6 +47,8 @@ export default async function AdminDashboardPage() {
         adminCount={adminCount}
         todaySignups={todaySignups}
       />
+
+      <HomeYoutubePanel />
 
       <NewsIngestPanel dailyCapLabel={formatDailyCapLabel()} />
 

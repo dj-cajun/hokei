@@ -425,6 +425,13 @@ model LifeGuide {
   @@index([authorId])
 }
 
+/// 사이트 전역 설정 (홈 유튜브 등)
+model AppSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 /// 일별 자동 수집 로그 (하루 10건 제한 추적)
 model NewsIngestRun {
   id           String   @id @default(cuid())

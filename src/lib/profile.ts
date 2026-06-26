@@ -16,6 +16,26 @@ export async function getUserActivityStats(userId: string) {
   return { posts, comments, likes, bookmarks };
 }
 
+export async function getUserManageablePosts(userId: string, limit = 50) {
+  return prisma.post.findMany({
+    where: {
+      authorId: userId,
+      isAutomated: false,
+      status: { in: ["PUBLISHED", "DRAFT"] },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      moderationStatus: true,
+      publishedAt: true,
+      category: { select: { label: true, href: true } },
+    },
+  });
+}
+
 export async function getUserPosts(userId: string, limit = 30) {
   return prisma.post.findMany({
     where: { authorId: userId, ...visiblePostWhere },

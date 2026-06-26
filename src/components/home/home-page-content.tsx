@@ -14,6 +14,7 @@ import { HomeLifeStrip } from "@/components/home/home-life-strip";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getFeaturedLifeGuide } from "@/lib/life/guides";
 import { formatUnknownError, log } from "@/lib/logger";
+import { getHomeYouTubeHighlight } from "@/lib/site-settings";
 import {
   getAutomatedNewsPosts,
   getCommunityNotices,
@@ -49,10 +50,15 @@ export async function HomePageContent() {
   ]);
 
   // 2) 커뮤니티 피드 — 뉴스 다음
-  const [latest, popular, notices] = await Promise.all([
+  const [latest, popular, notices, homeYoutube] = await Promise.all([
     safeLoad("latest", () => getLatestCommunityPosts(12), emptyFeed),
     safeLoad("popular", () => getPopularUserPosts(12), emptyFeed),
     safeLoad("notices", () => getCommunityNotices(8), emptyFeed),
+    safeLoad("homeYoutube", () => getHomeYouTubeHighlight(), {
+      videoId: "d-fY16xMeT4",
+      startSeconds: 12,
+      source: "default" as const,
+    }),
   ]);
 
   const latestItems = latest;
@@ -67,7 +73,10 @@ export async function HomePageContent() {
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
         <HomeLifeStrip featuredLife={featuredLife} />
-        <HomeVideoHighlight />
+        <HomeVideoHighlight
+          videoId={homeYoutube.videoId}
+          startSeconds={homeYoutube.startSeconds}
+        />
         <PopularPostsStrip items={popular} />
         <AdSenseUnit slotKind="home" className="px-3" />
         <SafeBoardPreviewList />
@@ -94,7 +103,10 @@ export async function HomePageContent() {
           />
         </div>
         <HomeLifeStrip featuredLife={featuredLife} />
-        <HomeVideoHighlight />
+        <HomeVideoHighlight
+          videoId={homeYoutube.videoId}
+          startSeconds={homeYoutube.startSeconds}
+        />
         <SafeBoardPreviewList />
       </div>
     </>
