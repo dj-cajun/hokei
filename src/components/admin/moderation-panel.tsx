@@ -80,8 +80,16 @@ export function ModerationPanel() {
     });
   }
 
-  async function bulkPost(action: "HIDE" | "RESTORE" | "REMOVE") {
+  async function bulkPost(action: "HIDE" | "RESTORE" | "REMOVE" | "DELETE") {
     if (selected.size === 0) return;
+    if (
+      action === "DELETE" &&
+      !confirm(
+        `선택한 ${selected.size}건을 영구 삭제할까요?\nDB에서 완전히 지워지며 복구할 수 없습니다.`
+      )
+    ) {
+      return;
+    }
     setActing(true);
     try {
       const res = await fetch("/api/admin/posts/bulk", {
@@ -94,7 +102,34 @@ export function ModerationPanel() {
         showToast(parseApiError(data) ?? "처리 실패", "error");
         return;
       }
-      showToast(`${data.updated ?? 0}건 처리되었습니다.`);
+      if (action === "DELETE") {
+        showToast(`${data.deleted ?? 0}건 영구 삭제되었습니다.`);
+      } else {
+        showToast(`${data.updated ?? 0}건 처리되었습니다.`);
+      }
+      void load();
+    } finally {
+      setActing(false);
+    }
+  }
+
+  async function deleteOnePost(id: string, title: string) {
+    if (
+      !confirm(
+        `「${title.slice(0, 40)}」을(를) 영구 삭제할까요?\n복구할 수 없습니다.`
+      )
+    ) {
+      return;
+    }
+    setActing(true);
+    try {
+      const res = await fetch(`/api/admin/posts/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(parseApiError(data) ?? "삭제 실패", "error");
+        return;
+      }
+      showToast("영구 삭제되었습니다.");
       void load();
     } finally {
       setActing(false);
@@ -174,9 +209,12 @@ export function ModerationPanel() {
               <Button size="sm" variant="outline" disabled={acting} onClick={() => void bulkPost("RESTORE")}>
                 복구
               </Button>
-              <Button size="sm" variant="destructive" disabled={acting} onClick={() => void bulkPost("REMOVE")}>
+              <Button size="sm" variant="outline" disabled={acting} onClick={() => void bulkPost("REMOVE")}>
+                목록에서 제거
+              </Button>
+              <Button size="sm" variant="destructive" disabled={acting} onClick={() => void bulkPost("DELETE")}>
                 <Trash2 className="mr-1 h-4 w-4" />
-                제거
+                영구 삭제
               </Button>
             </>
           ) : (
@@ -240,6 +278,20 @@ export function ModerationPanel() {
               >
                 <ExternalLink className="h-4 w-4" />
               </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10"
+                disabled={acting}
+                aria-label="영구 삭제"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void deleteOnePost(p.id, p.title);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </label>
           ))}
 

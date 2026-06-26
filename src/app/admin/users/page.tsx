@@ -12,13 +12,21 @@ export default async function AdminUsersPage() {
       email: true,
       name: true,
       role: true,
+      emailVerified: true,
       createdAt: true,
+      _count: { select: { posts: true, comments: true } },
     },
   });
 
   const serialized = users.map((u) => ({
-    ...u,
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role,
+    emailVerified: u.emailVerified?.toISOString() ?? null,
     createdAt: u.createdAt.toISOString(),
+    postCount: u._count.posts,
+    commentCount: u._count.comments,
   }));
 
   return (
@@ -26,7 +34,7 @@ export default async function AdminUsersPage() {
       <div>
         <h1 className="text-xl font-bold">회원 관리</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          총 {users.length}명 · 권한 변경 및 계정 삭제
+          총 {users.length}명 · 권한 변경 · 계정 삭제 · 이메일 인증·활동 요약
         </p>
       </div>
 

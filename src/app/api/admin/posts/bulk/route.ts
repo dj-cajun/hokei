@@ -2,12 +2,13 @@ import { z } from "zod";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { writeAdminAudit } from "@/lib/admin/audit-log";
+import { permanentlyDeletePosts } from "@/lib/admin/permanently-delete-post";
 import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { prisma } from "@/lib/prisma";
 
 const schema = z.object({
   ids: z.array(z.string().cuid()).min(1).max(100),
-  action: z.enum(["HIDE", "RESTORE", "REMOVE"]),
+  action: z.enum(["HIDE", "RESTORE", "REMOVE", "DELETE"]),
   note: z.string().max(500).optional(),
 });
 
@@ -30,6 +31,22 @@ export async function PATCH(request: Request) {
   }
 
   const { ids, action, note } = parsed.data;
+
+  if (action === "DELETE") {
+    const result = await permanentlyDeletePosts(ids);
+    await writeAdminAudit({
+      actorId: session!.user!.id,
+      action: "POST_BULK_DELETE",
+      metadata: {
+        ids,
+        count: result.deleted,
+        titles: result.titles.slice(0, 5),
+      },
+      request,
+    });
+    return apiSuccess({ deleted: result.deleted });
+  }
+
   const statusMap = {
     HIDE: "HIDDEN",
     RESTORE: "VISIBLE",
