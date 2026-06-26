@@ -135,6 +135,7 @@ model Post {
   moderatedById       String?
   moderationNote      String?
   isAutomated         Boolean          @default(true)
+  isOutlink           Boolean          @default(false)
   isCrawl             Boolean          @default(false)
   storeName           String?
   kakaoLink           String?

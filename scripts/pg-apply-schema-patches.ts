@@ -335,6 +335,18 @@ async function main() {
   await exec(
     `CREATE INDEX IF NOT EXISTS "Post_isCrawl_idx" ON "Post"("isCrawl")`
   );
+  await exec(
+    `ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "isOutlink" BOOLEAN NOT NULL DEFAULT false`
+  );
+  await exec(`
+    UPDATE "Category"
+    SET
+      slug = 'news-consulate-association',
+      label = '총영사관 / 한인회',
+      href = '/news/consulate-association',
+      description = '주호치민 총영사관·한인회·상공회의소 등 공식 공지 (원문 아웃링크)',
+      icon = 'Landmark'
+    WHERE slug = 'news-column-opinion'`);
 
   await exec(`
     DO $$ BEGIN

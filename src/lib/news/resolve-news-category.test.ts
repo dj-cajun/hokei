@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { resolveNewsCategorySlug } from "@/lib/news/resolve-news-category";
+import { formatOutlinkCtaLabel } from "@/lib/admin/curate-outlink-metadata";
+import {
+  normalizeOutlinkCategorySlug,
+  resolveNewsCategorySlug,
+} from "@/lib/news/resolve-news-category";
 
 describe("resolveNewsCategorySlug", () => {
   it("maps visa keywords to news-visa-residency", () => {
@@ -20,13 +24,14 @@ describe("resolveNewsCategorySlug", () => {
     ).toBe("news-international-school");
   });
 
-  it("maps column keywords to news-column-opinion", () => {
+  it("maps consulate keywords to news-consulate-association", () => {
     expect(
       resolveNewsCategorySlug({
         topic: "KOREA",
-        title: "[칼럼] 호치민에서 창업한 한 달",
+        title: "[총영사관] 호치민 교민 스캠 주의 당부",
+        sourceName: "주호치민 대한민국 총영사관",
       })
-    ).toBe("news-column-opinion");
+    ).toBe("news-consulate-association");
   });
 
   it("falls back to topic default", () => {
@@ -36,5 +41,21 @@ describe("resolveNewsCategorySlug", () => {
         title: "다낭 해변 리조트 특가 프로모션",
       })
     ).toBe("news");
+  });
+});
+
+describe("normalizeOutlinkCategorySlug", () => {
+  it("maps community-survival-qa to consulate tab", () => {
+    expect(normalizeOutlinkCategorySlug("community-survival-qa")).toBe(
+      "news-consulate-association"
+    );
+  });
+});
+
+describe("formatOutlinkCtaLabel", () => {
+  it("uses consulate label", () => {
+    expect(formatOutlinkCtaLabel("주호치민 대한민국 총영사관")).toContain(
+      "대사관"
+    );
   });
 });

@@ -45,8 +45,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/news/ho-chi-minh-live",
-        destination: "/news",
+        source: "/news/column-opinion",
+        destination: "/news/consulate-association",
         permanent: true,
       },
       {

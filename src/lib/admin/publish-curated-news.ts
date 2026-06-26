@@ -15,6 +15,8 @@ export type PublishCuratedNewsInput = {
   thumbnail?: string | null;
   originalTitle?: string;
   authorId: string;
+  mode?: "full" | "outlink";
+  summary?: string;
 };
 
 export async function publishCuratedNews(
@@ -40,7 +42,11 @@ export async function publishCuratedNews(
     throw new Error("뉴스 하위 카테고리를 선택하세요.");
   }
 
-  const summary = content.replace(/\s+/g, " ").trim().slice(0, 160) || title;
+  const summary =
+    input.summary?.trim() ||
+    content.replace(/\s+/g, " ").trim().slice(0, 160) ||
+    title;
+  const isOutlink = input.mode === "outlink";
   const topic =
     input.topic ??
     (() => {
@@ -49,6 +55,7 @@ export async function publishCuratedNews(
         title,
         summary,
         sourceName: input.sourceName,
+        sourceUrl,
       });
       if (slug.includes("visa")) return "VIETNAM_POLICY" as const;
       if (slug.includes("school")) return "TOURIST" as const;
@@ -78,6 +85,7 @@ export async function publishCuratedNews(
       publishedAt: now,
       ingestedAt: now,
       isAutomated: false,
+      isOutlink,
       status: "PUBLISHED",
       authorId: input.authorId,
     },

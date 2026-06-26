@@ -6,7 +6,7 @@ export type NewsBoardSlug = "news-local" | "news-world" | "news-community";
 export const NEWS_BOARD_REDIRECTS: Record<NewsBoardSlug, string> = {
   "news-local": "/news/visa-residency",
   "news-world": "/news",
-  "news-community": "/news/column-opinion",
+  "news-community": "/news/consulate-association",
 };
 
 export function getNewsBoardRedirect(slug: string): string | undefined {

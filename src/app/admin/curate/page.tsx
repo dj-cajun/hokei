@@ -21,13 +21,16 @@ export default async function AdminCuratePage() {
       <div>
         <h1 className="text-xl font-bold">콘텐츠 재가공</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          외부 교민·뉴스 사이트에서 가져온 정보를 편집해 호케이 뉴스로
-          올립니다. 출처 URL은 필수입니다.
+          총영사관·한인회 공지는 <strong>3초 컷 아웃링크</strong>로, 일반 기사는
+          본문 재가공으로 올립니다. 출처 URL은 필수입니다.
         </p>
       </div>
       <CurateNewsPanel
         categories={categories}
-        defaultCategoryId={categories[0]!.id}
+        defaultCategoryId={
+          categories.find((c) => c.slug === "news-consulate-association")?.id ??
+          categories[0]!.id
+        }
       />
     </div>
   );

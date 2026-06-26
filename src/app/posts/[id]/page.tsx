@@ -9,6 +9,7 @@ import { PostNextPostsSection } from "@/components/posts/post-next-posts-section
 import { PostCopyGuard } from "@/components/posts/post-copy-guard";
 import { PostTimelineBody } from "@/components/posts/post-timeline-body";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
+import { PostOutlinkCta } from "@/components/posts/post-outlink-cta";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { isCommunityPost, isUserBoardPost } from "@/lib/community";
 import { getNextPostsInBoard, getPostById } from "@/lib/posts";
@@ -159,6 +160,13 @@ export default async function PostPage({ params }: PageProps) {
                 네이버 뉴스 요약만 제공됩니다. 원문 링크에서 전체 내용을 확인해
                 주세요.
               </p>
+            ) : null}
+
+            {post.isOutlink ? (
+              <PostOutlinkCta
+                sourceUrl={post.sourceUrl}
+                sourceName={post.sourceName}
+              />
             ) : null}
 
             <AdSenseUnit slotKind="article" />

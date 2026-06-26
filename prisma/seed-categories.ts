@@ -25,7 +25,7 @@ export const CATEGORY_MASTER: SectionSeed[] = [
     slug: "news",
     label: "뉴스",
     description:
-      "호치민·베트남 현지 소식, 비자·교육·칼럼 등 교민 필수 정보.",
+      "호치민·베트남 현지 소식, 비자·교육·총영사관·한인회 공지 등 교민 필수 정보.",
     icon: "Newspaper",
     colorClass: "bg-red-50 text-red-600",
     sortOrder: 1,
@@ -47,10 +47,11 @@ export const CATEGORY_MASTER: SectionSeed[] = [
         sortOrder: 2,
       },
       {
-        slug: "column-opinion",
-        label: "칼럼 / 오피니언",
-        description: "현지 전문가 기고문 및 호치민 창업 수기",
-        icon: "PenLine",
+        slug: "consulate-association",
+        label: "총영사관 / 한인회",
+        description:
+          "주호치민 총영사관·한인회·상공회의소 등 공식 공지 (원문 아웃링크)",
+        icon: "Landmark",
         sortOrder: 3,
       },
     ],

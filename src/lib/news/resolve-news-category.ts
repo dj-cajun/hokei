@@ -1,4 +1,5 @@
 import type { PostTopic } from "@/generated/prisma/client";
+import { isOfficialNoticeSource } from "@/lib/news/official-notice-feeds";
 
 /** 수집 토픽 기본값 — 키워드 매칭 실패 시 */
 export const DEFAULT_TOPIC_CATEGORY_SLUG: Record<PostTopic, string> = {
@@ -14,8 +15,8 @@ const VISA_POLICY =
 const EDUCATION =
   /국제학교|학교|교육|유학|학원|입학|학비|캠퍼스|international school|education|tuition|enrollment|ISHCMC|BIS|AIS|UNIS|kindergarten|유치원/i;
 
-const COLUMN_OPINION =
-  /칼럼|오피니언|기고|에세이|창업 수기|column|opinion|editorial|교민|커뮤니티|단톡|카톡/i;
+const CONSULATE_ASSOCIATION =
+  /총영사관|영사관|대사관|한인회|상공회의소|KOTRA|consulate|embassy|korcham|교민회|동포회|사이공\s*한인|호치민\s*한인회/i;
 
 const JOBS_BUSINESS =
   /구인|구직|채용|일자리|창업|진출|투자|FDI|기업|공장|산업단지|hiring|recruit|startup|business/i;
@@ -25,6 +26,7 @@ export type ResolveNewsCategoryInput = {
   title: string;
   summary?: string;
   sourceName?: string;
+  sourceUrl?: string;
 };
 
 /**
@@ -39,18 +41,49 @@ export function resolveNewsCategorySlug(
     .join(" ")
     .trim();
 
+  if (
+    isOfficialNoticeSource(input.sourceName, input.sourceUrl) ||
+    CONSULATE_ASSOCIATION.test(text)
+  ) {
+    if (VISA_POLICY.test(text) || input.topic === "VIETNAM_POLICY") {
+      return "news-visa-residency";
+    }
+    return "news-consulate-association";
+  }
+
   if (VISA_POLICY.test(text) || input.topic === "VIETNAM_POLICY") {
     return "news-visa-residency";
   }
   if (EDUCATION.test(text)) {
     return "news-international-school";
   }
-  if (COLUMN_OPINION.test(text)) {
-    return "news-column-opinion";
-  }
   if (input.topic === "KOREA" && JOBS_BUSINESS.test(text)) {
     return "news";
   }
 
   return DEFAULT_TOPIC_CATEGORY_SLUG[input.topic] ?? "news";
+}
+
+/** 아웃링크 큐레이션 — AI·수동 분류용 허용 slug */
+export const OUTLINK_NEWS_CATEGORY_SLUGS = [
+  "news-visa-residency",
+  "news-consulate-association",
+] as const;
+
+export type OutlinkNewsCategorySlug =
+  (typeof OUTLINK_NEWS_CATEGORY_SLUGS)[number];
+
+export function normalizeOutlinkCategorySlug(
+  raw: string | undefined
+): OutlinkNewsCategorySlug {
+  const trimmed = raw?.trim() ?? "";
+  if (trimmed === "community-survival-qa") {
+    return "news-consulate-association";
+  }
+  if (
+    OUTLINK_NEWS_CATEGORY_SLUGS.includes(trimmed as OutlinkNewsCategorySlug)
+  ) {
+    return trimmed as OutlinkNewsCategorySlug;
+  }
+  return "news-consulate-association";
 }
