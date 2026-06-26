@@ -18,7 +18,9 @@ import { isMostlyKorean } from "@/lib/news/language";
 import {
   areDuplicateNews,
   dedupeRawNewsItems,
+  preferRicherNewsItem,
 } from "@/lib/news/dedupe";
+import { canonicalNewsArticleUrl } from "@/lib/news/article-url-canonical";
 import { sanitizeStoredSourceName } from "@/lib/news/source-display";
 import { isVnExpressArticle } from "@/lib/news/vnexpress";
 import { isVietnamKoreanMediaArticle } from "@/lib/news/vietnam-korean-media";
@@ -202,14 +204,41 @@ export async function ingestDailyNews(
     ) {
       continue;
     }
-    if (!uniqueByLink.has(normalized.link)) {
-      uniqueByLink.set(normalized.link, normalized);
+    const linkKey = canonicalNewsArticleUrl(normalized.link);
+    const existing = uniqueByLink.get(linkKey);
+    if (!existing) {
+      uniqueByLink.set(linkKey, normalized);
+      continue;
     }
+    const richer = preferRicherNewsItem(
+      {
+        title: normalized.title,
+        description: normalized.description,
+        content: normalized.description,
+        publishedAt: normalized.publishedAt,
+      },
+      {
+        title: existing.title,
+        description: existing.description,
+        content: existing.description,
+        publishedAt: existing.publishedAt,
+      }
+    );
+    uniqueByLink.set(
+      linkKey,
+      richer.title === normalized.title &&
+        richer.description === normalized.description
+        ? normalized
+        : existing
+    );
   }
 
   const dedupedPool = dedupeRawNewsItems([...uniqueByLink.values()]);
 
   const candidateLinks = dedupedPool.map((item) => item.link);
+  const candidateCanonical = dedupedPool.map((item) =>
+    canonicalNewsArticleUrl(item.link)
+  );
   const dedupSince = new Date(
     Date.now() - DEDUP_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
   );
@@ -219,7 +248,10 @@ export async function ingestDailyNews(
       ? prisma.post.findMany({
           where: {
             status: "PUBLISHED",
-            sourceUrl: { in: candidateLinks },
+            OR: [
+              { sourceUrl: { in: candidateLinks } },
+              { sourceUrl: { in: candidateCanonical } },
+            ],
           },
           select: { sourceUrl: true },
         })
@@ -230,20 +262,33 @@ export async function ingestDailyNews(
         status: "PUBLISHED",
         ingestedAt: { gte: dedupSince },
       },
-      select: { sourceUrl: true, title: true, content: true },
+      select: { sourceUrl: true, title: true, content: true, summary: true },
     }),
   ]);
 
-  const existingSet = new Set(existingUrlRows.map((e) => e.sourceUrl));
+  const existingSet = new Set(
+    existingUrlRows
+      .map((e) => e.sourceUrl)
+      .filter((u): u is string => Boolean(u))
+      .flatMap((u) => [u, canonicalNewsArticleUrl(u)])
+  );
 
   const candidates = dedupedPool
-    .filter((item) => !existingSet.has(item.link))
+    .filter((item) => !existingSet.has(canonicalNewsArticleUrl(item.link)))
     .filter(
       (item) =>
         !recentPosts.some((p) =>
           areDuplicateNews(
-            { title: item.title, description: item.description },
-            { title: p.title, content: p.content }
+            {
+              title: item.title,
+              description: item.description,
+              content: item.description,
+            },
+            {
+              title: p.title,
+              content: p.content,
+              description: p.summary,
+            }
           )
         )
     )
@@ -277,6 +322,7 @@ export async function ingestDailyNews(
   const knownNews = recentPosts.map((p) => ({
     title: p.title,
     content: p.content,
+    description: p.summary,
   }));
 
   const bodyPhaseStartedAt = Date.now();
@@ -340,7 +386,10 @@ export async function ingestDailyNews(
 
       if (
         knownNews.some((p) =>
-          areDuplicateNews({ title, content }, p)
+          areDuplicateNews(
+            { title, content, description: summaryText },
+            p
+          )
         )
       ) {
         result.skipped++;
@@ -372,7 +421,7 @@ export async function ingestDailyNews(
         status: post.status,
       });
 
-      knownNews.push({ title, content });
+      knownNews.push({ title, content, description: summaryText });
       result.inserted++;
       result.items.push({ id: post.id, title: post.title, topic: raw.topic });
     } catch (err) {

@@ -5,6 +5,9 @@ import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { buildPostFromArticlePage } from "@/lib/news/ingest-article";
 import { log } from "@/lib/logger";
 
+/** Jina Reader 폴백 포함 — 관리자 수동 가져오기 여유 */
+const CURATE_FETCH_TIMEOUT_MS = 28_000;
+
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -27,13 +30,24 @@ export async function POST(request: Request) {
     }
 
     const { sourceUrl, sourceName } = parsed.data;
-    const draft = await buildPostFromArticlePage({
-      topic: "KOREA",
-      title: "",
-      description: "",
-      link: sourceUrl,
-      sourceName: sourceName ?? "출처",
-    });
+    const draft = await buildPostFromArticlePage(
+      {
+        topic: "KOREA",
+        title: "",
+        description: "",
+        link: sourceUrl,
+        sourceName: sourceName ?? "출처",
+      },
+      { fetchTimeoutMs: CURATE_FETCH_TIMEOUT_MS }
+    );
+
+    if (!draft.content) {
+      const reason = draft.bodySkip?.reason ?? "extract_short";
+      return apiError(
+        `원문 본문을 가져오지 못했습니다. (${reason}) 직접 붙여넣거나 다른 URL을 시도해 보세요.`,
+        422
+      );
+    }
 
     return apiSuccess({
       sourceUrl,

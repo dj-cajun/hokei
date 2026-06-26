@@ -5,6 +5,7 @@ import { PostCrawlContactBar, PostCrawlNotice } from "@/components/posts/post-cr
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { PostOwnerActions } from "@/components/posts/post-owner-actions";
 import { PostTimelineBody } from "@/components/posts/post-timeline-body";
+import { PostCopyGuard } from "@/components/posts/post-copy-guard";
 import { PostImageGallery } from "@/components/posts/post-image-gallery";
 import { RegionBadge } from "@/components/region/region-badge";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
@@ -77,9 +78,11 @@ export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArti
           <RegionBadge region={post.region} />
         </div>
 
-        <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
-          {post.title}
-        </h1>
+        <PostCopyGuard>
+          <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
+            {post.title}
+          </h1>
+        </PostCopyGuard>
 
         <PostCrawlNotice isCrawl={post.isCrawl} sectionSlug={sectionSlug} />
         <PostCrawlContactBar
@@ -116,11 +119,13 @@ export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArti
         {images.length > 0 && <PostImageGallery images={images} />}
 
         {post.content && (
-          <PostTimelineBody
-            publishedAt={post.publishedAt}
-            content={post.content}
-            authorName={authorName}
-          />
+          <PostCopyGuard>
+            <PostTimelineBody
+              publishedAt={post.publishedAt}
+              content={post.content}
+              authorName={authorName}
+            />
+          </PostCopyGuard>
         )}
 
         <AdSenseUnit slotKind="article" />

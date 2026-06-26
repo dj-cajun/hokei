@@ -6,6 +6,7 @@ import { ViewCounter } from "@/components/posts/view-counter";
 import { CommunityPostArticle } from "@/components/posts/community-post-article";
 import { NewsPostClientBlocks } from "@/components/posts/news-post-client-blocks";
 import { PostNextPostsSection } from "@/components/posts/post-next-posts-section";
+import { PostCopyGuard } from "@/components/posts/post-copy-guard";
 import { PostTimelineBody } from "@/components/posts/post-timeline-body";
 import { PostCommentsSession } from "@/components/posts/post-comments-session";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
@@ -125,9 +126,11 @@ export default async function PostPage({ params }: PageProps) {
               </Link>
             </nav>
 
-            <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
-              {displayTitle}
-            </h1>
+            <PostCopyGuard>
+              <h1 className="mt-1.5 text-base font-bold leading-snug lg:text-xl">
+                {displayTitle}
+              </h1>
+            </PostCopyGuard>
 
             <p className="mt-1.5 text-[11px] text-muted-foreground">
               조회 {post.views}
@@ -145,10 +148,12 @@ export default async function PostPage({ params }: PageProps) {
             />
 
             {post.content ? (
-              <PostTimelineBody
-                publishedAt={post.publishedAt}
-                content={post.content}
-              />
+              <PostCopyGuard>
+                <PostTimelineBody
+                  publishedAt={post.publishedAt}
+                  content={post.content}
+                />
+              </PostCopyGuard>
             ) : isNaverNewsAggregatorLink(post.sourceUrl) ? (
               <p className="mt-3 text-sm text-muted-foreground">
                 네이버 뉴스 요약만 제공됩니다. 원문 링크에서 전체 내용을 확인해

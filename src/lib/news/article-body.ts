@@ -5,6 +5,7 @@ import { isHttpOrHttpsUrl } from "@/lib/news/image-url";
 import { log } from "@/lib/logger";
 import { getIngestFetchTimeoutMs } from "@/lib/news/ingest-budget";
 import { extractTextWithCheerio } from "@/lib/news/article-body-cheerio";
+import { fetchArticleBodyViaJinaReader } from "@/lib/news/article-body-jina";
 import { isNaverScraperAvailable, scrapeArticleFromUrl } from "@/lib/news/naver-scrape";
 
 const USER_AGENT =
@@ -15,7 +16,7 @@ export type ArticleBodyResult = {
   title: string;
   content: string;
   img?: string | null;
-  source: "playwright" | "html";
+  source: "playwright" | "html" | "jina";
 };
 
 /** 본문 추출 실패 사유 — ingest·로그 공통 */
@@ -235,7 +236,22 @@ export async function fetchArticleBody(
     }
   }
 
-  return fetchArticleBodyFromHtml(url, fetchTimeoutMs);
+  const htmlResult = await fetchArticleBodyFromHtml(url, fetchTimeoutMs);
+  if (htmlResult.article) return htmlResult;
+
+  const jina = await fetchArticleBodyViaJinaReader(url, fetchTimeoutMs);
+  if (jina) {
+    return {
+      article: {
+        title: jina.title,
+        content: jina.content,
+        img: jina.img,
+        source: "jina",
+      },
+    };
+  }
+
+  return htmlResult;
 }
 
 /** 본문이 제목과 어느 정도 관련 있는지 (완화된 휴리스틱) */
