@@ -1,18 +1,12 @@
-import { revalidatePath } from "next/cache";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { partnerStoreOwnerToPrismaData } from "@/lib/partner/owner";
 import { requirePartnerOwnerApi } from "@/lib/partner/require-partner-owner-api";
+import { revalidatePartnerPublicPaths } from "@/lib/partner/revalidate-paths";
 import { partnerStoreOwnerUpdateSchema } from "@/lib/partner/validate";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-function revalidateStorePaths(slug: string) {
-  revalidatePath("/");
-  revalidatePath("/partners");
-  revalidatePath(`/store/${slug}`);
-}
 
 export async function GET(request: Request) {
   const limited = await enforcePreset(request, "general");
@@ -56,7 +50,7 @@ export async function PATCH(request: Request) {
     data,
   });
 
-  revalidateStorePaths(updated.slug);
+  revalidatePartnerPublicPaths(updated.slug);
 
   return apiSuccess({ store: updated });
 }

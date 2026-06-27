@@ -1,8 +1,10 @@
+import { PartnerBannerImage } from "@/components/partner/partner-banner-image";
+import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
 import type { PartnerBannerSlot as BannerSlot } from "@/generated/prisma/client";
 import type { PartnerBannerWithStore } from "@/lib/partner/queries";
 import { listBannersForSlot } from "@/lib/partner/queries";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
+import { cn } from "@/lib/utils";
 
 type PartnerBannerSlotProps = {
   slot: BannerSlot;
@@ -28,28 +30,30 @@ export async function PartnerBannerSlot({
   const banners = preloaded ?? (await listBannersForSlot(slot, limit));
   if (banners.length === 0) return null;
 
+  const useAspectCover = fit === "cover" && imageClassName.includes("aspect-");
+
   return (
     <div className={className}>
       {banners.map((banner) => {
         const slug = banner.linkSlug?.trim() || banner.store.slug;
+        const alt = banner.altText ?? banner.store.name;
         return (
           <PartnerBannerLink
             key={banner.id}
             href={`/store/${slug}`}
             slug={slug}
-            className={`block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm${
-              fit === "contain" ? " bg-[#ebe6dc]" : ""
-            }`}
+            className={cn(
+              "relative block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm",
+              fit === "contain" && "bg-[#ebe6dc]",
+              useAspectCover && "aspect-[3/1] w-full"
+            )}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <PartnerBannerImage
               src={banner.imageUrl}
-              alt={banner.altText ?? banner.store.name}
-              className={
-                fit === "contain"
-                  ? "w-full object-contain"
-                  : imageClassName
-              }
+              alt={alt}
+              fit={fit}
+              sizes="(max-width: 1024px) 100vw, 480px"
+              className={!useAspectCover ? imageClassName : undefined}
             />
           </PartnerBannerLink>
         );

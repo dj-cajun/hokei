@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { getPartnerStoreBySlug } from "@/lib/partner/queries";
+import { getPartnerStoreBySlugCached } from "@/lib/partner/queries";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { formatRelativeTime } from "@/lib/format/date";
 import { getWriteHref } from "@/lib/write-sections";
@@ -31,7 +31,7 @@ export default async function PromoStoreTimelinePage({ params }: PageProps) {
   const { storeName, items } = await getPromoPostsByStore(store);
   if (!storeName || items.length === 0) notFound();
 
-  const partnerStore = await getPartnerStoreBySlug(store);
+  const partnerStore = await getPartnerStoreBySlugCached(store);
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">

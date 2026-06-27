@@ -1,3 +1,4 @@
+import { PartnerBannerImage } from "@/components/partner/partner-banner-image";
 import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
 import type { PartnerBannerWithStore } from "@/lib/partner/queries";
 import { listBannersForSlotCached } from "@/lib/partner/queries";
@@ -35,32 +36,30 @@ export function HomeTopBannerView({ banner }: HomeTopBannerViewProps) {
         href={href}
         slug={slug}
         className={cn(
-          "block w-full lg:hidden",
+          "relative block w-full lg:hidden",
           hasDedicatedMobile ? "aspect-[1024/220] max-h-[200px]" : "h-[120px]"
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <PartnerBannerImage
           src={mobileSrc}
           alt={alt}
-          fetchPriority="high"
-          decoding="async"
-          className="h-full w-full object-contain object-center"
+          priority
+          fit="contain"
+          sizes="100vw"
         />
       </PartnerBannerLink>
 
       <PartnerBannerLink
         href={href}
         slug={slug}
-        className="hidden h-[88px] w-full lg:block"
+        className="relative hidden h-[88px] w-full lg:block"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <PartnerBannerImage
           src={banner.imageUrl}
           alt={alt}
-          fetchPriority="high"
-          decoding="async"
-          className="h-full w-full object-cover object-center"
+          priority
+          fit="cover"
+          sizes="100vw"
         />
       </PartnerBannerLink>
     </section>

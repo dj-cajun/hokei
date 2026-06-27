@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { writeAdminAudit } from "@/lib/admin/audit-log";
@@ -13,20 +12,13 @@ import {
   resolveOwnerEmailInput,
 } from "@/lib/partner/owner";
 import { isPartnerSlugTaken } from "@/lib/partner/queries";
+import { revalidatePartnerPublicPaths } from "@/lib/partner/revalidate-paths";
 import { partnerStoreUpdateSchema } from "@/lib/partner/validate";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-function revalidatePartnerPaths(...slugs: (string | undefined)[]) {
-  revalidatePath("/");
-  revalidatePath("/partners");
-  for (const slug of slugs) {
-    if (slug) revalidatePath(`/store/${slug}`);
-  }
-}
 
 export async function PATCH(request: Request, context: RouteContext) {
   const limited = await enforcePreset(request, "general");
@@ -159,7 +151,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     },
   });
 
-  revalidatePartnerPaths(existing.slug, store.slug);
+  revalidatePartnerPublicPaths(existing.slug, store.slug);
 
   await writeAdminAudit({
     actorId: session!.user!.id,
@@ -186,7 +178,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   }
 
   await prisma.partnerStore.delete({ where: { id } });
-  revalidatePartnerPaths(existing.slug);
+  revalidatePartnerPublicPaths(existing.slug);
 
   await writeAdminAudit({
     actorId: session!.user!.id,

@@ -166,7 +166,10 @@ export default async function PostPage({ params }: PageProps) {
             {post.sourceUrl.startsWith("http") &&
             (post.isOutlink ||
               (post.content &&
-                isOfficialNoticeSource(post.sourceName, post.sourceUrl))) ? (
+                isOfficialNoticeSource(
+                  post.sourceName ?? undefined,
+                  post.sourceUrl
+                ))) ? (
               <PostOutlinkCta
                 sourceUrl={post.sourceUrl}
                 sourceName={post.sourceName}

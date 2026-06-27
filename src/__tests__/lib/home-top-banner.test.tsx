@@ -21,7 +21,8 @@ describe("HomeTopBannerView", () => {
       />
     );
     expect(html).toContain("제휴 상단 배너");
-    expect(html).toContain("/partners/demo.jpg");
-    expect(html).toContain("/partners/demo-mobile.png");
+    expect(html).toContain("demo.jpg");
+    expect(html).toContain("demo-mobile.png");
+    expect(html).toContain('alt="Demo Cafe"');
   });
 });

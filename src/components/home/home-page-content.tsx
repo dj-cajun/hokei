@@ -127,6 +127,10 @@ export async function HomePageContent() {
           />
         </div>
         <HomeLifeStrip featuredLife={featuredLife} />
+        <HomePartnerBanner
+          banners={homeBottomBanners}
+          className="space-y-2 px-2 py-2"
+        />
         <HomeVideoHighlight
           videoId={homeYoutube.videoId}
           startSeconds={homeYoutube.startSeconds}

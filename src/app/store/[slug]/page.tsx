@@ -6,8 +6,8 @@ import { StoreLanding } from "@/components/partner/store-landing";
 import { LocalBusinessJsonLd } from "@/components/seo/local-business-json-ld";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import {
-  getPartnerStoreBySlug,
   getPartnerStoreBySlugAnyStatus,
+  getPartnerStoreBySlugCached,
 } from "@/lib/partner/queries";
 import { resolveStoreCommentPost } from "@/lib/partner/store-page";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
@@ -22,7 +22,7 @@ interface PageProps {
 }
 
 async function resolveStore(slug: string, previewRequested: boolean) {
-  const published = await getPartnerStoreBySlug(slug);
+  const published = await getPartnerStoreBySlugCached(slug);
   if (published) {
     return { store: published, isPreview: false };
   }
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "제휴 업소 - 호케이" };
   }
 
-  const store = await getPartnerStoreBySlug(slug);
+  const store = await getPartnerStoreBySlugCached(slug);
   if (!store) {
     return { title: "업소를 찾을 수 없음 - 호케이" };
   }

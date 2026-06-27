@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { writeAdminAudit } from "@/lib/admin/audit-log";
@@ -10,18 +9,11 @@ import {
   resolveOwnerEmailInput,
 } from "@/lib/partner/owner";
 import { isPartnerSlugTaken } from "@/lib/partner/queries";
+import { revalidatePartnerPublicPaths } from "@/lib/partner/revalidate-paths";
 import { partnerStoreCreateSchema } from "@/lib/partner/validate";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-function revalidatePartnerPaths(slug?: string) {
-  revalidatePath("/");
-  revalidatePath("/partners");
-  if (slug) {
-    revalidatePath(`/store/${slug}`);
-  }
-}
 
 export async function GET(request: Request) {
   const limited = await enforcePreset(request, "general");
@@ -87,7 +79,7 @@ export async function POST(request: Request) {
     },
   });
 
-  revalidatePartnerPaths(store.slug);
+  revalidatePartnerPublicPaths(store.slug);
 
   await writeAdminAudit({
     actorId: session!.user!.id,

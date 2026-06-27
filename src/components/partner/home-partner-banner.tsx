@@ -3,10 +3,16 @@ import type { PartnerBannerWithStore } from "@/lib/partner/queries";
 
 type HomePartnerBannerProps = {
   banners?: PartnerBannerWithStore[];
+  className?: string;
 };
 
-export async function HomePartnerBanner({ banners }: HomePartnerBannerProps = {}) {
-  return <PartnerBannerSlot slot="HOME_BOTTOM" banners={banners} />;
+export async function HomePartnerBanner({
+  banners,
+  className,
+}: HomePartnerBannerProps = {}) {
+  return (
+    <PartnerBannerSlot slot="HOME_BOTTOM" banners={banners} className={className} />
+  );
 }
 
 export async function NewsPartnerBanner() {

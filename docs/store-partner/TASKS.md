@@ -82,9 +82,18 @@
 
 ---
 
+## Phase 8 — Phase C (성능·캐시)
+
+- [x] **C1** 배너 `next/image` + `priority` (HOME_TOP·슬롯)
+- [x] **C2** `getPartnerStoreBySlugCached` — LP metadata/page dedup
+- [x] **C3** `revalidatePartnerPublicPaths` — admin·owner·배너 API 통일
+- [x] **C4** 데스크톱 홈 `HOME_BOTTOM` 배너 노출
+
+---
+
 ## 현재 다음 작업
 
-**→ Phase C (이미지 next/image, store cache, revalidate 통일) · `db:pg:patch`·프로덕션 시드·영업 데모**
+**→ 프로덕션 시드·영업 데모 리허설 · `seed:life-v2` 프로덕션 반영**
 
 ---
 

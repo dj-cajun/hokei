@@ -22,6 +22,11 @@ export async function getPartnerStoreBySlug(slug: string) {
   });
 }
 
+/** 동일 RSC 요청 내 LP 조회 dedup (generateMetadata + page) */
+export const getPartnerStoreBySlugCached = cache((slug: string) =>
+  getPartnerStoreBySlug(slug)
+);
+
 /** 관리자 draft LP 미리보기 */
 export async function getPartnerStoreBySlugAnyStatus(slug: string) {
   const trimmed = slug.trim();
