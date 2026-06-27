@@ -15,11 +15,14 @@ type StoreData = {
   slug: string;
   name: string;
   tagline: string | null;
+  introText: string | null;
   description: string | null;
+  menuText: string | null;
   phone: string | null;
   kakaoLink: string | null;
   mapsUrl: string | null;
   address: string | null;
+  locationTips: string | null;
   hoursText: string | null;
   thumbnail: string | null;
   status: PartnerStatus;
@@ -27,11 +30,14 @@ type StoreData = {
 
 const emptyForm = {
   tagline: "",
+  introText: "",
   description: "",
+  menuText: "",
   phone: "",
   kakaoLink: "",
   mapsUrl: "",
   address: "",
+  locationTips: "",
   hoursText: "",
   thumbnail: "",
 };
@@ -65,11 +71,14 @@ export function PartnerStoreOwnerForm() {
     setStore(s);
     setForm({
       tagline: s.tagline ?? "",
+      introText: s.introText ?? "",
       description: s.description ?? "",
+      menuText: s.menuText ?? "",
       phone: s.phone ?? "",
       kakaoLink: s.kakaoLink ?? "",
       mapsUrl: s.mapsUrl ?? "",
       address: s.address ?? "",
+      locationTips: s.locationTips ?? "",
       hoursText: s.hoursText ?? "",
       thumbnail: s.thumbnail ?? "",
     });
@@ -92,11 +101,14 @@ export function PartnerStoreOwnerForm() {
         body: JSON.stringify({
           ...form,
           tagline: form.tagline || undefined,
+          introText: form.introText || undefined,
           description: form.description || undefined,
+          menuText: form.menuText || undefined,
           phone: form.phone || undefined,
           kakaoLink: form.kakaoLink || undefined,
           mapsUrl: form.mapsUrl || undefined,
           address: form.address || undefined,
+          locationTips: form.locationTips || undefined,
           hoursText: form.hoursText || undefined,
           thumbnail: form.thumbnail || undefined,
         }),
@@ -175,12 +187,36 @@ export function PartnerStoreOwnerForm() {
         />
       </div>
       <div>
+        <Label htmlFor="introText">소개</Label>
+        <textarea
+          id="introText"
+          value={form.introText}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, introText: e.target.value }))
+          }
+          rows={4}
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
         <Label htmlFor="description">상세 설명</Label>
         <textarea
           id="description"
           value={form.description}
           onChange={(e) =>
             setForm((f) => ({ ...f, description: e.target.value }))
+          }
+          rows={3}
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <Label htmlFor="menuText">메뉴·가격</Label>
+        <textarea
+          id="menuText"
+          value={form.menuText}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, menuText: e.target.value }))
           }
           rows={4}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -227,14 +263,27 @@ export function PartnerStoreOwnerForm() {
         />
       </div>
       <div>
-        <Label htmlFor="hoursText">영업시간</Label>
-        <Input
+        <Label htmlFor="locationTips">오시는 길 팁</Label>
+        <textarea
+          id="locationTips"
+          value={form.locationTips}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, locationTips: e.target.value }))
+          }
+          rows={3}
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <Label htmlFor="hoursText">영업시간·이벤트</Label>
+        <textarea
           id="hoursText"
           value={form.hoursText}
           onChange={(e) =>
             setForm((f) => ({ ...f, hoursText: e.target.value }))
           }
-          className="mt-1"
+          rows={4}
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
       <div>

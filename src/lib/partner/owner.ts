@@ -76,8 +76,14 @@ export function partnerStoreOwnerToPrismaData(
   if (input.tagline !== undefined) {
     data.tagline = nullIfEmpty(input.tagline);
   }
+  if (input.introText !== undefined) {
+    data.introText = nullIfEmpty(input.introText);
+  }
   if (input.description !== undefined) {
     data.description = nullIfEmpty(input.description);
+  }
+  if (input.menuText !== undefined) {
+    data.menuText = nullIfEmpty(input.menuText);
   }
   if (input.phone !== undefined) {
     data.phone = nullIfEmpty(input.phone);
@@ -90,6 +96,9 @@ export function partnerStoreOwnerToPrismaData(
   }
   if (input.address !== undefined) {
     data.address = nullIfEmpty(input.address);
+  }
+  if (input.locationTips !== undefined) {
+    data.locationTips = nullIfEmpty(input.locationTips);
   }
   if (input.hoursText !== undefined) {
     data.hoursText = nullIfEmpty(input.hoursText);

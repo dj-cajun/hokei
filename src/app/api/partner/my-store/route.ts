@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 function revalidateStorePaths(slug: string) {
+  revalidatePath("/");
   revalidatePath("/partners");
   revalidatePath(`/store/${slug}`);
 }

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 function revalidatePartnerPaths(slug?: string) {
+  revalidatePath("/");
   revalidatePath("/partners");
   if (slug) {
     revalidatePath(`/store/${slug}`);
