@@ -9,7 +9,7 @@
 ### T1. 스키마 · lib 기반
 - [x] **T1-1** Prisma `PartnerStore`, enums 추가 + `db:pg:patch`
 - [x] **T1-2** `src/lib/partner/slug.ts`, `validate.ts` + unit test
-- [ ] **T1-3** `src/lib/partner/queries.ts` — getBySlug, listPublished
+- [x] **T1-3** `src/lib/partner/queries.ts` — getBySlug, listPublished
 
 ### T2. 모바일 LP
 - [ ] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T1-3** (`loop.md` 필수 통과)
+**→ T2-1** (`loop.md` 필수 통과)
 
 ---
 
