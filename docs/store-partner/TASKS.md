@@ -21,7 +21,7 @@
 - [x] **T3-2** `partner-card.tsx` + ads CTA
 
 ### T4. 관리자
-- [ ] **T4-1** `/api/admin/partners` CRUD + requireAdmin
+- [x] **T4-1** `/api/admin/partners` CRUD + requireAdmin
 - [ ] **T4-2** `/admin/partners` + `partners-panel.tsx`
 - [ ] **T4-3** 썸네일 — 기존 Blob upload API 재사용
 
