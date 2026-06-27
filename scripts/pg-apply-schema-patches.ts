@@ -503,6 +503,41 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "PartnerStore_sortOrder_idx" ON "PartnerStore"("sortOrder")`
   );
 
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PartnerBannerSlot" AS ENUM ('HOME_BOTTOM', 'HOME_TOP', 'NEWS_INLINE', 'PROMO_TOP');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "PartnerBanner" (
+      "id" TEXT NOT NULL,
+      "storeId" TEXT NOT NULL,
+      "slot" "PartnerBannerSlot" NOT NULL,
+      "imageUrl" TEXT NOT NULL,
+      "altText" TEXT,
+      "linkSlug" TEXT,
+      "sortOrder" INTEGER NOT NULL DEFAULT 0,
+      "isActive" BOOLEAN NOT NULL DEFAULT true,
+      "startsAt" TIMESTAMP(3),
+      "endsAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "PartnerBanner_pkey" PRIMARY KEY ("id")
+    )`);
+  await exec(`
+    DO $$ BEGIN
+      ALTER TABLE "PartnerBanner"
+        ADD CONSTRAINT "PartnerBanner_storeId_fkey"
+        FOREIGN KEY ("storeId") REFERENCES "PartnerStore"("id")
+        ON DELETE CASCADE ON UPDATE CASCADE;
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerBanner_slot_isActive_idx" ON "PartnerBanner"("slot", "isActive")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerBanner_storeId_idx" ON "PartnerBanner"("storeId")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

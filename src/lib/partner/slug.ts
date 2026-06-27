@@ -1,7 +1,7 @@
 import { slugifyStoreName } from "@/lib/admin/publish-curated-trade";
+import { PARTNER_SLUG_MAX, PARTNER_SLUG_MIN } from "@/lib/partner/slugify-name";
 
-export const PARTNER_SLUG_MIN = 2;
-export const PARTNER_SLUG_MAX = 48;
+export { PARTNER_SLUG_MIN, PARTNER_SLUG_MAX } from "@/lib/partner/slugify-name";
 
 /** lowercase ASCII, digits, hyphens (no leading/trailing hyphen) */
 export const PARTNER_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

@@ -5,6 +5,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LIFE_INFO_HUB_HREF } from "@/lib/life-info-hub";
 import type { FeedItem } from "@/types/feed";
+import Link from "next/link";
 
 interface LifeInfoHubPageProps {
   posts: FeedItem[];
@@ -68,6 +69,15 @@ export function LifeInfoHubPage({
             />
           )}
         </section>
+
+        <footer className="bg-surface px-3 py-4 text-center lg:rounded-xl">
+          <Link
+            href="/partners"
+            className="text-xs text-primary hover:underline"
+          >
+            제휴 업소 보기 → /partners
+          </Link>
+        </footer>
       </div>
     </div>
   );

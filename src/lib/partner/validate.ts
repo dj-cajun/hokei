@@ -110,3 +110,45 @@ export const partnerStoreUpdateSchema = partnerStoreCreateSchema
 
 export type PartnerStoreCreateInput = z.infer<typeof partnerStoreCreateSchema>;
 export type PartnerStoreUpdateInput = z.infer<typeof partnerStoreUpdateSchema>;
+
+export const partnerBannerSlotSchema = z.enum([
+  "HOME_BOTTOM",
+  "HOME_TOP",
+  "NEWS_INLINE",
+  "PROMO_TOP",
+]);
+
+export const partnerBannerCreateSchema = z.object({
+  storeId: z.string().min(1, "업소를 선택해 주세요."),
+  slot: partnerBannerSlotSchema,
+  imageUrl: z
+    .string()
+    .min(1, "배너 이미지 URL을 입력해 주세요.")
+    .max(500)
+    .refine((v) => /^https:\/\/.+/i.test(v), {
+      message: "https URL만 입력할 수 있습니다.",
+    }),
+  altText: z.string().max(200).optional(),
+  linkSlug: partnerSlugField.optional().nullable(),
+  sortOrder: z.number().int().min(0).max(9999).default(0),
+  isActive: z.boolean().default(true),
+  startsAt: z.coerce.date().optional().nullable(),
+  endsAt: z.coerce.date().optional().nullable(),
+});
+
+export const partnerBannerUpdateSchema = partnerBannerCreateSchema
+  .partial()
+  .extend({
+    storeId: z.string().min(1).optional(),
+    slot: partnerBannerSlotSchema.optional(),
+    imageUrl: z
+      .string()
+      .max(500)
+      .refine((v) => v === "" || /^https:\/\/.+/i.test(v), {
+        message: "https URL만 입력할 수 있습니다.",
+      })
+      .optional(),
+  });
+
+export type PartnerBannerCreateInput = z.infer<typeof partnerBannerCreateSchema>;
+export type PartnerBannerUpdateInput = z.infer<typeof partnerBannerUpdateSchema>;
