@@ -17,7 +17,7 @@ test.describe("법적·문의 페이지", () => {
     await page.goto("/contact");
     await expect(page.getByRole("heading", { name: "문의하기" })).toBeVisible();
     await expect(page.getByLabel("이름")).toBeVisible();
-    await expect(page.getByRole("button", { name: "메일 앱으로 보내기" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "문의 보내기" })).toBeVisible();
   });
 
   test("쪽지함은 로그인 필요", async ({ page }) => {
