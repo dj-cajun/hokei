@@ -1,4 +1,5 @@
 import { visiblePostWhere } from "@/lib/moderation";
+import { HERE_HOW_LEAF_SLUGS, HERE_HOW_MID_SLUG } from "@/lib/here-how";
 import { slugifyStoreName } from "@/lib/admin/publish-curated-trade";
 import { prisma } from "@/lib/prisma";
 
@@ -13,7 +14,13 @@ export type PromoStoreSummary = {
 
 const promoPostWhere = {
   ...visiblePostWhere,
-  category: { parent: { slug: "promo" } },
+  category: {
+    OR: [
+      { parent: { slug: HERE_HOW_MID_SLUG } },
+      { parent: { slug: "promo" } },
+      { slug: { in: [...HERE_HOW_LEAF_SLUGS] } },
+    ],
+  },
 };
 
 export async function getPromoStores(limit = 24): Promise<PromoStoreSummary[]> {
