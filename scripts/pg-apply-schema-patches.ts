@@ -451,6 +451,58 @@ async function main() {
     `UPDATE "LifeGuide" SET "updatedAt" = "createdAt" WHERE "updatedAt" IS NULL`
   );
 
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PartnerCategory" AS ENUM ('FOOD', 'BEAUTY', 'CLINIC', 'SERVICE', 'OTHER');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PartnerPlan" AS ENUM ('BASIC', 'STANDARD', 'PREMIUM');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PartnerStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "PartnerStore" (
+      "id" TEXT NOT NULL,
+      "slug" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "tagline" TEXT,
+      "description" TEXT,
+      "category" "PartnerCategory" NOT NULL,
+      "phone" TEXT,
+      "kakaoLink" TEXT,
+      "mapsUrl" TEXT,
+      "address" TEXT,
+      "hoursText" TEXT,
+      "thumbnail" TEXT,
+      "plan" "PartnerPlan" NOT NULL DEFAULT 'BASIC',
+      "status" "PartnerStatus" NOT NULL DEFAULT 'DRAFT',
+      "sortOrder" INTEGER NOT NULL DEFAULT 0,
+      "publishedAt" TIMESTAMP(3),
+      "expiresAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "PartnerStore_pkey" PRIMARY KEY ("id")
+    )`);
+  await exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "PartnerStore_slug_key" ON "PartnerStore"("slug")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerStore_status_idx" ON "PartnerStore"("status")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerStore_category_idx" ON "PartnerStore"("category")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerStore_expiresAt_idx" ON "PartnerStore"("expiresAt")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerStore_sortOrder_idx" ON "PartnerStore"("sortOrder")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

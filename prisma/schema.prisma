@@ -434,6 +434,54 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 }
 
+enum PartnerCategory {
+  FOOD
+  BEAUTY
+  CLINIC
+  SERVICE
+  OTHER
+}
+
+enum PartnerPlan {
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum PartnerStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// 제휴 업소 — 모바일 LP `/store/{slug}`
+model PartnerStore {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  tagline     String?
+  description String?         @db.Text
+  category    PartnerCategory
+  phone       String?
+  kakaoLink   String?
+  mapsUrl     String?
+  address     String?
+  hoursText   String?
+  thumbnail   String?
+  plan        PartnerPlan     @default(BASIC)
+  status      PartnerStatus   @default(DRAFT)
+  sortOrder   Int             @default(0)
+  publishedAt DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([expiresAt])
+  @@index([sortOrder])
+}
+
 /// 일별 자동 수집 로그 (하루 10건 제한 추적)
 model NewsIngestRun {
   id           String   @id @default(cuid())

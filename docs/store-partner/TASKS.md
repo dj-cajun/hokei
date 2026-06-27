@@ -7,7 +7,7 @@
 ## Phase 1 — MVP (영업 데모 가능)
 
 ### T1. 스키마 · lib 기반
-- [ ] **T1-1** Prisma `PartnerStore`, enums 추가 + `db:pg:patch`
+- [x] **T1-1** Prisma `PartnerStore`, enums 추가 + `db:pg:patch`
 - [ ] **T1-2** `src/lib/partner/slug.ts`, `validate.ts` + unit test
 - [ ] **T1-3** `src/lib/partner/queries.ts` — getBySlug, listPublished
 
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T1-1 부터 시작** (`loop.md` 필수 통과)
+**→ T1-2** (`loop.md` 필수 통과)
 
 ---
 
@@ -64,4 +64,5 @@
 
 | 날짜 | 태스크 | 커밋 |
 |------|--------|------|
-| 2026-06-27 | 기획 문서·loop.md | (문서 only) |
+| 2026-06-27 | T1-1 PartnerStore 스키마 | (pending) |
+| 2026-06-27 | 기획 문서·loop.md | 11665df |
