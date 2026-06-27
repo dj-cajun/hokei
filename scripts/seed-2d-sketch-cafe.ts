@@ -111,7 +111,7 @@ async function main() {
       mapsUrl: seed.partner.mapsUrl,
       address: seed.partner.address,
       hoursText: seed.partner.hoursText,
-      plan: "BASIC",
+      plan: "PREMIUM",
       status: "PUBLISHED",
       sortOrder: 1,
       publishedAt: new Date(),
@@ -125,8 +125,36 @@ async function main() {
       address: seed.partner.address,
       hoursText: seed.partner.hoursText,
       status: "PUBLISHED",
+      plan: "PREMIUM",
     },
   });
+
+  const bannerImage = "/partners/2d-sketch-cafe-banner.svg";
+  const existingTop = await prisma.partnerBanner.findFirst({
+    where: { storeId: store.id, slot: "HOME_TOP" },
+  });
+  if (existingTop) {
+    await prisma.partnerBanner.update({
+      where: { id: existingTop.id },
+      data: {
+        imageUrl: bannerImage,
+        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
+        isActive: true,
+        sortOrder: 0,
+      },
+    });
+  } else {
+    await prisma.partnerBanner.create({
+      data: {
+        storeId: store.id,
+        slot: "HOME_TOP",
+        imageUrl: bannerImage,
+        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
+        isActive: true,
+        sortOrder: 0,
+      },
+    });
+  }
 
   const post = await prisma.post.upsert({
     where: { sourceUrl: SOURCE_URL },
@@ -161,6 +189,7 @@ async function main() {
   console.log(`  LP: /store/${store.slug}`);
   console.log(`  글: /posts/${post.id}`);
   console.log(`  타임라인: /promo/timeline/2d-sketch-cafe`);
+  console.log(`  홈 상단 배너: HOME_TOP → ${bannerImage}`);
 
   await prisma.$disconnect();
 }

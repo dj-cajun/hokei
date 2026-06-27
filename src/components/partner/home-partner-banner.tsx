@@ -5,7 +5,14 @@ export async function HomePartnerBanner() {
 }
 
 export async function HomePartnerBannerTop() {
-  return <PartnerBannerSlot slot="HOME_TOP" limit={1} />;
+  return (
+    <PartnerBannerSlot
+      slot="HOME_TOP"
+      limit={1}
+      className="px-3 pt-2"
+      imageClassName="aspect-[3/1] w-full rounded-xl object-cover shadow-md ring-1 ring-black/5"
+    />
+  );
 }
 
 export async function NewsPartnerBanner() {
