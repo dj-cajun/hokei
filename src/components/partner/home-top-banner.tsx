@@ -1,5 +1,3 @@
-import { HomeTopBannerDismiss } from "@/components/partner/home-top-banner-dismiss";
-import { HomeTopBannerVisibility } from "@/components/partner/home-top-banner-visibility";
 import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { listBannersForSlot } from "@/lib/partner/queries";
@@ -47,42 +45,38 @@ export async function HomeTopBanner() {
   const hasDedicatedMobile = mobileSrc !== banner.imageUrl;
 
   return (
-    <HomeTopBannerVisibility bannerId={banner.id}>
-      <section
-        className="relative w-full shrink-0 overflow-hidden bg-[#ebe6dc]"
-        aria-label="제휴 상단 배너"
+    <section
+      className="relative w-full shrink-0 overflow-hidden bg-[#ebe6dc]"
+      aria-label="제휴 상단 배너"
+    >
+      <PartnerBannerLink
+        href={href}
+        slug={slug}
+        className={cn(
+          "block w-full lg:hidden",
+          hasDedicatedMobile ? "aspect-[1024/220] max-h-[200px]" : "h-[120px]"
+        )}
       >
-        <PartnerBannerLink
-          href={href}
-          slug={slug}
-          className={cn(
-            "block w-full lg:hidden",
-            hasDedicatedMobile ? "aspect-[1024/220] max-h-[200px]" : "h-[120px]"
-          )}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mobileSrc}
-            alt={alt}
-            className="h-full w-full object-contain object-center"
-          />
-        </PartnerBannerLink>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={mobileSrc}
+          alt={alt}
+          className="h-full w-full object-contain object-center"
+        />
+      </PartnerBannerLink>
 
-        <PartnerBannerLink
-          href={href}
-          slug={slug}
-          className="hidden h-[88px] w-full lg:block"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={banner.imageUrl}
-            alt={alt}
-            className="h-full w-full object-cover object-center"
-          />
-        </PartnerBannerLink>
-
-        <HomeTopBannerDismiss />
-      </section>
-    </HomeTopBannerVisibility>
+      <PartnerBannerLink
+        href={href}
+        slug={slug}
+        className="hidden h-[88px] w-full lg:block"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={banner.imageUrl}
+          alt={alt}
+          className="h-full w-full object-cover object-center"
+        />
+      </PartnerBannerLink>
+    </section>
   );
 }

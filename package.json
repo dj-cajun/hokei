@@ -99,6 +99,11 @@
     "news:analyze-ingest": "tsx scripts/analyze-ingest-runs.ts",
     "news:queries": "tsx -e \"import { listNaverSearchQueries } from './src/lib/news/naver-search-queries.ts'; console.log(JSON.stringify(listNaverSearchQueries(), null, 2))\""
   },
+  "overrides": {
+    "smol-toml": "^1.6.1",
+    "tar": "^7.5.16",
+    "undici": "^6.27.0"
+  },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
@@ -151,7 +156,7 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vercel": "^54.6.1",
+    "vercel": "^54.18.0",
     "vitest": "^4.1.8"
   }
 }
