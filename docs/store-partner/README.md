@@ -23,7 +23,7 @@
 | 환경 | DB | 명령 |
 |------|-----|------|
 | **로컬 dev** | `.env` + `.env.local` (Neon dev) | `npm run db:pg:patch` → `npm run db:seed:2d-sketch-cafe` → `npm run dev` (**http://localhost:3001**) |
-| **프로덕션** | `.env.production.pg` | `bash scripts/with-pg-env.sh npm run db:pg:patch` → `bash scripts/with-pg-env.sh npm run db:seed:2d-sketch-cafe` |
+| **프로덕션** | `.env.production.pg` | `bash scripts/with-pg-env.sh npm run db:pg:patch` → `db:seed:2d-sketch-cafe` → `seed:life-v2` |
 
 `with-pg-env`는 **프로덕션 DB만** 대상입니다. 로컬에서 `with-pg-env`로 시드해도 dev 서버에는 반영되지 않습니다.
 
@@ -36,6 +36,7 @@ npm run dev                      # → http://localhost:3001 (3000 아님)
 # 프로덕션
 bash scripts/with-pg-env.sh npm run db:pg:patch
 bash scripts/with-pg-env.sh npm run db:seed:2d-sketch-cafe
+bash scripts/with-pg-env.sh npm run seed:life-v2
 
 # 스모크 (non-200·홈 배너 없으면 exit 1)
 npm run check:prod
