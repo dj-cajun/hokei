@@ -3,11 +3,22 @@ import { Prisma } from "@/generated/prisma/client";
 import { googleLoginErrorCodeFromUnknown } from "@/lib/auth/google-login-error-code";
 
 describe("googleLoginErrorCodeFromUnknown", () => {
-  it("maps Prisma known errors", () => {
+  it("maps missing column (P2022) to schema hint", () => {
     expect(
       googleLoginErrorCodeFromUnknown(
         new Prisma.PrismaClientKnownRequestError("msg", {
           code: "P2022",
+          clientVersion: "test",
+        })
+      )
+    ).toBe("google_db_schema");
+  });
+
+  it("maps other Prisma known errors", () => {
+    expect(
+      googleLoginErrorCodeFromUnknown(
+        new Prisma.PrismaClientKnownRequestError("msg", {
+          code: "P2002",
           clientVersion: "test",
         })
       )

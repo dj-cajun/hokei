@@ -1,4 +1,4 @@
-const base = process.argv[2] ?? "https://hokei-peach.vercel.app";
+const base = process.argv[2] ?? "https://www.hokei.vn";
 const paths = ["/", "/news", "/community", "/login", "/search"];
 
 async function main() {
