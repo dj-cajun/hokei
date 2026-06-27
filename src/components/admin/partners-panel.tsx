@@ -800,11 +800,14 @@ export function PartnersPanel() {
                 </Button>
               </div>
             </div>
-            {editingStoreId ? (
-              <fieldset className="space-y-3 rounded-lg border border-border-light p-3">
-                <legend className="px-1 text-sm font-semibold">
-                  홈 상단 배너 (HOME_TOP)
-                </legend>
+            <fieldset className="space-y-3 rounded-lg border border-border-light p-3">
+              <legend className="px-1 text-sm font-semibold">
+                홈 상단 배너 (HOME_TOP)
+              </legend>
+              <p className="text-[10px] text-muted-foreground">
+                PC 배너 URL이 있으면 등록·수정과 함께 저장됩니다. 비우면 배너는
+                건드리지 않습니다.
+              </p>
                 <div>
                   <Label htmlFor="homeTopPc">PC 배너 URL (768px 이상)</Label>
                   <div className="mt-1 flex gap-2">
@@ -941,8 +944,7 @@ export function PartnersPanel() {
                 <p className="text-[10px] text-muted-foreground">
                   저장 시 홈(/)·LP(/store/…) 캐시가 갱신됩니다.
                 </p>
-              </fieldset>
-            ) : null}
+            </fieldset>
             <div className="flex gap-2">
               <Button type="submit" disabled={saving}>
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -13,5 +13,5 @@
 
 ## 진행 중 / 완료
 
-- **업소 제휴 · 배너 · 모바일 LP** — Phase 1~2 + **Phase 3 셀프 LP 수정** (`/account/partner`). PG 없음 — ads@ 수동 계약
+- **업소 제휴 · 배너 · 모바일 LP** — Phase 1~3 + **Phase 4 T10~T11** (데모 시드·운영 문서). PG 없음 — ads@ 수동 계약
 - 뉴스 중복 제거 보강 (`dedupe.ts`, URL canonical, ingest 교차 비교) — 지역 확장과 별개로 유지
