@@ -22,18 +22,18 @@
 
 ### T4. 관리자
 - [x] **T4-1** `/api/admin/partners` CRUD + requireAdmin
-- [ ] **T4-2** `/admin/partners` + `partners-panel.tsx`
-- [ ] **T4-3** 썸네일 — 기존 Blob upload API 재사용
+- [x] **T4-2** `/admin/partners` + `partners-panel.tsx`
+- [x] **T4-3** 썸네일 — 기존 Blob upload API 재사용
 
 ### T5. 홈 배너
-- [ ] **T5-1** Prisma `PartnerBanner` + slot enum
-- [ ] **T5-2** `/api/admin/partner-banners` CRUD
-- [ ] **T5-3** `home-partner-banner.tsx` → `home-page-content.tsx` 삽입
+- [x] **T5-1** Prisma `PartnerBanner` + slot enum
+- [x] **T5-2** `/api/admin/partner-banners` CRUD
+- [x] **T5-3** `home-partner-banner.tsx` → `home-page-content.tsx` 삽입
 
 ### T6. 시드 · QA
-- [ ] **T6-1** `scripts/seed-partner-demo.ts` — 데모 업소 1곳
-- [ ] **T6-2** route test 1개 + `npm run check:prod` on www.hokei.vn
-- [ ] **T6-3** `docs/BACKLOG.md` 업데이트
+- [x] **T6-1** `scripts/seed-partner-demo.ts` — 데모 업소 1곳
+- [x] **T6-2** route test 1개 + `npm run check:prod` on www.hokei.vn
+- [x] **T6-3** `docs/BACKLOG.md` 업데이트
 
 ---
 
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T4-1** (`loop.md` 필수 통과)
+**→ Phase 2 (T7)** 또는 프로덕션 데모 시드 실행
 
 ---
 
@@ -64,6 +64,8 @@
 
 | 날짜 | 태스크 | 커밋 |
 |------|--------|------|
+| 2026-06-27 | Phase 1 MVP T4-2~T6 완료 | (this commit) |
+| 2026-06-27 | T4-1 admin API | a5284ce |
 | 2026-06-27 | T3-1~2 /partners 허브 | 1417af3 |
 | 2026-06-27 | T2 모바일 LP | 6e9e14e |
 | 2026-06-27 | 기획 문서·loop.md | 11665df |

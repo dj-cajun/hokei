@@ -1,4 +1,4 @@
-import type { PartnerCategory } from "@/generated/prisma/client";
+import type { PartnerBannerSlot, PartnerCategory } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 /** 공개 LP·허브 — PUBLISHED 이고 만료 전만 */
@@ -34,6 +34,37 @@ export async function listPublishedPartners(options?: {
     },
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }],
     take: limit,
+  });
+}
+
+export function activePartnerBannerWhere(now = new Date()) {
+  return {
+    isActive: true,
+    AND: [
+      { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+      { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
+    ],
+  };
+}
+
+export async function listBannersForSlot(
+  slot: PartnerBannerSlot,
+  limit = 5
+) {
+  const take = Math.min(Math.max(limit, 1), 10);
+  const now = new Date();
+
+  return prisma.partnerBanner.findMany({
+    where: {
+      slot,
+      ...activePartnerBannerWhere(now),
+      store: publishedPartnerWhere(now),
+    },
+    include: {
+      store: { select: { slug: true, name: true } },
+    },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    take,
   });
 }
 

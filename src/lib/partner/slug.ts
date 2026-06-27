@@ -1,10 +1,18 @@
-import { slugifyStoreName } from "@/lib/admin/publish-curated-trade";
-
 export const PARTNER_SLUG_MIN = 2;
 export const PARTNER_SLUG_MAX = 48;
 
 /** lowercase ASCII, digits, hyphens (no leading/trailing hyphen) */
 export const PARTNER_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function slugifyStoreNameFallback(name: string): string {
+  const base = name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}-]/gu, "")
+    .slice(0, PARTNER_SLUG_MAX);
+  return base || "store";
+}
 
 /** 가게명 → URL slug (ASCII kebab). 한글만이면 slugifyStoreName 폴백 후 ASCII 정규화 */
 export function slugifyPartnerName(name: string): string {
@@ -23,7 +31,7 @@ export function slugifyPartnerName(name: string): string {
     return ascii;
   }
 
-  const fallback = slugifyStoreName(name)
+  const fallback = slugifyStoreNameFallback(name)
     .replace(/[^a-z0-9-]/gi, "")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")

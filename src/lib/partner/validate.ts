@@ -110,3 +110,36 @@ export const partnerStoreUpdateSchema = partnerStoreCreateSchema
 
 export type PartnerStoreCreateInput = z.infer<typeof partnerStoreCreateSchema>;
 export type PartnerStoreUpdateInput = z.infer<typeof partnerStoreUpdateSchema>;
+
+export const partnerBannerSlotSchema = z.enum([
+  "HOME_BOTTOM",
+  "HOME_TOP",
+  "NEWS_INLINE",
+  "PROMO_TOP",
+]);
+
+export const partnerBannerCreateSchema = z.object({
+  storeId: z.string().min(1),
+  slot: partnerBannerSlotSchema.default("HOME_BOTTOM"),
+  imageUrl: z.string().url("배너 이미지 URL을 입력해 주세요.").max(500),
+  altText: z.string().max(200).optional(),
+  linkSlug: z
+    .string()
+    .max(PARTNER_SLUG_MAX)
+    .refine((v) => v === "" || isValidPartnerSlug(v), {
+      message: "linkSlug 형식이 올바르지 않습니다.",
+    })
+    .optional(),
+  sortOrder: z.number().int().min(0).max(9999).default(0),
+  isActive: z.boolean().default(true),
+  startsAt: z.coerce.date().optional().nullable(),
+  endsAt: z.coerce.date().optional().nullable(),
+});
+
+export const partnerBannerUpdateSchema = partnerBannerCreateSchema
+  .partial()
+  .extend({
+    storeId: z.string().min(1).optional(),
+    slot: partnerBannerSlotSchema.optional(),
+    imageUrl: z.string().url().max(500).optional(),
+  });

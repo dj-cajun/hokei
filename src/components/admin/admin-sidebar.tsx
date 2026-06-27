@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Sparkles,
   Users,
+  Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMounted } from "@/lib/use-mounted";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/admin/curate", label: "콘텐츠 재가공", icon: PenLine },
   { href: "/admin/ai-curate", label: "AI 카톡 큐레이션", icon: Sparkles },
   { href: "/admin/life", label: "생활 가이드", icon: BookOpen },
+  { href: "/admin/partners", label: "제휴 업소", icon: Store },
   { href: "/admin/ingest", label: "뉴스 수집", icon: Newspaper },
   { href: "/admin/security", label: "보안·감사", icon: ShieldAlert },
   { href: "/admin/users", label: "회원 관리", icon: Users },

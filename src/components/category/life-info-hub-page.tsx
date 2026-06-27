@@ -1,4 +1,5 @@
 import { CategoryIcon } from "@/components/category/category-icon";
+import Link from "next/link";
 import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
@@ -67,6 +68,11 @@ export function LifeInfoHubPage({
               basePath={LIFE_INFO_HUB_HREF}
             />
           )}
+          <p className="mt-4 border-t border-border-light px-2 py-3 text-center text-[11px]">
+            <Link href="/partners" className="font-medium text-primary hover:underline">
+              호케이 제휴 업소 보기 →
+            </Link>
+          </p>
         </section>
       </div>
     </div>
