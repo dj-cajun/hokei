@@ -12,7 +12,8 @@
 | Hero | 썸네일 full-width |
 | Tagline | 한 줄 카피 |
 | CTA Bar (sticky) | 카톡 · 전화 · 길찾기 |
-| Body | description, hoursText, address |
+| Body | introText, menuText, hoursText, locationTips, address |
+| SEO | `LocalBusiness` JSON-LD |
 | Footer | 「호케이 제휴 업소」+ /partners |
 
 **Layout:** `max-w-[480px]` 중앙, 모바일 퍼스트
@@ -24,6 +25,7 @@
 | 영역 | 요소 |
 |------|------|
 | Title | 「호케이 제휴 업소」 |
+| Filter | 카테고리 pill (`?category=FOOD` 등) |
 | Grid | PartnerCard (썸네일, name, tagline, category) |
 | CTA | 「광고·제휴 문의」→ `/contact?kind=ads` |
 | Empty | 「준비 중」+ ads CTA |
@@ -54,8 +56,8 @@
 | 탭 | 기능 |
 |----|------|
 | 업소 목록 | table: name, slug, plan, status, expires |
-| 등록/수정 | modal or subpage form |
-| 배너 | slot별 imageUrl, active, 기간 |
+| 등록/수정 | LP 7섹션 + HOME_TOP 통합 + commentPostId 홍보글 검색 |
+| 배너 | slot별 imageUrl, active, 기간 (별도 탭) |
 
 Form fields = DB-DESIGN PartnerStore + PartnerBanner
 

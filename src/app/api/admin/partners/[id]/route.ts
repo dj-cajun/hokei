@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
 type RouteContext = { params: Promise<{ id: string }> };
 
 function revalidatePartnerPaths(...slugs: (string | undefined)[]) {
+  revalidatePath("/");
   revalidatePath("/partners");
   for (const slug of slugs) {
     if (slug) revalidatePath(`/store/${slug}`);
@@ -109,6 +110,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.hoursText !== undefined
         ? nullIfEmpty(parsed.data.hoursText)
         : existing.hoursText,
+    commentPostId:
+      parsed.data.commentPostId !== undefined
+        ? nullIfEmpty(parsed.data.commentPostId ?? undefined)
+        : existing.commentPostId,
     thumbnail:
       parsed.data.thumbnail !== undefined
         ? nullIfEmpty(parsed.data.thumbnail)

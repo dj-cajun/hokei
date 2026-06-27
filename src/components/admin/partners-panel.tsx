@@ -23,13 +23,17 @@ type StoreRow = {
   slug: string;
   name: string;
   tagline: string | null;
+  introText: string | null;
   description: string | null;
+  menuText: string | null;
   category: PartnerCategory;
   phone: string | null;
   kakaoLink: string | null;
   mapsUrl: string | null;
   address: string | null;
+  locationTips: string | null;
   hoursText: string | null;
+  commentPostId: string | null;
   thumbnail: string | null;
   plan: PartnerPlan;
   status: PartnerStatus;
@@ -67,19 +71,31 @@ const emptyStoreForm = {
   name: "",
   slug: "",
   tagline: "",
+  introText: "",
   description: "",
+  menuText: "",
   category: "FOOD" as PartnerCategory,
   phone: "",
   kakaoLink: "",
   mapsUrl: "",
   address: "",
+  locationTips: "",
   hoursText: "",
+  commentPostId: "",
   thumbnail: "",
   plan: "BASIC" as PartnerPlan,
   status: "DRAFT" as PartnerStatus,
   sortOrder: 0,
   expiresAt: "",
   ownerEmail: "",
+};
+
+const emptyHomeTopBannerForm = {
+  imageUrl: "",
+  mobileImageUrl: "",
+  altText: "",
+  linkSlug: "",
+  isActive: true,
 };
 
 const emptyBannerForm = {
@@ -114,9 +130,18 @@ export function PartnersPanel() {
   const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
   const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
   const [storeForm, setStoreForm] = useState(emptyStoreForm);
+  const [homeTopBannerForm, setHomeTopBannerForm] = useState(emptyHomeTopBannerForm);
+  const [editingHomeTopBannerId, setEditingHomeTopBannerId] = useState<string | null>(null);
+  const [promoPostQuery, setPromoPostQuery] = useState("");
+  const [promoPostHits, setPromoPostHits] = useState<
+    { id: string; title: string }[]
+  >([]);
+  const [searchingPromoPosts, setSearchingPromoPosts] = useState(false);
   const [bannerForm, setBannerForm] = useState(emptyBannerForm);
   const thumbInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const homeTopPcInputRef = useRef<HTMLInputElement>(null);
+  const homeTopMobileInputRef = useRef<HTMLInputElement>(null);
 
   const loadStores = useCallback(async () => {
     const res = await fetch("/api/admin/partners");
@@ -160,6 +185,10 @@ export function PartnersPanel() {
   function resetStoreForm() {
     setEditingStoreId(null);
     setStoreForm(emptyStoreForm);
+    setHomeTopBannerForm(emptyHomeTopBannerForm);
+    setEditingHomeTopBannerId(null);
+    setPromoPostQuery("");
+    setPromoPostHits([]);
   }
 
   function resetBannerForm() {
@@ -173,13 +202,17 @@ export function PartnersPanel() {
       name: row.name,
       slug: row.slug,
       tagline: row.tagline ?? "",
+      introText: row.introText ?? "",
       description: row.description ?? "",
+      menuText: row.menuText ?? "",
       category: row.category,
       phone: row.phone ?? "",
       kakaoLink: row.kakaoLink ?? "",
       mapsUrl: row.mapsUrl ?? "",
       address: row.address ?? "",
+      locationTips: row.locationTips ?? "",
       hoursText: row.hoursText ?? "",
+      commentPostId: row.commentPostId ?? "",
       thumbnail: row.thumbnail ?? "",
       plan: row.plan,
       status: row.status,
@@ -187,6 +220,53 @@ export function PartnersPanel() {
       expiresAt: row.expiresAt ? row.expiresAt.slice(0, 10) : "",
       ownerEmail: row.owner?.email ?? "",
     });
+    const homeTop = banners.find(
+      (b) => b.storeId === row.id && b.slot === "HOME_TOP"
+    );
+    if (homeTop) {
+      setEditingHomeTopBannerId(homeTop.id);
+      setHomeTopBannerForm({
+        imageUrl: homeTop.imageUrl,
+        mobileImageUrl: homeTop.mobileImageUrl ?? "",
+        altText: homeTop.altText ?? "",
+        linkSlug: homeTop.linkSlug ?? "",
+        isActive: homeTop.isActive,
+      });
+    } else {
+      setEditingHomeTopBannerId(null);
+      setHomeTopBannerForm(emptyHomeTopBannerForm);
+    }
+    setPromoPostQuery(row.name);
+    setPromoPostHits([]);
+  }
+
+  async function searchPromoPosts() {
+    const storeName = promoPostQuery.trim() || storeForm.name.trim();
+    if (!storeName) {
+      showToast("업소명 또는 검색어를 입력해 주세요.", "error");
+      return;
+    }
+    setSearchingPromoPosts(true);
+    try {
+      const res = await fetch(
+        `/api/admin/posts?storeName=${encodeURIComponent(storeName)}&limit=8`
+      );
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(parseApiError(data) ?? "홍보 글 검색 실패", "error");
+        return;
+      }
+      setPromoPostHits(
+        (data.posts as { id: string; title: string }[] | undefined)?.map(
+          (post) => ({ id: post.id, title: post.title })
+        ) ?? []
+      );
+      if (!data.posts?.length) {
+        showToast("일치하는 홍보 글이 없습니다.", "error");
+      }
+    } finally {
+      setSearchingPromoPosts(false);
+    }
   }
 
   function startEditBanner(row: BannerRow) {
@@ -210,12 +290,16 @@ export function PartnersPanel() {
       const payload = {
         ...storeForm,
         tagline: storeForm.tagline || undefined,
+        introText: storeForm.introText || undefined,
         description: storeForm.description || undefined,
+        menuText: storeForm.menuText || undefined,
         phone: storeForm.phone || undefined,
         kakaoLink: storeForm.kakaoLink || undefined,
         mapsUrl: storeForm.mapsUrl || undefined,
         address: storeForm.address || undefined,
+        locationTips: storeForm.locationTips || undefined,
         hoursText: storeForm.hoursText || undefined,
+        commentPostId: storeForm.commentPostId || null,
         thumbnail: storeForm.thumbnail || undefined,
         expiresAt: storeForm.expiresAt
           ? new Date(storeForm.expiresAt).toISOString()
@@ -237,9 +321,40 @@ export function PartnersPanel() {
         showToast(parseApiError(data) ?? "저장 실패", "error");
         return;
       }
+
+      const savedStoreId = (editingStoreId ?? data.store?.id) as string | undefined;
+      if (savedStoreId && homeTopBannerForm.imageUrl.trim()) {
+        const bannerPayload = {
+          storeId: savedStoreId,
+          slot: "HOME_TOP",
+          imageUrl: homeTopBannerForm.imageUrl.trim(),
+          mobileImageUrl: homeTopBannerForm.mobileImageUrl || undefined,
+          altText: homeTopBannerForm.altText || undefined,
+          linkSlug: homeTopBannerForm.linkSlug || undefined,
+          isActive: homeTopBannerForm.isActive,
+        };
+        const bannerRes = await fetch(
+          editingHomeTopBannerId
+            ? `/api/admin/partner-banners/${editingHomeTopBannerId}`
+            : "/api/admin/partner-banners",
+          {
+            method: editingHomeTopBannerId ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bannerPayload),
+          }
+        );
+        const bannerData = await bannerRes.json();
+        if (!bannerRes.ok || !bannerData.ok) {
+          showToast(
+            parseApiError(bannerData) ?? "업소는 저장됐으나 홈 배너 저장 실패",
+            "error"
+          );
+        }
+      }
+
       showToast(editingStoreId ? "업소를 수정했습니다." : "업소를 등록했습니다.");
       resetStoreForm();
-      await loadStores();
+      await Promise.all([loadStores(), loadBanners()]);
     } catch {
       showToast("저장 실패", "error");
     } finally {
@@ -332,6 +447,25 @@ export function PartnersPanel() {
     }
     setBannerForm((f) => ({ ...f, imageUrl: url }));
     showToast("배너 이미지를 업로드했습니다.");
+  }
+
+  async function handleHomeTopUpload(
+    file: File,
+    target: "pc" | "mobile"
+  ) {
+    setUploading(true);
+    const url = await uploadImage(file);
+    setUploading(false);
+    if (!url) {
+      showToast("업로드 실패", "error");
+      return;
+    }
+    setHomeTopBannerForm((f) =>
+      target === "pc" ? { ...f, imageUrl: url } : { ...f, mobileImageUrl: url }
+    );
+    showToast(
+      target === "pc" ? "PC 배너를 업로드했습니다." : "모바일 배너를 업로드했습니다."
+    );
   }
 
   return (
@@ -536,16 +670,122 @@ export function PartnersPanel() {
               />
             </div>
             <div>
-              <Label htmlFor="description">상세 설명</Label>
+              <Label htmlFor="introText">소개 (LP 본문)</Label>
+              <textarea
+                id="introText"
+                value={storeForm.introText}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, introText: e.target.value }))
+                }
+                rows={4}
+                placeholder="introText 우선 노출. 비우면 상세 설명 사용"
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">상세 설명 (레거시)</Label>
               <textarea
                 id="description"
                 value={storeForm.description}
                 onChange={(e) =>
                   setStoreForm((f) => ({ ...f, description: e.target.value }))
                 }
+                rows={3}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="menuText">메뉴·가격</Label>
+              <textarea
+                id="menuText"
+                value={storeForm.menuText}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, menuText: e.target.value }))
+                }
                 rows={4}
                 className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+            </div>
+            <div>
+              <Label htmlFor="locationTips">오시는 길 팁</Label>
+              <textarea
+                id="locationTips"
+                value={storeForm.locationTips}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, locationTips: e.target.value }))
+                }
+                rows={3}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="hoursText">영업시간·이벤트</Label>
+              <textarea
+                id="hoursText"
+                value={storeForm.hoursText}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, hoursText: e.target.value }))
+                }
+                rows={4}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="commentPostId">댓글 연결 Post ID</Label>
+              <Input
+                id="commentPostId"
+                value={storeForm.commentPostId}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, commentPostId: e.target.value }))
+                }
+                placeholder="LP 하단 댓글용 홍보 글 ID"
+                className="mt-1"
+              />
+              <div className="mt-2 flex gap-2">
+                <Input
+                  value={promoPostQuery}
+                  onChange={(e) => setPromoPostQuery(e.target.value)}
+                  placeholder={`홍보 글 검색 (기본: ${storeForm.name || "업소명"})`}
+                  className="text-xs"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={searchingPromoPosts}
+                  onClick={() => void searchPromoPosts()}
+                >
+                  {searchingPromoPosts ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "검색"
+                  )}
+                </Button>
+              </div>
+              {promoPostHits.length > 0 ? (
+                <ul className="mt-2 max-h-36 overflow-y-auto rounded-md border border-border-light text-xs">
+                  {promoPostHits.map((post) => (
+                    <li key={post.id} className="border-b border-border-light last:border-0">
+                      <button
+                        type="button"
+                        className="w-full px-2 py-2 text-left hover:bg-secondary/60"
+                        onClick={() => {
+                          setStoreForm((f) => ({
+                            ...f,
+                            commentPostId: post.id,
+                          }));
+                          showToast("댓글 글을 연결했습니다.");
+                        }}
+                      >
+                        <span className="font-medium">{post.title}</span>
+                        <span className="ml-1 text-muted-foreground">
+                          {post.id.slice(0, 10)}…
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
@@ -578,6 +818,17 @@ export function PartnersPanel() {
                 value={storeForm.mapsUrl}
                 onChange={(e) =>
                   setStoreForm((f) => ({ ...f, mapsUrl: e.target.value }))
+                }
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="address">주소</Label>
+              <Input
+                id="address"
+                value={storeForm.address}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, address: e.target.value }))
                 }
                 className="mt-1"
               />
@@ -632,6 +883,151 @@ export function PartnersPanel() {
                 </Button>
               </div>
             </div>
+            <fieldset className="space-y-3 rounded-lg border border-border-light p-3">
+              <legend className="px-1 text-sm font-semibold">
+                홈 상단 배너 (HOME_TOP)
+              </legend>
+              <p className="text-[10px] text-muted-foreground">
+                PC 배너 URL이 있으면 등록·수정과 함께 저장됩니다. 비우면 배너는
+                건드리지 않습니다.
+              </p>
+                <div>
+                  <Label htmlFor="homeTopPc">PC 배너 URL (768px 이상)</Label>
+                  <div className="mt-1 flex gap-2">
+                    <Input
+                      id="homeTopPc"
+                      value={homeTopBannerForm.imageUrl}
+                      onChange={(e) =>
+                        setHomeTopBannerForm((f) => ({
+                          ...f,
+                          imageUrl: e.target.value,
+                        }))
+                      }
+                      placeholder="https://…"
+                    />
+                    <input
+                      ref={homeTopPcInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleHomeTopUpload(file, "pc");
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploading}
+                      onClick={() => homeTopPcInputRef.current?.click()}
+                    >
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {homeTopBannerForm.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={homeTopBannerForm.imageUrl}
+                      alt="PC 배너 미리보기"
+                      className="mt-2 max-h-24 rounded border object-contain"
+                    />
+                  ) : null}
+                </div>
+                <div>
+                  <Label htmlFor="homeTopMobile">
+                    모바일 배너 URL (768px 미만)
+                  </Label>
+                  <div className="mt-1 flex gap-2">
+                    <Input
+                      id="homeTopMobile"
+                      value={homeTopBannerForm.mobileImageUrl}
+                      onChange={(e) =>
+                        setHomeTopBannerForm((f) => ({
+                          ...f,
+                          mobileImageUrl: e.target.value,
+                        }))
+                      }
+                      placeholder="비우면 PC 이미지 사용"
+                    />
+                    <input
+                      ref={homeTopMobileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleHomeTopUpload(file, "mobile");
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploading}
+                      onClick={() => homeTopMobileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {homeTopBannerForm.mobileImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={homeTopBannerForm.mobileImageUrl}
+                      alt="모바일 배너 미리보기"
+                      className="mt-2 max-h-24 rounded border object-contain"
+                    />
+                  ) : null}
+                </div>
+                <div>
+                  <Label htmlFor="homeTopAlt">alt 텍스트</Label>
+                  <Input
+                    id="homeTopAlt"
+                    value={homeTopBannerForm.altText}
+                    onChange={(e) =>
+                      setHomeTopBannerForm((f) => ({
+                        ...f,
+                        altText: e.target.value,
+                      }))
+                    }
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="homeTopLinkSlug">링크 slug (선택)</Label>
+                  <Input
+                    id="homeTopLinkSlug"
+                    value={homeTopBannerForm.linkSlug}
+                    onChange={(e) =>
+                      setHomeTopBannerForm((f) => ({
+                        ...f,
+                        linkSlug: e.target.value,
+                      }))
+                    }
+                    placeholder={`기본: ${storeForm.slug || "업소 slug"}`}
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="homeTopActive"
+                    type="checkbox"
+                    checked={homeTopBannerForm.isActive}
+                    onChange={(e) =>
+                      setHomeTopBannerForm((f) => ({
+                        ...f,
+                        isActive: e.target.checked,
+                      }))
+                    }
+                  />
+                  <Label htmlFor="homeTopActive">활성</Label>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  저장 시 홈(/)·LP(/store/…) 캐시가 갱신됩니다.
+                </p>
+            </fieldset>
             <div className="flex gap-2">
               <Button type="submit" disabled={saving}>
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

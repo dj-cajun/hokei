@@ -2,12 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PartnerCard } from "@/components/partner/partner-card";
+import { PartnersCategoryFilter } from "@/components/partner/partners-category-filter";
 import { getAdContactEmail } from "@/lib/contact-emails";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { listPublishedPartners } from "@/lib/partner/queries";
+import { partnerCategorySchema } from "@/lib/partner/validate";
 import { resolveSiteUrl } from "@/lib/site-url";
+import type { PartnerCategory } from "@/generated/prisma/client";
 
 export const revalidate = 300;
+
+interface PageProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+function parseCategoryParam(raw?: string): PartnerCategory | undefined {
+  if (!raw?.trim()) return undefined;
+  const parsed = partnerCategorySchema.safeParse(raw.trim());
+  return parsed.success ? parsed.data : undefined;
+}
 
 export const metadata: Metadata = {
   title: "호케이 제휴 업소",
@@ -25,9 +38,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function PartnersPage() {
+export default async function PartnersPage({ searchParams }: PageProps) {
+  const { category: categoryParam } = await searchParams;
+  const category = parseCategoryParam(categoryParam);
+
   const stores = isDatabaseAvailable()
-    ? await listPublishedPartners({ limit: 48 })
+    ? await listPublishedPartners({ limit: 48, category })
     : [];
 
   const adEmail = getAdContactEmail();
@@ -43,6 +59,8 @@ export default async function PartnersPage() {
           </p>
         </header>
 
+        <PartnersCategoryFilter activeCategory={category} />
+
         {stores.length > 0 ? (
           <ul className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
             {stores.map((store) => (
@@ -53,7 +71,9 @@ export default async function PartnersPage() {
           </ul>
         ) : (
           <div className="px-4 py-10 text-center">
-            <p className="text-sm font-medium text-foreground">준비 중</p>
+            <p className="text-sm font-medium text-foreground">
+              {category ? "해당 카테고리 업소가 없습니다" : "준비 중"}
+            </p>
             <p className="mt-2 text-xs text-muted-foreground">
               제휴 업소가 곧 오픈됩니다. 배너·업소 홍보 문의를 환영합니다.
             </p>

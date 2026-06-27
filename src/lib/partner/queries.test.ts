@@ -67,4 +67,16 @@ describe("listPublishedPartners", () => {
       expect.objectContaining({ take: 48 })
     );
   });
+
+  it("filters by category when provided", async () => {
+    vi.mocked(prisma.partnerStore.findMany).mockResolvedValue([]);
+
+    await listPublishedPartners({ category: "FOOD" });
+
+    expect(prisma.partnerStore.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ category: "FOOD" }),
+      })
+    );
+  });
 });

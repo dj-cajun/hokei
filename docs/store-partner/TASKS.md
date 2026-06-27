@@ -50,14 +50,28 @@
 ## Phase 3 — 셀프 서비스
 
 - [x] **T8** 사장님 로그인·본인 LP 수정 (`/account/partner`, `ownerId`)
+- [x] **T9** 업체 LP 전체 편집 폼 — admin 7섹션 + HOME_TOP 통합 + owner 동기화
 
 > **결제:** PG·자동 결제 **범위 외** — 영업·수금은 `ads@hokei.vn` 수동 계약·이체
 
 ---
 
+## Phase 4 — 프로덕션·운영
+
+- [x] **T10** 신규 업소 등록 시 HOME_TOP 통합 (T9 후속)
+- [x] **T11** 프로덕션 데모 시드 + check:prod 확장 + 운영 문서
+
+## Phase 5 — 확장·SEO
+
+- [x] **T12** `/partners` 카테고리 필터 (`?category=`)
+- [x] **T13** LP `LocalBusiness` JSON-LD
+- [x] **T14** commentPostId — admin 홍보글 `storeName` 검색 UI (스키마 변경 없음)
+
+---
+
 ## 현재 다음 작업
 
-**→ 프로덕션 운영·데모 시드** 또는 Phase 3 이후 확장
+**→ PR 머지·배포 완료. 프로덕션 시드·영업 데모.**
 
 ---
 
@@ -65,6 +79,8 @@
 
 | 날짜 | 태스크 | 커밋 |
 |------|--------|------|
+| 2026-06-27 | T12~T14 필터·SEO·Post 연동 | 0a84a20 |
+| 2026-06-27 | T9 LP 전체 편집 폼 | 35e899d |
 | 2026-06-21 | Phase 3 T8 셀프 LP 수정 | 7d233d9 |
 | 2026-06-21 | Phase 2 T7 운영·수익 | 637c3d7 |
 | 2026-06-27 | Phase 1 MVP T4-2~T6 완료 | 12679c2 |

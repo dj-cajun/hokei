@@ -18,6 +18,7 @@ export type PartnerStorePrismaInput = {
   address?: string | null;
   locationTips?: string | null;
   hoursText?: string | null;
+  commentPostId?: string | null;
   thumbnail?: string | null;
   plan?: PartnerPlan;
   status?: PartnerStatus;
@@ -53,6 +54,7 @@ export function partnerStoreToPrismaData(input: PartnerStorePrismaInput) {
     address: nullIfEmpty(input.address),
     locationTips: nullIfEmpty(input.locationTips),
     hoursText: nullIfEmpty(input.hoursText),
+    commentPostId: nullIfEmpty(input.commentPostId),
     thumbnail: nullIfEmpty(input.thumbnail),
     plan: input.plan ?? "BASIC",
     status,

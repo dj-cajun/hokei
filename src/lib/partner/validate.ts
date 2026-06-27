@@ -95,6 +95,7 @@ export const partnerStoreCreateSchema = z.object({
   address: z.string().max(300).optional(),
   locationTips: z.string().max(2000).optional(),
   hoursText: z.string().max(1000).optional(),
+  commentPostId: z.string().max(64).optional().nullable(),
   thumbnail: optionalHttpsUrl,
   plan: partnerPlanSchema.default("BASIC"),
   status: partnerStatusSchema.default("DRAFT"),
@@ -170,12 +171,15 @@ export const partnerEventCreateSchema = z.object({
 /** 사장님 셀프 수정 — 노출·플랜·slug 제외 */
 export const partnerStoreOwnerUpdateSchema = z.object({
   tagline: z.string().max(200).optional(),
+  introText: z.string().max(2000).optional(),
   description: z.string().max(8000).optional(),
+  menuText: z.string().max(8000).optional(),
   phone: phoneField,
   kakaoLink: kakaoLinkField,
   mapsUrl: mapsUrlField,
   address: z.string().max(300).optional(),
-  hoursText: z.string().max(300).optional(),
+  locationTips: z.string().max(2000).optional(),
+  hoursText: z.string().max(1000).optional(),
   thumbnail: optionalHttpsUrl,
 });
 
