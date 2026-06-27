@@ -4,6 +4,10 @@ import { apiError, apiSuccess } from "@/lib/api-response";
 import { writeAdminAudit } from "@/lib/admin/audit-log";
 import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { partnerStoreToPrismaData } from "@/lib/partner/admin-map";
+import {
+  extractOwnerEmailFromBody,
+  resolveOwnerEmailInput,
+} from "@/lib/partner/owner";
 import { isPartnerSlugTaken } from "@/lib/partner/queries";
 import { partnerStoreCreateSchema } from "@/lib/partner/validate";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +29,7 @@ export async function GET(request: Request) {
 
   const stores = await prisma.partnerStore.findMany({
     orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
+    include: { owner: { select: { email: true } } },
   });
 
   return apiSuccess({ stores });
@@ -43,7 +48,8 @@ export async function POST(request: Request) {
     return apiError("잘못된 JSON입니다.", 400);
   }
 
-  const parsed = partnerStoreCreateSchema.safeParse(body);
+  const { payload, ownerEmail } = extractOwnerEmailFromBody(body);
+  const parsed = partnerStoreCreateSchema.safeParse(payload);
   if (!parsed.success) {
     return apiError(
       parsed.error.issues[0]?.message ?? "입력값이 올바르지 않습니다.",
@@ -55,8 +61,18 @@ export async function POST(request: Request) {
     return apiError("이미 사용 중인 slug입니다.", 409);
   }
 
+  const ownerResolved = await resolveOwnerEmailInput(ownerEmail);
+  if (ownerResolved.action === "error") {
+    return apiError(ownerResolved.message, 400);
+  }
+
   const store = await prisma.partnerStore.create({
-    data: partnerStoreToPrismaData(parsed.data),
+    data: {
+      ...partnerStoreToPrismaData(parsed.data),
+      ...(ownerResolved.action === "set"
+        ? { ownerId: ownerResolved.ownerId }
+        : {}),
+    },
   });
 
   revalidatePartnerPaths(store.slug);

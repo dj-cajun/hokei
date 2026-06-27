@@ -7,6 +7,10 @@ import {
   nullIfEmpty,
   partnerStoreToPrismaData,
 } from "@/lib/partner/admin-map";
+import {
+  extractOwnerEmailFromBody,
+  resolveOwnerEmailInput,
+} from "@/lib/partner/owner";
 import { isPartnerSlugTaken } from "@/lib/partner/queries";
 import { partnerStoreUpdateSchema } from "@/lib/partner/validate";
 import { prisma } from "@/lib/prisma";
@@ -41,12 +45,18 @@ export async function PATCH(request: Request, context: RouteContext) {
     return apiError("잘못된 JSON입니다.", 400);
   }
 
-  const parsed = partnerStoreUpdateSchema.safeParse(body);
+  const { payload, ownerEmail } = extractOwnerEmailFromBody(body);
+  const parsed = partnerStoreUpdateSchema.safeParse(payload);
   if (!parsed.success) {
     return apiError(
       parsed.error.issues[0]?.message ?? "입력값이 올바르지 않습니다.",
       400
     );
+  }
+
+  const ownerResolved = await resolveOwnerEmailInput(ownerEmail);
+  if (ownerResolved.action === "error") {
+    return apiError(ownerResolved.message, 400);
   }
 
   if (parsed.data.slug && parsed.data.slug !== existing.slug) {
@@ -104,10 +114,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         : existing.expiresAt,
   };
 
-  const data = partnerStoreToPrismaData(merged);
   const store = await prisma.partnerStore.update({
     where: { id },
-    data,
+    data: {
+      ...partnerStoreToPrismaData(merged),
+      ...(ownerResolved.action === "set"
+        ? { ownerId: ownerResolved.ownerId }
+        : {}),
+      ...(ownerResolved.action === "clear" ? { ownerId: null } : {}),
+    },
   });
 
   revalidatePartnerPaths(existing.slug, store.slug);

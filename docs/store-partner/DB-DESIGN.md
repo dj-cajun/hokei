@@ -34,6 +34,7 @@ PartnerStore (optional) ── link ── Post.storeName  [Phase 2, soft string
 | sortOrder | Int @default(0) | /partners 정렬 |
 | publishedAt | DateTime? | |
 | expiresAt | DateTime? | null = 무기한 |
+| ownerId | String? | FK → User (셀프 수정 권한) |
 | createdAt | DateTime | |
 | updatedAt | DateTime | |
 

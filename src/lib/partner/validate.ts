@@ -156,3 +156,25 @@ export const partnerEventCreateSchema = z.object({
   slug: z.string().min(1).max(PARTNER_SLUG_MAX),
   eventType: partnerEventTypeSchema,
 });
+
+/** 사장님 셀프 수정 — 노출·플랜·slug 제외 */
+export const partnerStoreOwnerUpdateSchema = z.object({
+  tagline: z.string().max(200).optional(),
+  description: z.string().max(8000).optional(),
+  phone: phoneField,
+  kakaoLink: kakaoLinkField,
+  mapsUrl: mapsUrlField,
+  address: z.string().max(300).optional(),
+  hoursText: z.string().max(300).optional(),
+  thumbnail: optionalHttpsUrl,
+});
+
+export type PartnerStoreOwnerUpdateInput = z.infer<
+  typeof partnerStoreOwnerUpdateSchema
+>;
+
+export const partnerStoreOwnerEmailSchema = z
+  .string()
+  .email("유효한 이메일을 입력해 주세요.")
+  .optional()
+  .or(z.literal(""));

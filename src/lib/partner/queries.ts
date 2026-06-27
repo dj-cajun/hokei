@@ -31,6 +31,19 @@ export async function getPartnerStoreBySlugAnyStatus(slug: string) {
   });
 }
 
+/** 사장님 셀프 서비스 — ARCHIVED 제외, 최근 수정 우선 */
+export async function getPartnerStoreByOwnerId(ownerId: string) {
+  if (!ownerId.trim()) return null;
+
+  return prisma.partnerStore.findFirst({
+    where: {
+      ownerId,
+      status: { not: "ARCHIVED" },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function listPublishedPartnerSlugs(limit = 200) {
   const take = Math.min(Math.max(limit, 1), 500);
 

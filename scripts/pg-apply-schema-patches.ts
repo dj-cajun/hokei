@@ -556,6 +556,20 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "PartnerEvent_createdAt_idx" ON "PartnerEvent"("createdAt")`
   );
 
+  await exec(`
+    ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "ownerId" TEXT
+  `);
+  await exec(`
+    DO $$ BEGIN
+      ALTER TABLE "PartnerStore"
+        ADD CONSTRAINT "PartnerStore_ownerId_fkey"
+        FOREIGN KEY ("ownerId") REFERENCES "User"("id")
+        ON DELETE SET NULL ON UPDATE CASCADE;
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerStore_ownerId_idx" ON "PartnerStore"("ownerId")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

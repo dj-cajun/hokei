@@ -35,6 +35,7 @@ type StoreRow = {
   status: PartnerStatus;
   sortOrder: number;
   expiresAt: string | null;
+  owner?: { email: string } | null;
 };
 
 type BannerRow = {
@@ -77,6 +78,7 @@ const emptyStoreForm = {
   status: "DRAFT" as PartnerStatus,
   sortOrder: 0,
   expiresAt: "",
+  ownerEmail: "",
 };
 
 const emptyBannerForm = {
@@ -181,6 +183,7 @@ export function PartnersPanel() {
       status: row.status,
       sortOrder: row.sortOrder,
       expiresAt: row.expiresAt ? row.expiresAt.slice(0, 10) : "",
+      ownerEmail: row.owner?.email ?? "",
     });
   }
 
@@ -574,6 +577,22 @@ export function PartnersPanel() {
                 }
                 className="mt-1"
               />
+            </div>
+            <div>
+              <Label htmlFor="ownerEmail">사장님 계정 이메일</Label>
+              <Input
+                id="ownerEmail"
+                type="email"
+                value={storeForm.ownerEmail}
+                onChange={(e) =>
+                  setStoreForm((f) => ({ ...f, ownerEmail: e.target.value }))
+                }
+                placeholder="셀프 수정 권한 부여"
+                className="mt-1"
+              />
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                호케이 가입 이메일. 비우면 연결 해제.
+              </p>
             </div>
             <div>
               <Label htmlFor="thumbnail">썸네일 URL</Label>

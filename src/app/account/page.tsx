@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { getUserManageablePosts } from "@/lib/profile";
+import { getPartnerStoreByOwnerId } from "@/lib/partner/queries";
 import { MyPostsPanel } from "@/components/account/my-posts-panel";
 
 export const metadata: Metadata = {
@@ -14,7 +15,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
   const session = await requireAuth();
-  const posts = await getUserManageablePosts(session.user.id);
+  const [posts, partnerStore] = await Promise.all([
+    getUserManageablePosts(session.user.id),
+    getPartnerStoreByOwnerId(session.user.id),
+  ]);
 
   const serialized = posts.map((p) => ({
     id: p.id,
@@ -41,6 +45,17 @@ export default async function AccountPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           {session.user.name}님 · 내가 작성한 글 {serialized.length}건
         </p>
+
+        {partnerStore ? (
+          <p className="mt-3">
+            <Link
+              href="/account/partner"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              제휴 업소 관리 ({partnerStore.name}) →
+            </Link>
+          </p>
+        ) : null}
 
         <MyPostsPanel posts={serialized} />
       </div>
