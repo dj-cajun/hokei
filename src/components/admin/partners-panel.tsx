@@ -49,7 +49,15 @@ type BannerRow = {
   store: { id: string; name: string; slug: string; status: PartnerStatus };
 };
 
+type EventStats = { views: number; clicks: number; total: number };
+
 const categories = Object.keys(PARTNER_CATEGORY_LABELS) as PartnerCategory[];
+const bannerSlots = [
+  "HOME_BOTTOM",
+  "HOME_TOP",
+  "NEWS_INLINE",
+  "PROMO_TOP",
+] as const;
 const plans: PartnerPlan[] = ["BASIC", "STANDARD", "PREMIUM"];
 const statuses: PartnerStatus[] = ["DRAFT", "PUBLISHED", "ARCHIVED"];
 
@@ -95,6 +103,7 @@ export function PartnersPanel() {
   const [tab, setTab] = useState<Tab>("stores");
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [banners, setBanners] = useState<BannerRow[]>([]);
+  const [eventStats, setEventStats] = useState<Record<string, EventStats>>({});
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -121,13 +130,21 @@ export function PartnersPanel() {
     }
   }, []);
 
+  const loadStats = useCallback(async () => {
+    const res = await fetch("/api/admin/partner-events/summary");
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      setEventStats(data.stats ?? {});
+    }
+  }, []);
+
   const reload = useCallback(async () => {
     try {
-      await Promise.all([loadStores(), loadBanners()]);
+      await Promise.all([loadStores(), loadBanners(), loadStats()]);
     } finally {
       setReady(true);
     }
-  }, [loadStores, loadBanners]);
+  }, [loadStores, loadBanners, loadStats]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -343,6 +360,7 @@ export function PartnersPanel() {
                   <th className="py-2 pr-2">slug</th>
                   <th className="py-2 pr-2">플랜</th>
                   <th className="py-2 pr-2">상태</th>
+                  <th className="py-2 pr-2">30일</th>
                   <th className="py-2" />
                 </tr>
               </thead>
@@ -352,7 +370,7 @@ export function PartnersPanel() {
                     <td className="py-2 pr-2 font-medium">{row.name}</td>
                     <td className="py-2 pr-2">
                       <Link
-                        href={`/store/${row.slug}`}
+                        href={`/store/${row.slug}${row.status === "PUBLISHED" ? "" : "?preview=1"}`}
                         className="text-primary hover:underline"
                         target="_blank"
                       >
@@ -361,6 +379,11 @@ export function PartnersPanel() {
                     </td>
                     <td className="py-2 pr-2">{row.plan}</td>
                     <td className="py-2 pr-2">{row.status}</td>
+                    <td className="py-2 pr-2 text-[10px] text-muted-foreground">
+                      {eventStats[row.id]
+                        ? `${eventStats[row.id].views}조회 · ${eventStats[row.id].clicks}클릭`
+                        : "—"}
+                    </td>
                     <td className="py-2 text-right">
                       <button
                         type="button"
@@ -598,7 +621,7 @@ export function PartnersPanel() {
               ) : null}
               {storeForm.slug ? (
                 <Link
-                  href={`/store/${storeForm.slug}`}
+                  href={`/store/${storeForm.slug}${storeForm.status === "PUBLISHED" ? "" : "?preview=1"}`}
                   target="_blank"
                   className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                 >
@@ -684,7 +707,11 @@ export function PartnersPanel() {
                 }
                 className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
-                <option value="HOME_BOTTOM">HOME_BOTTOM</option>
+                {bannerSlots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
               </select>
             </div>
             <div>

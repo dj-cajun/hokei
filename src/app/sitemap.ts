@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { prisma } from "@/lib/prisma";
+import { publishedPartnerWhere } from "@/lib/partner/queries";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -15,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/real-estate",
     "/classifieds",
     "/promo",
+    "/partners",
     "/life",
     "/life/study",
     "/search",
@@ -29,16 +31,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   let posts: { id: string; publishedAt: Date }[] = [];
+  let partnerStores: { slug: string; updatedAt: Date }[] = [];
   if (!isDatabaseAvailable()) {
     return staticRoutes;
   }
   try {
-    posts = await prisma.post.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      take: 500,
-      select: { id: true, publishedAt: true },
-    });
+    [posts, partnerStores] = await Promise.all([
+      prisma.post.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: { publishedAt: "desc" },
+        take: 500,
+        select: { id: true, publishedAt: true },
+      }),
+      prisma.partnerStore.findMany({
+        where: publishedPartnerWhere(),
+        select: { slug: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 200,
+      }),
+    ]);
   } catch {
     /* build/CI without DB */
   }
@@ -50,5 +61,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...postRoutes];
+  const storeRoutes: MetadataRoute.Sitemap = partnerStores.map((s) => ({
+    url: `${base}/store/${s.slug}`,
+    lastModified: s.updatedAt,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...postRoutes, ...storeRoutes];
 }

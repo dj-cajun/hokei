@@ -533,6 +533,29 @@ async function main() {
     `CREATE INDEX IF NOT EXISTS "PartnerBanner_storeId_idx" ON "PartnerBanner"("storeId")`
   );
 
+  await exec(`
+    DO $$ BEGIN
+      CREATE TYPE "PartnerEventType" AS ENUM ('VIEW', 'KAKAO_CLICK', 'PHONE_CLICK', 'MAPS_CLICK', 'BANNER_CLICK');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS "PartnerEvent" (
+      "id" TEXT NOT NULL,
+      "storeId" TEXT NOT NULL,
+      "eventType" "PartnerEventType" NOT NULL,
+      "userAgentHash" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "PartnerEvent_pkey" PRIMARY KEY ("id"),
+      CONSTRAINT "PartnerEvent_storeId_fkey"
+        FOREIGN KEY ("storeId") REFERENCES "PartnerStore"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`);
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerEvent_storeId_eventType_idx" ON "PartnerEvent"("storeId", "eventType")`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "PartnerEvent_createdAt_idx" ON "PartnerEvent"("createdAt")`
+  );
+
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns
     WHERE table_schema = 'public'

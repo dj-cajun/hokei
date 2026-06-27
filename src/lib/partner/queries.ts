@@ -21,6 +21,58 @@ export async function getPartnerStoreBySlug(slug: string) {
   });
 }
 
+/** 관리자 draft LP 미리보기 */
+export async function getPartnerStoreBySlugAnyStatus(slug: string) {
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+
+  return prisma.partnerStore.findUnique({
+    where: { slug: trimmed },
+  });
+}
+
+export async function listPublishedPartnerSlugs(limit = 200) {
+  const take = Math.min(Math.max(limit, 1), 500);
+
+  return prisma.partnerStore.findMany({
+    where: publishedPartnerWhere(),
+    select: { slug: true, updatedAt: true },
+    orderBy: { updatedAt: "desc" },
+    take,
+  });
+}
+
+export async function getPartnerEventSummary(since: Date) {
+  const rows = await prisma.partnerEvent.groupBy({
+    by: ["storeId", "eventType"],
+    where: { createdAt: { gte: since } },
+    _count: { _all: true },
+  });
+
+  const byStore = new Map<
+    string,
+    { views: number; clicks: number; total: number }
+  >();
+
+  for (const row of rows) {
+    const entry = byStore.get(row.storeId) ?? {
+      views: 0,
+      clicks: 0,
+      total: 0,
+    };
+    const count = row._count._all;
+    entry.total += count;
+    if (row.eventType === "VIEW") {
+      entry.views += count;
+    } else {
+      entry.clicks += count;
+    }
+    byStore.set(row.storeId, entry);
+  }
+
+  return byStore;
+}
+
 export async function listPublishedPartners(options?: {
   limit?: number;
   category?: PartnerCategory;

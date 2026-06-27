@@ -483,6 +483,7 @@ model PartnerStore {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   banners     PartnerBanner[]
+  events      PartnerEvent[]
 
   @@index([status])
   @@index([category])
@@ -508,6 +509,27 @@ model PartnerBanner {
 
   @@index([slot, isActive])
   @@index([storeId])
+}
+
+enum PartnerEventType {
+  VIEW
+  KAKAO_CLICK
+  PHONE_CLICK
+  MAPS_CLICK
+  BANNER_CLICK
+}
+
+/// 제휴 업소 LP·배너 클릭 통계 (Phase 2)
+model PartnerEvent {
+  id            String           @id @default(cuid())
+  storeId       String
+  store         PartnerStore     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  eventType     PartnerEventType
+  userAgentHash String?
+  createdAt     DateTime         @default(now())
+
+  @@index([storeId, eventType])
+  @@index([createdAt])
 }
 
 /// 일별 자동 수집 로그 (하루 10건 제한 추적)

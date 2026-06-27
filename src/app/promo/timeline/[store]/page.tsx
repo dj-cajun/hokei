@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { isDatabaseAvailable } from "@/lib/database-available";
+import { getPartnerStoreBySlug } from "@/lib/partner/queries";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { formatRelativeTime } from "@/lib/format/date";
 import { getWriteHref } from "@/lib/write-sections";
@@ -30,6 +31,8 @@ export default async function PromoStoreTimelinePage({ params }: PageProps) {
   const { storeName, items } = await getPromoPostsByStore(store);
   if (!storeName || items.length === 0) notFound();
 
+  const partnerStore = await getPartnerStoreBySlug(store);
+
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
@@ -45,6 +48,14 @@ export default async function PromoStoreTimelinePage({ params }: PageProps) {
           <p className="mt-0.5 text-xs text-muted-foreground">
             {items.length}건의 홍보·전단 아카이브
           </p>
+          {partnerStore ? (
+            <Link
+              href={`/store/${partnerStore.slug}`}
+              className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
+            >
+              제휴 업소 페이지 보기 →
+            </Link>
+          ) : null}
         </header>
 
         <ul className="relative my-3 ml-3 space-y-4 border-l-2 border-rose-200/80 py-2 pl-4">

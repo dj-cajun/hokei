@@ -143,3 +143,16 @@ export const partnerBannerUpdateSchema = partnerBannerCreateSchema
     slot: partnerBannerSlotSchema.optional(),
     imageUrl: z.string().url().max(500).optional(),
   });
+
+export const partnerEventTypeSchema = z.enum([
+  "VIEW",
+  "KAKAO_CLICK",
+  "PHONE_CLICK",
+  "MAPS_CLICK",
+  "BANNER_CLICK",
+]);
+
+export const partnerEventCreateSchema = z.object({
+  slug: z.string().min(1).max(PARTNER_SLUG_MAX),
+  eventType: partnerEventTypeSchema,
+});

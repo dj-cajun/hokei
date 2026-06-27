@@ -4,6 +4,7 @@ import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PromoPartnerBanner } from "@/components/partner/home-partner-banner";
 import { LIFE_INFO_HUB_HREF } from "@/lib/life-info-hub";
 import type { FeedItem } from "@/types/feed";
 
@@ -42,6 +43,8 @@ export function LifeInfoHubPage({
             </div>
           </div>
         </div>
+
+        <PromoPartnerBanner />
 
         <section className="bg-surface lg:rounded-xl">
           <header className="flex items-center justify-between border-b border-[#f3f4f6] px-2 py-1.5">

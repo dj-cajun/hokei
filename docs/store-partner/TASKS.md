@@ -39,11 +39,11 @@
 
 ## Phase 2 — 운영·수익
 
-- [ ] **T7** PartnerEvent 클릭 통계
-- [ ] **T7** 추가 배너 슬롯 (HOME_TOP, NEWS_INLINE)
-- [ ] **T7** `/promo/timeline` ↔ `/store` 연결
-- [ ] **T7** sitemap 동적 URL
-- [ ] **T7** admin preview (draft LP)
+- [x] **T7** PartnerEvent 클릭 통계
+- [x] **T7** 추가 배너 슬롯 (HOME_TOP, NEWS_INLINE)
+- [x] **T7** `/promo/timeline` ↔ `/store` 연결
+- [x] **T7** sitemap 동적 URL
+- [x] **T7** admin preview (draft LP)
 
 ---
 
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ Phase 2 (T7)** 또는 프로덕션 데모 시드 실행
+**→ Phase 3 (셀프 서비스)** 또는 프로덕션 운영·데모 시드
 
 ---
 

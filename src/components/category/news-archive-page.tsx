@@ -3,6 +3,7 @@ import { NewsInfiniteList } from "@/components/category/news-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
+import { NewsPartnerBanner } from "@/components/partner/home-partner-banner";
 import type { NewsDateGroup } from "@/lib/news/group-news-by-date";
 import type { FeedItem } from "@/types/feed";
 
@@ -45,6 +46,8 @@ export function NewsArchivePage({
             전체 {totalCount.toLocaleString()}건
           </p>
         </div>
+
+        <NewsPartnerBanner />
 
         <section className="bg-surface lg:rounded-xl">
           <header className="border-b border-[#f3f4f6] px-2 py-2">

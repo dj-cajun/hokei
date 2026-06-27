@@ -1,32 +1,31 @@
-import Link from "next/link";
-import { isDatabaseAvailable } from "@/lib/database-available";
-import { listBannersForSlot } from "@/lib/partner/queries";
+import { PartnerBannerSlot } from "@/components/partner/partner-banner-slot";
 
 export async function HomePartnerBanner() {
-  if (!isDatabaseAvailable()) return null;
+  return <PartnerBannerSlot slot="HOME_BOTTOM" />;
+}
 
-  const banners = await listBannersForSlot("HOME_BOTTOM", 3);
-  if (banners.length === 0) return null;
+export async function HomePartnerBannerTop() {
+  return <PartnerBannerSlot slot="HOME_TOP" limit={1} />;
+}
 
+export async function NewsPartnerBanner() {
   return (
-    <div className="space-y-2 px-3 py-2">
-      {banners.map((banner) => {
-        const slug = banner.linkSlug?.trim() || banner.store.slug;
-        return (
-          <Link
-            key={banner.id}
-            href={`/store/${slug}`}
-            className="block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={banner.imageUrl}
-              alt={banner.altText ?? banner.store.name}
-              className="aspect-[3/1] w-full object-cover"
-            />
-          </Link>
-        );
-      })}
-    </div>
+    <PartnerBannerSlot
+      slot="NEWS_INLINE"
+      limit={1}
+      className="px-2 py-2"
+      imageClassName="aspect-[3/1] w-full rounded-lg object-cover"
+    />
+  );
+}
+
+export async function PromoPartnerBanner() {
+  return (
+    <PartnerBannerSlot
+      slot="PROMO_TOP"
+      limit={2}
+      className="space-y-2 px-2 py-2"
+      imageClassName="aspect-[3/1] w-full rounded-lg object-cover"
+    />
   );
 }

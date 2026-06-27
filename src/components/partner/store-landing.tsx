@@ -1,17 +1,32 @@
 import Link from "next/link";
 import type { PartnerStore } from "@/generated/prisma/client";
 import { StoreCtaBar } from "@/components/partner/store-cta-bar";
+import { StoreViewTracker } from "@/components/partner/store-view-tracker";
 import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
 
 type StoreLandingProps = {
   store: PartnerStore;
+  isPreview?: boolean;
+  promoTimelineSlug?: string | null;
 };
 
-export function StoreLanding({ store }: StoreLandingProps) {
+export function StoreLanding({
+  store,
+  isPreview = false,
+  promoTimelineSlug = null,
+}: StoreLandingProps) {
   const categoryLabel = PARTNER_CATEGORY_LABELS[store.category];
 
   return (
     <div className="mx-auto w-full max-w-[480px] flex-1 bg-surface lg:max-w-2xl lg:rounded-lg">
+      {!isPreview ? <StoreViewTracker slug={store.slug} /> : null}
+
+      {isPreview ? (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-900">
+          관리자 미리보기 — {store.status === "PUBLISHED" ? "공개 상태" : "비공개(draft)"}
+        </div>
+      ) : null}
+
       {store.thumbnail ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -32,9 +47,18 @@ export function StoreLanding({ store }: StoreLandingProps) {
         {store.tagline ? (
           <p className="mt-2 text-sm text-muted-foreground">{store.tagline}</p>
         ) : null}
+        {promoTimelineSlug ? (
+          <Link
+            href={`/promo/timeline/${promoTimelineSlug}`}
+            className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
+          >
+            홍보·전단 아카이브 보기 →
+          </Link>
+        ) : null}
       </header>
 
       <StoreCtaBar
+        slug={store.slug}
         kakaoLink={store.kakaoLink}
         phone={store.phone}
         mapsUrl={store.mapsUrl}

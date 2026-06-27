@@ -9,7 +9,7 @@ import {
 } from "@/components/home/safe-home-sections";
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
-import { HomePartnerBanner } from "@/components/partner/home-partner-banner";
+import { HomePartnerBanner, HomePartnerBannerTop } from "@/components/partner/home-partner-banner";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { HomeLifeStrip } from "@/components/home/home-life-strip";
@@ -90,6 +90,7 @@ export async function HomePageContent() {
       {/* 모바일 — 뉴스 우선 */}
       <div className="block lg:hidden">
         <SafeWeatherQuickGrid />
+        <HomePartnerBannerTop />
         <HomeHeadlineSlider items={sliderSource} />
         <HomeCompactNewsList items={compactNews} />
         <HomeLifeStrip featuredLife={featuredLife} />
