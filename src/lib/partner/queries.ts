@@ -1,4 +1,4 @@
-import type { PartnerCategory } from "@/generated/prisma";
+import type { PartnerCategory } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 /** 공개 LP·허브 — PUBLISHED 이고 만료 전만 */

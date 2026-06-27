@@ -12,8 +12,8 @@
 - [x] **T1-3** `src/lib/partner/queries.ts` — getBySlug, listPublished
 
 ### T2. 모바일 LP
-- [ ] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
-- [ ] **T2-2** `store-landing.tsx`, `store-cta-bar.tsx`
+- [x] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
+- [x] **T2-2** `store-landing.tsx`, `store-cta-bar.tsx`
 - [ ] **T2-3** 404 / expired / draft 처리
 
 ### T3. 제휴 허브
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T2-1** (`loop.md` 필수 통과)
+**→ T2-3** (`loop.md` 필수 통과)
 
 ---
 
@@ -66,3 +66,4 @@
 |------|--------|------|
 | 2026-06-27 | T1-1 PartnerStore 스키마 | 8b7cdd6 |
 | 2026-06-27 | 기획 문서·loop.md | 11665df |
+| 2026-06-27 | T2-1 LP 라우트·metadata, T2-2 UI | (this PR) |
