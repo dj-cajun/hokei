@@ -8,6 +8,7 @@ import {
   otherParticipantId,
 } from "@/lib/messages/conversation";
 import { prisma } from "@/lib/prisma";
+import { enforceActiveUser } from "@/lib/user-moderation";
 
 const createSchema = z.object({
   recipientId: z.string().min(1),
@@ -22,6 +23,11 @@ export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return apiError("로그인이 필요합니다.", 401);
+  }
+
+  const active = await enforceActiveUser(session.user.id);
+  if (!active.ok) {
+    return apiError(active.error, active.status);
   }
 
   const userId = session.user.id;
@@ -90,6 +96,11 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return apiError("로그인이 필요합니다.", 401);
+  }
+
+  const active = await enforceActiveUser(session.user.id);
+  if (!active.ok) {
+    return apiError(active.error, active.status);
   }
 
   const parsed = createSchema.safeParse(await request.json());

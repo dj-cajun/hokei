@@ -62,6 +62,8 @@ model User {
   avatarUrl         String?
   password          String
   role              Role               @default(USER)
+  isSuspended       Boolean            @default(false)
+  writeBanned       Boolean            @default(false)
   emailVerified     DateTime?
   emailVerification EmailVerification?
   posts             Post[]

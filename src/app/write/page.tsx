@@ -1,7 +1,11 @@
 import { WriteForm } from "@/components/write/write-form";
 import { getWritableCategories } from "@/lib/categories";
 import { isWritableSection, WRITE_SECTION_META } from "@/lib/write-sections";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { USER_WRITE_BANNED_MESSAGE } from "@/lib/user-moderation";
 
 import type { Metadata } from "next";
 
@@ -36,6 +40,33 @@ export default async function WritePage({ searchParams }: PageProps) {
   const defaultCategoryId =
     categories.find((c) => c.slug === meta?.defaultCategorySlug)?.id ??
     categories[0]!.id;
+
+  const session = await auth();
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isSuspended: true, writeBanned: true },
+    });
+    if (user?.isSuspended) {
+      redirect("/login?suspended=1");
+    }
+    if (user?.writeBanned) {
+      return (
+        <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-surface p-6">
+          <h1 className="text-lg font-bold">글쓰기 제한</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {USER_WRITE_BANNED_MESSAGE}
+          </p>
+          <Link
+            href="/"
+            className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            홈으로 돌아가기
+          </Link>
+        </div>
+      );
+    }
+  }
 
   return (
     <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-surface">

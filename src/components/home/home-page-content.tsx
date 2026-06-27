@@ -1,4 +1,5 @@
 import { HomeCompactNewsList } from "@/components/home/home-compact-news-list";
+import { HomeNewsLoadAlert } from "@/components/home/home-news-load-alert";
 import { HomeHeadlineSlider } from "@/components/home/home-headline-slider";
 import { HomeMobileFeed } from "@/components/home/home-mobile-feed";
 import { HomeVideoHighlight } from "@/components/home/home-video-highlight";
@@ -34,6 +35,23 @@ async function safeLoad<T>(name: string, load: () => Promise<T>, fallback: T): P
   }
 }
 
+/** Neon 깨우기 — 첫 조회 실패 시 1회 재시도 */
+async function loadHomeNews(): Promise<FeedItem[]> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await getAutomatedNewsPosts(12);
+    } catch (reason) {
+      log("error", `home news failed (attempt ${attempt + 1}): ${formatUnknownError(reason)}`);
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 2500));
+        continue;
+      }
+    }
+    break;
+  }
+  return emptyFeed;
+}
+
 export async function HomePageContent() {
   if (!isDatabaseAvailable()) {
     return (
@@ -45,7 +63,7 @@ export async function HomePageContent() {
 
   // 1) 뉴스·v2 생활 — 우선 로드 (뉴스가 홈에서 가장 먼저 보이도록)
   const [news, featuredLife] = await Promise.all([
-    safeLoad("news", () => getAutomatedNewsPosts(12), emptyFeed),
+    loadHomeNews(),
     safeLoad("featuredLife", () => getFeaturedLifeGuide(), null),
   ]);
 
@@ -63,10 +81,11 @@ export async function HomePageContent() {
 
   const latestItems = latest;
   const sliderSource = news.length > 0 ? news : latestItems;
-  const compactNews = sliderSource.slice(0, 3);
+  const compactNews = news.slice(0, 3);
 
   return (
     <>
+      {news.length === 0 ? <HomeNewsLoadAlert /> : null}
       {/* 모바일 — 뉴스 우선 */}
       <div className="block lg:hidden">
         <SafeWeatherQuickGrid />

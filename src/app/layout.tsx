@@ -17,15 +17,20 @@ import { AdSenseScript } from "@/components/ads/adsense-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { resolveSiteUrl } from "@/lib/site-url";
+import { getGoogleSiteVerification } from "@/lib/site-verification";
 import {
   darkClassFromThemeCookie,
   THEME_COOKIE,
 } from "@/lib/theme-cookie";
 
 const siteUrl = resolveSiteUrl();
+const googleVerification = getGoogleSiteVerification();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  ...(googleVerification
+    ? { verification: { google: googleVerification } }
+    : {}),
   title: "호케이 Hokei - 호치민 한국 교민 포털",
   description:
     "호케이(Hokei). 호치민 거주 한국 교민을 위한 현지 뉴스, 숙소, 구인, 생존 Q&A, 커뮤니티.",

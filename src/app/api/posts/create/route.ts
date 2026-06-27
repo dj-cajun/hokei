@@ -10,6 +10,7 @@ import { indexPostInSearch } from "@/lib/search/index-post";
 import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { resolveSectionSlugForCategory } from "@/lib/category-tree";
 import { postCreateBodySchema } from "@/lib/validation/post-create";
+import { enforceCanWrite } from "@/lib/user-moderation";
 
 function topicFromSection(sectionSlug: string): PostTopic {
   if (sectionSlug === "news") return "VIETNAM_POLICY";
@@ -76,6 +77,11 @@ export async function POST(request: Request) {
     if (!userId) {
       if (!guestName?.trim() || !guestPassword?.trim()) {
         return apiError("로그인하거나 이름·비밀번호를 입력해 주세요.", 401);
+      }
+    } else {
+      const allowed = await enforceCanWrite(userId);
+      if (!allowed.ok) {
+        return apiError(allowed.error, allowed.status);
       }
     }
 

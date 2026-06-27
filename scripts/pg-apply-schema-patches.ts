@@ -3,7 +3,10 @@
  * Vercel 빌드에서 prisma-generate-for-deploy 이후 호출
  */
 import { spawnSync } from "child_process";
+import { loadDotenv } from "../src/lib/load-dotenv";
 import { createPostgresPrisma } from "../src/lib/prisma-pg";
+
+loadDotenv();
 
 const url = process.env.DATABASE_URL?.trim() ?? "";
 if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) {
@@ -347,6 +350,8 @@ async function main() {
   );
 
   await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT`);
+  await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isSuspended" BOOLEAN NOT NULL DEFAULT false`);
+  await exec(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "writeBanned" BOOLEAN NOT NULL DEFAULT false`);
 
   await exec(`
     CREATE TABLE IF NOT EXISTS "SearchQueryStat" (

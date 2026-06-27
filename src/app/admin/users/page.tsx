@@ -12,6 +12,8 @@ export default async function AdminUsersPage() {
       email: true,
       name: true,
       role: true,
+      isSuspended: true,
+      writeBanned: true,
       emailVerified: true,
       createdAt: true,
       _count: { select: { posts: true, comments: true } },
@@ -23,6 +25,8 @@ export default async function AdminUsersPage() {
     email: u.email,
     name: u.name,
     role: u.role,
+    isSuspended: u.isSuspended,
+    writeBanned: u.writeBanned,
     emailVerified: u.emailVerified?.toISOString() ?? null,
     createdAt: u.createdAt.toISOString(),
     postCount: u._count.posts,
@@ -34,7 +38,7 @@ export default async function AdminUsersPage() {
       <div>
         <h1 className="text-xl font-bold">회원 관리</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          총 {users.length}명 · 권한 변경 · 계정 삭제 · 이메일 인증·활동 요약
+          총 {users.length}명 · 권한 변경 · 글쓰기 제한 · 계정 정지 · 삭제
         </p>
       </div>
 

@@ -7,12 +7,15 @@ type ExchangeCalculatorProps = {
   vndPerKrw: number;
 };
 
-function formatKrw(n: number) {
-  return Math.round(n).toLocaleString("ko-KR");
+function formatNum(n: number): string {
+  const rounded = Math.round(n);
+  return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-function formatVnd(n: number) {
-  return Math.round(n).toLocaleString("en-US");
+function computeVndFromKrw(krwText: string, vndPerKrw: number): string {
+  const n = parseFloat(krwText.replace(/,/g, ""));
+  if (Number.isNaN(n) || !vndPerKrw) return "";
+  return formatNum(n * vndPerKrw);
 }
 
 export function ExchangeCalculator({ vndPerKrw }: ExchangeCalculatorProps) {
@@ -26,48 +29,49 @@ export function ExchangeCalculator({ vndPerKrw }: ExchangeCalculatorProps) {
     if (lastEdited === "krw") {
       const n = parseFloat(krwInput.replace(/,/g, ""));
       if (Number.isNaN(n)) return { krw: krwInput, vnd: "" };
-      return { krw: krwInput, vnd: formatVnd(n * vndPerKrw) };
+      return { krw: krwInput, vnd: computeVndFromKrw(krwInput, vndPerKrw) };
     }
 
     const n = parseFloat(vndInput.replace(/,/g, ""));
     if (Number.isNaN(n)) return { krw: "", vnd: vndInput };
-    return { krw: formatKrw(n / vndPerKrw), vnd: vndInput };
+    return { krw: formatNum(n / vndPerKrw), vnd: vndInput };
   }, [krwInput, vndInput, lastEdited, vndPerKrw]);
+
+  const inputClass =
+    "mt-1 w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm";
 
   return (
     <div className="mt-3 space-y-2 border-t border-border-light pt-3">
       <p className="text-xs font-semibold text-foreground">환율 계산기</p>
-      <label htmlFor="exchange-krw" className="block text-[11px] text-muted-foreground">
+      <label className="block text-[11px] text-muted-foreground">
         KRW (원)
         <input
-          id="exchange-krw"
-          name="exchangeKrw"
           type="text"
           inputMode="decimal"
           autoComplete="off"
+          aria-label="원화 금액"
           value={krw}
           onChange={(e) => {
             setLastEdited("krw");
             setKrwInput(e.target.value.replace(/[^\d.]/g, ""));
           }}
-          className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+          className={inputClass}
           placeholder="1000"
         />
       </label>
-      <label htmlFor="exchange-vnd" className="block text-[11px] text-muted-foreground">
+      <label className="block text-[11px] text-muted-foreground">
         VND (동)
         <input
-          id="exchange-vnd"
-          name="exchangeVnd"
           type="text"
           inputMode="decimal"
           autoComplete="off"
+          aria-label="베트남 동 금액"
           value={vnd}
           onChange={(e) => {
             setLastEdited("vnd");
             setVndInput(e.target.value.replace(/[^\d.]/g, ""));
           }}
-          className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+          className={inputClass}
           placeholder="20000"
         />
       </label>

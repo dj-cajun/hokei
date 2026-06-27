@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { isCommentOwner } from "@/lib/post-permissions";
 import { visibleCommentWhere } from "@/lib/moderation";
 import { notifyPostComment } from "@/lib/notifications";
+import { enforceCanWrite } from "@/lib/user-moderation";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
@@ -91,6 +92,11 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!userId) {
       return apiError("댓글을 작성하려면 로그인이 필요합니다.", 401);
+    }
+
+    const allowed = await enforceCanWrite(userId);
+    if (!allowed.ok) {
+      return apiError(allowed.error, allowed.status);
     }
 
     if (parentId) {

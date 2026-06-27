@@ -42,7 +42,12 @@ export async function POST(request: Request) {
       );
     }
 
-    await findOrCreateUserFromGoogle(profile);
+    const user = await findOrCreateUserFromGoogle(profile);
+    if (!user) {
+      return NextResponse.redirect(
+        new URL("/?login_error=google_account_suspended", request.url)
+      );
+    }
 
     const signInResult = await signInWithGoogleCredential(credential, {
       redirect: false,
@@ -56,7 +61,8 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL(callbackUrl, request.url));
   } catch (err) {
     const code = googleLoginErrorCodeFromUnknown(err);
-    console.error("[google redirect]", code, err);
+    const detail = err instanceof Error ? err.message : String(err);
+    console.error("[google redirect]", code, detail, err);
     return NextResponse.redirect(
       new URL(`/?login_error=${code}`, request.url)
     );

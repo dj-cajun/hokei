@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ const HIDE_PATHS = ["/write", "/login", "/signup", "/admin"];
 
 export function WriteFab() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [visible, setVisible] = useState(true);
   const lastY = useRef(0);
 
@@ -30,6 +32,10 @@ export function WriteFab() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (session?.user?.writeBanned || session?.user?.isSuspended) {
+    return null;
+  }
 
   if (
     HIDE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||

@@ -2,7 +2,7 @@ import {
   ExchangeDisplay,
   ExchangeDisplayHeader,
 } from "@/components/widgets/exchange-display";
-import { ExchangeCalculator } from "@/components/widgets/exchange-calculator";
+import { ExchangeCalculatorShell } from "@/components/widgets/exchange-calculator-shell";
 import {
   WeatherDisplay,
   WeatherDisplayHeader,
@@ -40,7 +40,7 @@ export async function ExchangeStatsPanel() {
     <SidebarCard>
       <ExchangeDisplayHeader />
       <ExchangeDisplay data={data} />
-      <ExchangeCalculator vndPerKrw={data.vndPerKrw} />
+      <ExchangeCalculatorShell vndPerKrw={data.vndPerKrw} />
     </SidebarCard>
   );
 }

@@ -40,7 +40,12 @@ const globalForPrisma = globalThis as unknown as {
 function isValidPrismaClient(
   client: PrismaClient | undefined
 ): client is PrismaClient {
-  return Boolean(client && typeof client.post?.findMany === "function");
+  return Boolean(
+    client &&
+      typeof client.post?.findMany === "function" &&
+      typeof client.appSetting?.findUnique === "function" &&
+      typeof client.user?.findUnique === "function"
+  );
 }
 
 function getPrisma(): PrismaClient {

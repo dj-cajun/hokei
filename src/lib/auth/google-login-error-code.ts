@@ -3,6 +3,9 @@ import { Prisma } from "@/generated/prisma/client";
 /** redirect POST 실패 시 URL `login_error` 코드 */
 export function googleLoginErrorCodeFromUnknown(err: unknown): string {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2022") {
+      return "google_db_schema";
+    }
     return "google_db_error";
   }
   if (err instanceof Prisma.PrismaClientInitializationError) {

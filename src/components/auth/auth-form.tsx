@@ -38,6 +38,7 @@ export function AuthForm({
     callbackUrlProp ?? searchParams.get("callbackUrl")
   );
   const verified = mode === "login" && searchParams.get("verified") === "1";
+  const suspended = mode === "login" && searchParams.get("suspended") === "1";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -134,6 +135,11 @@ export function AuthForm({
       {verified && (
         <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
           이메일 인증이 완료되었습니다. 로그인해 주세요.
+        </p>
+      )}
+      {suspended && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+          정지된 계정입니다. 운영자에게 문의해 주세요.
         </p>
       )}
 

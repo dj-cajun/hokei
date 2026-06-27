@@ -10,6 +10,8 @@ export async function findOrCreateUserFromGoogle(
   email: string;
   name: string;
   role: Role;
+  isSuspended: boolean;
+  writeBanned: boolean;
 } | null> {
   const email = profile.email.toLowerCase();
 
@@ -36,10 +38,16 @@ export async function findOrCreateUserFromGoogle(
     });
   }
 
+  if (user.isSuspended) {
+    return null;
+  }
+
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     role: user.role,
+    isSuspended: user.isSuspended,
+    writeBanned: user.writeBanned,
   };
 }

@@ -5,6 +5,7 @@ import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { visibleCommentWhere } from "@/lib/moderation";
+import { enforceActiveUser } from "@/lib/user-moderation";
 
 type RouteContext = { params: Promise<{ commentId: string }> };
 
@@ -60,6 +61,11 @@ export async function POST(request: Request, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return apiError("로그인이 필요합니다.", 401);
+  }
+
+  const active = await enforceActiveUser(session.user.id);
+  if (!active.ok) {
+    return apiError(active.error, active.status);
   }
 
   const { commentId } = await context.params;

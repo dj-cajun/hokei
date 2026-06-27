@@ -15,6 +15,7 @@ import {
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { canModifyComment, isCommentOwner } from "@/lib/post-permissions";
+import { enforceCanWrite } from "@/lib/user-moderation";
 
 const patchSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
@@ -111,6 +112,13 @@ export async function PATCH(request: Request, context: RouteContext) {
         recordGuestCommentPasswordFailure(request, commentId);
       }
       return apiError("수정 권한이 없습니다.", 403);
+    }
+
+    if (session?.user?.id && comment.authorId === session.user.id) {
+      const writeAllowed = await enforceCanWrite(session.user.id);
+      if (!writeAllowed.ok) {
+        return apiError(writeAllowed.error, writeAllowed.status);
+      }
     }
 
     const updated = await prisma.comment.update({

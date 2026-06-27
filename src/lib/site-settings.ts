@@ -58,11 +58,15 @@ export function resolveHomeYouTubeHighlight(
 }
 
 export async function getHomeYouTubeHighlight(): Promise<HomeYouTubeHighlight> {
-  const row = await prisma.appSetting.findUnique({
-    where: { key: HOME_YOUTUBE_URL_KEY },
-    select: { value: true },
-  });
-  return resolveHomeYouTubeHighlight(row?.value);
+  try {
+    const row = await prisma.appSetting.findUnique({
+      where: { key: HOME_YOUTUBE_URL_KEY },
+      select: { value: true },
+    });
+    return resolveHomeYouTubeHighlight(row?.value);
+  } catch {
+    return resolveHomeYouTubeHighlight(null);
+  }
 }
 
 export async function setHomeYouTubeUrl(url: string) {

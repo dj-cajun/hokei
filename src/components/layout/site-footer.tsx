@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Mail } from "lucide-react";
 import { LIFE_INFO_HUB_HREF } from "@/lib/life-info-hub";
+import { getAdContactEmail } from "@/lib/contact-emails";
+import { AdInquiryLink } from "@/components/contact/ad-inquiry-link";
 
 const quickLinks = [
   { href: "/news", label: "뉴스" },
@@ -18,8 +19,6 @@ const policyLinks = [
   { href: "/privacy", label: "개인정보처리방침" },
   { href: "/contact", label: "문의하기" },
 ] as const;
-
-const AD_EMAIL = "ads@hokei.vn";
 
 function FooterLink({
   href,
@@ -40,6 +39,7 @@ function FooterLink({
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  const adEmail = getAdContactEmail();
 
   return (
     <footer className="mt-auto border-t border-border bg-[#0b132b] text-gray-400">
@@ -52,13 +52,10 @@ export function SiteFooter() {
             <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-gray-400">
               호치민·베트남 거주 한국 교민을 위한 뉴스·커뮤니티·생활 정보 포털
             </p>
-            <a
-              href={`mailto:${AD_EMAIL}`}
+            <AdInquiryLink
+              email={adEmail}
               className="mt-4 inline-flex items-center gap-1.5 text-[12px] text-primary transition-colors hover:text-primary/80"
-            >
-              <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              광고·제휴 문의: {AD_EMAIL}
-            </a>
+            />
           </div>
 
           <div>

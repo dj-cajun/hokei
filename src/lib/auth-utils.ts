@@ -9,6 +9,8 @@ const buildStubSession: Session = {
     email: "build@hokei.local",
     name: "Build",
     role: "ADMIN",
+    isSuspended: false,
+    writeBanned: false,
   },
   expires: new Date(Date.now() + 86_400_000).toISOString(),
 };
@@ -25,6 +27,18 @@ export async function requireAuth() {
   if (!session?.user) {
     redirect("/login");
   }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isSuspended: true, writeBanned: true },
+  });
+  if (dbUser?.isSuspended) {
+    redirect("/login?suspended=1");
+  }
+  if (dbUser) {
+    session.user.writeBanned = dbUser.writeBanned;
+  }
+
   return session;
 }
 

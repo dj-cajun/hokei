@@ -21,13 +21,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id!;
         token.role = user.role;
+        token.isSuspended = user.isSuspended ?? false;
+        token.writeBanned = user.writeBanned ?? false;
       }
       if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true },
-        });
-        if (dbUser) token.role = dbUser.role;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true, isSuspended: true, writeBanned: true },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.isSuspended = dbUser.isSuspended;
+            token.writeBanned = dbUser.writeBanned;
+          }
+        } catch {
+          /* DB 일시 오류 시 authorize·기존 토큰 값 유지 */
+        }
       }
       return token;
     },
@@ -35,6 +45,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.isSuspended = Boolean(token.isSuspended);
+        session.user.writeBanned = Boolean(token.writeBanned);
       }
       return session;
     },
@@ -61,11 +73,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        if (user.isSuspended) {
+          return null;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          isSuspended: user.isSuspended,
+          writeBanned: user.writeBanned,
         };
       },
     }),

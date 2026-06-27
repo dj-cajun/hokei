@@ -26,6 +26,7 @@ import { attachmentUrlsToDelete } from "@/lib/posts/attachment-sync";
 import { isValidRegion } from "@/lib/regions";
 import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { deleteUploadFile } from "@/lib/upload";
+import { enforceCanWrite } from "@/lib/user-moderation";
 
 const attachmentSchema = z.object({
   url: z.string().min(1),
@@ -101,6 +102,13 @@ export async function PATCH(request: Request, context: RouteContext) {
         recordGuestPasswordFailure(request, id);
       }
       return apiError("수정 권한이 없습니다.", 403);
+    }
+
+    if (session?.user?.id && post.authorId === session.user.id) {
+      const writeAllowed = await enforceCanWrite(session.user.id);
+      if (!writeAllowed.ok) {
+        return apiError(writeAllowed.error, writeAllowed.status);
+      }
     }
 
     const { title, content, categoryId, attachments, newGuestPassword, region } =

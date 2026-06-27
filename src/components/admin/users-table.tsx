@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, Trash2 } from "lucide-react";
+import { Ban, Loader2, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/providers/toast-provider";
@@ -15,6 +15,8 @@ export interface AdminUser {
   email: string;
   name: string;
   role: Role;
+  isSuspended: boolean;
+  writeBanned: boolean;
   emailVerified: string | null;
   createdAt: string;
   postCount: number;
@@ -24,6 +26,24 @@ export interface AdminUser {
 interface UsersTableProps {
   users: AdminUser[];
   currentUserId: string;
+}
+
+type PatchBody = {
+  role?: Role;
+  writeBanned?: boolean;
+  isSuspended?: boolean;
+};
+
+function accountStatusLabel(user: AdminUser) {
+  if (user.isSuspended) return "계정 정지";
+  if (user.writeBanned) return "글쓰기 금지";
+  return "정상";
+}
+
+function accountStatusClass(user: AdminUser) {
+  if (user.isSuspended) return "bg-red-50 text-red-700";
+  if (user.writeBanned) return "bg-orange-50 text-orange-800";
+  return "bg-green-50 text-green-700";
 }
 
 export function UsersTable({ users, currentUserId }: UsersTableProps) {
@@ -41,16 +61,16 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
     );
   }, [users, query]);
 
-  async function updateRole(userId: string, role: Role) {
+  async function patchUser(userId: string, body: PatchBody, success: string) {
     setLoadingId(userId);
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
-        showToast("권한이 변경되었습니다.");
+        showToast(success);
         router.refresh();
       } else {
         const data = await res.json();
@@ -59,6 +79,40 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
     } finally {
       setLoadingId(null);
     }
+  }
+
+  async function updateRole(userId: string, role: Role) {
+    await patchUser(userId, { role }, "권한이 변경되었습니다.");
+  }
+
+  async function toggleWriteBan(user: AdminUser) {
+    const next = !user.writeBanned;
+    const ok = confirm(
+      next
+        ? `「${user.name}」 회원의 글쓰기를 금지할까요?`
+        : `「${user.name}」 회원의 글쓰기 제한을 해제할까요?`
+    );
+    if (!ok) return;
+    await patchUser(
+      user.id,
+      { writeBanned: next },
+      next ? "글쓰기가 금지되었습니다." : "글쓰기 제한이 해제되었습니다."
+    );
+  }
+
+  async function toggleSuspend(user: AdminUser) {
+    const next = !user.isSuspended;
+    const ok = confirm(
+      next
+        ? `「${user.name}」 회원을 정지할까요?\n로그인·글쓰기가 모두 차단됩니다.`
+        : `「${user.name}」 회원 정지를 해제할까요?`
+    );
+    if (!ok) return;
+    await patchUser(
+      user.id,
+      { isSuspended: next },
+      next ? "계정이 정지되었습니다." : "계정 정지가 해제되었습니다."
+    );
   }
 
   async function deleteUser(userId: string, name: string) {
@@ -100,11 +154,12 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
 
       <div className="overflow-hidden rounded-2xl bg-surface">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
+          <table className="w-full min-w-[920px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-muted-foreground">
                 <th className="px-4 py-3 font-medium">이름</th>
                 <th className="px-4 py-3 font-medium">이메일</th>
+                <th className="px-4 py-3 font-medium">상태</th>
                 <th className="px-4 py-3 font-medium">인증</th>
                 <th className="px-4 py-3 font-medium">활동</th>
                 <th className="px-4 py-3 font-medium">권한</th>
@@ -125,6 +180,16 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                     <td className="px-4 py-3 font-medium">{user.name}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {user.email}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          "inline-block rounded-md px-2 py-0.5 text-xs font-medium",
+                          accountStatusClass(user)
+                        )}
+                      >
+                        {accountStatusLabel(user)}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -162,7 +227,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                           본인
                         </span>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <select
                             value={user.role}
                             disabled={isLoading}
@@ -174,6 +239,29 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                             <option value="USER">일반</option>
                             <option value="ADMIN">관리자</option>
                           </select>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 text-xs"
+                            disabled={isLoading || user.isSuspended}
+                            onClick={() => void toggleWriteBan(user)}
+                          >
+                            {user.writeBanned ? "글쓰기 허용" : "글쓰기 금지"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={cn(
+                              "h-8 px-2 text-xs",
+                              user.isSuspended &&
+                                "border-red-200 text-red-600 hover:bg-red-50"
+                            )}
+                            disabled={isLoading}
+                            onClick={() => void toggleSuspend(user)}
+                          >
+                            <Ban className="mr-1 h-3.5 w-3.5" />
+                            {user.isSuspended ? "정지 해제" : "계정 정지"}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
