@@ -468,12 +468,18 @@ model PartnerStore {
   slug        String          @unique
   name        String
   tagline     String?
+  /** 2~3줄 브랜드 소개 (description과 중복 방지) */
+  introText   String?         @db.Text
   description String?         @db.Text
+  /** 메뉴명·가격 (텍스트) */
+  menuText    String?         @db.Text
   category    PartnerCategory
   phone       String?
   kakaoLink   String?
   mapsUrl     String?
   address     String?
+  /** 교통·주차 안내 */
+  locationTips String?        @db.Text
   hoursText   String?
   thumbnail   String?
   plan        PartnerPlan     @default(BASIC)
@@ -502,6 +508,8 @@ model PartnerBanner {
   store     PartnerStore      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   slot      PartnerBannerSlot
   imageUrl  String
+  /** HOME_TOP — 768px 미만 모바일 전용 (없으면 imageUrl 사용) */
+  mobileImageUrl String?
   altText   String?
   linkSlug  String?
   sortOrder Int               @default(0)

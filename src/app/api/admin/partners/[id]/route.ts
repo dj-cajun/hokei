@@ -72,10 +72,18 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.tagline !== undefined
         ? nullIfEmpty(parsed.data.tagline)
         : existing.tagline,
+    introText:
+      parsed.data.introText !== undefined
+        ? nullIfEmpty(parsed.data.introText)
+        : existing.introText,
     description:
       parsed.data.description !== undefined
         ? nullIfEmpty(parsed.data.description)
         : existing.description,
+    menuText:
+      parsed.data.menuText !== undefined
+        ? nullIfEmpty(parsed.data.menuText)
+        : existing.menuText,
     category: parsed.data.category ?? existing.category,
     phone:
       parsed.data.phone !== undefined
@@ -93,6 +101,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.address !== undefined
         ? nullIfEmpty(parsed.data.address)
         : existing.address,
+    locationTips:
+      parsed.data.locationTips !== undefined
+        ? nullIfEmpty(parsed.data.locationTips)
+        : existing.locationTips,
     hoursText:
       parsed.data.hoursText !== undefined
         ? nullIfEmpty(parsed.data.hoursText)

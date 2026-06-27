@@ -39,6 +39,11 @@ export async function POST(request: Request) {
 
   const { slug, eventType } = parsed.data;
 
+  if (typeof prisma.partnerEvent?.create !== "function") {
+    log("error", "partnerEvent delegate missing — dev 서버 재시작 또는 prisma generate");
+    return apiError("이벤트 기록을 사용할 수 없습니다.", 503);
+  }
+
   try {
     const store = await prisma.partnerStore.findFirst({
       where: {

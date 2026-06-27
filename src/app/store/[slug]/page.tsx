@@ -8,6 +8,7 @@ import {
   getPartnerStoreBySlug,
   getPartnerStoreBySlugAnyStatus,
 } from "@/lib/partner/queries";
+import { getPostById } from "@/lib/posts";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { resolveSiteUrl } from "@/lib/site-url";
 
@@ -53,11 +54,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const description =
+    store.introText?.trim() ||
     store.tagline?.trim() ||
     store.description?.replace(/\s+/g, " ").trim().slice(0, 160) ||
     `${store.name} - 호케이 제휴 업소`;
   const canonical = `${resolveSiteUrl()}/store/${store.slug}`;
-  const ogImage = store.thumbnail?.trim() || undefined;
+  const thumb = store.thumbnail?.trim();
+  const ogImage = thumb
+    ? thumb.startsWith("http")
+      ? thumb
+      : `${resolveSiteUrl()}${thumb.startsWith("/") ? thumb : `/${thumb}`}`
+    : undefined;
 
   return {
     title: `${store.name} | 호케이`,
@@ -89,9 +96,23 @@ export default async function PartnerStorePage({
     notFound();
   }
 
-  const promo = await getPromoPostsByStore(store.slug, 1);
-  const promoTimelineSlug =
-    promo.items.length > 0 ? store.slug : null;
+  const promo = await getPromoPostsByStore(store.slug, 8);
+  const timelineItems = promo.items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    summary: item.summary,
+    publishedAt: item.publishedAt,
+    isCrawl: item.isCrawl,
+  }));
+
+  const commentPostId = promo.items[0]?.id;
+  const commentPostRaw = commentPostId
+    ? await getPostById(commentPostId)
+    : null;
+  const commentPost =
+    commentPostRaw && commentPostRaw.comments
+      ? { id: commentPostRaw.id, comments: commentPostRaw.comments }
+      : null;
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
@@ -99,7 +120,8 @@ export default async function PartnerStorePage({
       <StoreLanding
         store={store}
         isPreview={isPreview}
-        promoTimelineSlug={promoTimelineSlug}
+        timelineItems={timelineItems}
+        commentPost={commentPost}
       />
     </div>
   );

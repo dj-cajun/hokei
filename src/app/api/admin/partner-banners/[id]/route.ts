@@ -69,6 +69,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       ...(parsed.data.imageUrl !== undefined
         ? { imageUrl: parsed.data.imageUrl.trim() }
         : {}),
+      ...(parsed.data.mobileImageUrl !== undefined
+        ? { mobileImageUrl: nullIfEmpty(parsed.data.mobileImageUrl ?? undefined) }
+        : {}),
       ...(parsed.data.altText !== undefined
         ? { altText: nullIfEmpty(parsed.data.altText) }
         : {}),

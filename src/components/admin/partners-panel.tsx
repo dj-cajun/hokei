@@ -43,6 +43,7 @@ type BannerRow = {
   storeId: string;
   slot: string;
   imageUrl: string;
+  mobileImageUrl: string | null;
   altText: string | null;
   linkSlug: string | null;
   sortOrder: number;
@@ -85,6 +86,7 @@ const emptyBannerForm = {
   storeId: "",
   slot: "HOME_BOTTOM",
   imageUrl: "",
+  mobileImageUrl: "",
   altText: "",
   linkSlug: "",
   sortOrder: 0,
@@ -193,6 +195,7 @@ export function PartnersPanel() {
       storeId: row.storeId,
       slot: row.slot,
       imageUrl: row.imageUrl,
+      mobileImageUrl: row.mobileImageUrl ?? "",
       altText: row.altText ?? "",
       linkSlug: row.linkSlug ?? "",
       sortOrder: row.sortOrder,
@@ -265,6 +268,7 @@ export function PartnersPanel() {
         ...bannerForm,
         altText: bannerForm.altText || undefined,
         linkSlug: bannerForm.linkSlug || undefined,
+        mobileImageUrl: bannerForm.mobileImageUrl || undefined,
       };
       const res = await fetch(
         editingBannerId
@@ -734,7 +738,11 @@ export function PartnersPanel() {
               </select>
             </div>
             <div>
-              <Label htmlFor="bannerImage">배너 이미지 URL</Label>
+              <Label htmlFor="bannerImage">
+                {bannerForm.slot === "HOME_TOP"
+                  ? "PC 배너 URL (768px 이상)"
+                  : "배너 이미지 URL"}
+              </Label>
               <div className="mt-1 flex gap-2">
                 <Input
                   id="bannerImage"
@@ -764,6 +772,28 @@ export function PartnersPanel() {
                 </Button>
               </div>
             </div>
+            {bannerForm.slot === "HOME_TOP" ? (
+              <div>
+                <Label htmlFor="bannerMobileImage">
+                  모바일 배너 URL (768px 미만, 선택)
+                </Label>
+                <Input
+                  id="bannerMobileImage"
+                  value={bannerForm.mobileImageUrl}
+                  onChange={(e) =>
+                    setBannerForm((f) => ({
+                      ...f,
+                      mobileImageUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="/partners/…-mobile.png"
+                  className="mt-1"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  PC용(위)과 별도 이미지. 비우면 PC 이미지를 모바일에도 사용합니다.
+                </p>
+              </div>
+            ) : null}
             <div className="flex items-center gap-2">
               <input
                 id="bannerActive"

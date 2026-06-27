@@ -67,6 +67,7 @@ export async function POST(request: Request) {
       storeId: parsed.data.storeId,
       slot: parsed.data.slot,
       imageUrl: parsed.data.imageUrl.trim(),
+      mobileImageUrl: nullIfEmpty(parsed.data.mobileImageUrl ?? undefined),
       altText: nullIfEmpty(parsed.data.altText),
       linkSlug: nullIfEmpty(parsed.data.linkSlug),
       sortOrder: parsed.data.sortOrder ?? 0,

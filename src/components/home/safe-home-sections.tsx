@@ -8,10 +8,10 @@ import {
   WeatherDisplayHeader,
 } from "@/components/widgets/weather-display";
 import { getBoardPreviewSections } from "@/lib/data/board-preview";
-import { getCachedLiveStats } from "@/lib/widgets/cached-live-stats";
 import { log } from "@/lib/logger";
+import { getCachedLiveStats } from "@/lib/widgets/cached-live-stats";
 
-/** 홈 서버 섹션 실패 시 전체 페이지 error boundary로 가지 않도록 */
+/** 홈 모바일 — 날씨·환율 2열 (상단 배너는 HomeTopBanner) */
 export async function SafeWeatherQuickGrid() {
   let stats;
   try {
@@ -37,6 +37,11 @@ export async function SafeWeatherQuickGrid() {
       </div>
     </section>
   );
+}
+
+/** @deprecated SafeWeatherQuickGrid 사용 */
+export async function SafeHomeMobileTopRow() {
+  return SafeWeatherQuickGrid();
 }
 
 export async function SafeBoardPreviewList() {

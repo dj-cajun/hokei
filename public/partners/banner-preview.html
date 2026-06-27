@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2D SKETCH CAFE — 홈 배너 미리보기</title>
+  <title>2D SKETCH CAFE — 홈 상단 배너 미리보기</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -35,26 +35,54 @@
       text-align: center;
       padding: 8px;
     }
+    .top-banner {
+      position: relative;
+      height: 140px;
+      background: #ebe6dc;
+      overflow: hidden;
+    }
+    .top-banner .pc-only { display: none; }
+    .top-banner a { display: block; height: 100%; }
+    .top-banner img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .top-banner .mobile-only img { object-fit: contain; object-position: center; }
+    .top-banner .close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(0,0,0,.45);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .top-banner .dismiss {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      border: none;
+      background: none;
+      color: rgba(255,255,255,.9);
+      font-size: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,.55);
+      cursor: pointer;
+      text-decoration: underline;
+    }
     .weather {
-      padding: 12px 12px 4px;
-      font-size: 13px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px 0 0;
+      font-size: 11px;
       color: #6b7280;
     }
-    .banner-wrap {
-      padding: 8px 12px 0;
-    }
-    .banner-wrap a {
-      display: block;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      background: #ebe6dc;
-    }
-    .banner-wrap img {
-      width: 100%;
-      display: block;
-      object-fit: contain;
-    }
+    .weather div { background: #fafafa; padding: 8px; }
     .headline {
       margin: 12px;
       height: 80px;
@@ -72,29 +100,46 @@
       gap: 10px;
       justify-content: center;
     }
-    .links a {
-      color: #2563eb;
-      font-size: 14px;
+    .links a { color: #2563eb; font-size: 14px; }
+    .spec {
+      max-width: 420px;
+      font-size: 0.8rem;
+      color: #666;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
-  <h1>홈 상단 배너 — Korean Sketch Event</h1>
-  <p>실제 홈(모바일) 날씨 위젯 바로 아래에 이 포스터가 전체 보이게 나옵니다.</p>
+  <h1>홈 상단 배너 (캠페이너스형)</h1>
+  <p>헤더 바로 아래 <strong>전폭 스트립</strong> → 날씨·환율 → 뉴스 순서입니다.</p>
+  <p class="spec">
+    <strong>768px 미만</strong> 모바일 배너 · <strong>768px 이상</strong> PC 가로 배너 (CSS로 전환).
+    PC 88px · 모바일 140px 노출.
+  </p>
 
   <div class="phone">
     <div class="status">9:41 · 호케이 Hokei</div>
-    <div class="weather">☀️ 호치민 32°C · 환율 · 날씨</div>
-    <div class="banner-wrap">
-      <a href="/store/2d-sketch-cafe" title="2D SKETCH CAFE">
-        <img src="/partners/2d-sketch-cafe-event-banner.jpg" alt="Korean Sketch Event at 2D SKETCH CAFE" />
+    <div class="top-banner">
+      <a href="/store/2d-sketch-cafe" class="mobile-only" title="2D SKETCH CAFE (모바일)">
+        <img src="/partners/2d-sketch-cafe-home-top-banner-mobile.png" alt="2D SKETCH CAFE 모바일" />
       </a>
+      <a href="/store/2d-sketch-cafe" class="pc-only" title="2D SKETCH CAFE (PC)">
+        <img src="/partners/2d-sketch-cafe-home-top-banner.jpg" alt="2D SKETCH CAFE PC" />
+      </a>
+      <button type="button" class="close" aria-label="닫기">×</button>
+      <button type="button" class="dismiss">1일 동안 보지 않음</button>
+    </div>
+    <div class="weather">
+      <div>☀️ 호치민<br><strong>32°C</strong></div>
+      <div>환율<br><strong>₫18,200</strong></div>
     </div>
     <div class="headline">헤드라인 뉴스 (아래)</div>
   </div>
 
   <div class="links">
-    <a href="/partners/2d-sketch-cafe-event-banner.jpg" target="_blank">포스터 원본</a>
+    <a href="/partners/2d-sketch-cafe-home-top-banner-mobile.png" target="_blank">모바일 배너</a>
+    <a href="/partners/2d-sketch-cafe-home-top-banner.jpg" target="_blank">PC 배너</a>
+    <a href="/partners/2d-sketch-cafe-event-banner.jpg" target="_blank">이벤트 포스터</a>
     <a href="/store/2d-sketch-cafe">가게 LP</a>
     <a href="/">실제 홈</a>
   </div>

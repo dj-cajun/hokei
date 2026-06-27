@@ -1,18 +1,12 @@
 import { PartnerBannerSlot } from "@/components/partner/partner-banner-slot";
+import { HomeTopBanner } from "@/components/partner/home-top-banner";
 
 export async function HomePartnerBanner() {
   return <PartnerBannerSlot slot="HOME_BOTTOM" />;
 }
 
 export async function HomePartnerBannerTop() {
-  return (
-    <PartnerBannerSlot
-      slot="HOME_TOP"
-      limit={1}
-      fit="contain"
-      className="px-3 pt-2"
-    />
-  );
+  return <HomeTopBanner />;
 }
 
 export async function NewsPartnerBanner() {

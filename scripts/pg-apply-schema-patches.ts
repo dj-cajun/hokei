@@ -532,6 +532,9 @@ async function main() {
   await exec(
     `CREATE INDEX IF NOT EXISTS "PartnerBanner_storeId_idx" ON "PartnerBanner"("storeId")`
   );
+  await exec(
+    `ALTER TABLE "PartnerBanner" ADD COLUMN IF NOT EXISTS "mobileImageUrl" TEXT`
+  );
 
   await exec(`
     DO $$ BEGIN
@@ -568,6 +571,15 @@ async function main() {
     EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
   await exec(
     `CREATE INDEX IF NOT EXISTS "PartnerStore_ownerId_idx" ON "PartnerStore"("ownerId")`
+  );
+  await exec(
+    `ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "introText" TEXT`
+  );
+  await exec(
+    `ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "menuText" TEXT`
+  );
+  await exec(
+    `ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "locationTips" TEXT`
   );
 
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`

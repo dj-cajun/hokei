@@ -9,11 +9,14 @@ export type PartnerStorePrismaInput = {
   slug: string;
   category: PartnerCategory;
   tagline?: string | null;
+  introText?: string | null;
   description?: string | null;
+  menuText?: string | null;
   phone?: string | null;
   kakaoLink?: string | null;
   mapsUrl?: string | null;
   address?: string | null;
+  locationTips?: string | null;
   hoursText?: string | null;
   thumbnail?: string | null;
   plan?: PartnerPlan;
@@ -40,12 +43,15 @@ export function partnerStoreToPrismaData(input: PartnerStorePrismaInput) {
     name: input.name.trim(),
     slug: input.slug.trim(),
     tagline: nullIfEmpty(input.tagline),
+    introText: nullIfEmpty(input.introText),
     description: nullIfEmpty(input.description),
+    menuText: nullIfEmpty(input.menuText),
     category: input.category,
     phone: nullIfEmpty(input.phone),
     kakaoLink: nullIfEmpty(input.kakaoLink),
     mapsUrl: nullIfEmpty(input.mapsUrl),
     address: nullIfEmpty(input.address),
+    locationTips: nullIfEmpty(input.locationTips),
     hoursText: nullIfEmpty(input.hoursText),
     thumbnail: nullIfEmpty(input.thumbnail),
     plan: input.plan ?? "BASIC",

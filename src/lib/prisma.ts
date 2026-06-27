@@ -46,7 +46,8 @@ function isValidPrismaClient(
       typeof client.appSetting?.findUnique === "function" &&
       typeof client.user?.findUnique === "function" &&
       typeof client.partnerStore?.findFirst === "function" &&
-      typeof client.partnerBanner?.findMany === "function"
+      typeof client.partnerBanner?.findMany === "function" &&
+      typeof client.partnerEvent?.create === "function"
   );
 }
 

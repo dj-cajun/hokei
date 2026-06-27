@@ -1,24 +1,42 @@
 import Link from "next/link";
 import type { PartnerStore } from "@/generated/prisma/client";
+import { StoreCommentsSection } from "@/components/partner/store-comments-section";
 import { StoreCtaBar } from "@/components/partner/store-cta-bar";
+import { StoreTimelineSection } from "@/components/partner/store-timeline-section";
+import type { StoreTimelineItem } from "@/components/partner/store-timeline-section";
 import { StoreViewTracker } from "@/components/partner/store-view-tracker";
+import { mapsEmbedSrc } from "@/lib/partner/maps-embed";
 import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
+import { storeIntroBody, storeTaglineDisplay } from "@/lib/partner/store-copy";
+import { mapPostComments } from "@/lib/map-post-comments";
 
 type StoreLandingProps = {
   store: PartnerStore;
   isPreview?: boolean;
-  promoTimelineSlug?: string | null;
+  timelineItems?: StoreTimelineItem[];
+  commentPost?: {
+    id: string;
+    comments: Parameters<typeof mapPostComments>[0];
+  } | null;
 };
 
 export function StoreLanding({
   store,
   isPreview = false,
-  promoTimelineSlug = null,
+  timelineItems = [],
+  commentPost = null,
 }: StoreLandingProps) {
   const categoryLabel = PARTNER_CATEGORY_LABELS[store.category];
+  const intro = storeIntroBody(store);
+  const tagline = storeTaglineDisplay(store);
+  const menuText = store.menuText?.trim();
+  const hoursText = store.hoursText?.trim();
+  const address = store.address?.trim();
+  const locationTips = store.locationTips?.trim();
+  const embedSrc = mapsEmbedSrc(address, store.mapsUrl);
 
   return (
-    <div className="mx-auto w-full max-w-[480px] flex-1 bg-surface lg:max-w-2xl lg:rounded-lg">
+    <div className="relative mx-auto w-full max-w-[480px] flex-1 bg-surface pb-24 lg:max-w-2xl lg:rounded-lg">
       {!isPreview ? <StoreViewTracker slug={store.slug} /> : null}
 
       {isPreview ? (
@@ -27,79 +45,110 @@ export function StoreLanding({
         </div>
       ) : null}
 
-      {store.thumbnail ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={store.thumbnail}
-          alt={store.name}
-          className="w-full bg-[#ebe6dc] object-contain"
-          fetchPriority="high"
-        />
-      ) : (
-        <div className="flex aspect-[16/10] w-full items-center justify-center bg-secondary text-sm text-muted-foreground">
-          {store.name}
-        </div>
-      )}
+      {/* 1. Hero */}
+      <div className="relative w-full bg-[#ebe6dc]">
+        {store.thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={store.thumbnail}
+            alt={store.name}
+            className="max-h-[min(70vh,520px)] min-h-[240px] w-full object-cover object-center"
+          />
+        ) : (
+          <div className="flex min-h-[min(50vh,360px)] w-full items-center justify-center bg-secondary text-sm text-muted-foreground">
+            {store.name}
+          </div>
+        )}
+      </div>
 
-      <header className="border-b border-border-light px-4 py-4">
-        <p className="text-[11px] font-medium text-primary">{categoryLabel}</p>
-        <h1 className="mt-1 text-xl font-bold leading-snug">{store.name}</h1>
-        {store.tagline ? (
-          <p className="mt-2 text-sm text-muted-foreground">{store.tagline}</p>
-        ) : null}
-        {promoTimelineSlug ? (
-          <Link
-            href={`/promo/timeline/${promoTimelineSlug}`}
-            className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
-          >
-            홍보·전단 아카이브 보기 →
-          </Link>
+      {/* 2. Identity */}
+      <header className="border-b border-border-light px-4 py-5">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+          {categoryLabel}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-foreground">
+          {store.name}
+        </h1>
+        {tagline ? (
+          <p className="mt-2 text-sm font-medium text-muted-foreground">{tagline}</p>
         ) : null}
       </header>
 
-      <StoreCtaBar
-        slug={store.slug}
-        kakaoLink={store.kakaoLink}
-        phone={store.phone}
-        mapsUrl={store.mapsUrl}
-      />
+      {/* 3. Menu & Price */}
+      {menuText ? (
+        <section className="border-b border-border-light px-4 py-5">
+          <h2 className="text-sm font-bold text-foreground">메뉴 · 가격</h2>
+          <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
+            {menuText}
+          </pre>
+        </section>
+      ) : null}
 
-      <div className="space-y-4 px-4 py-4 pb-8">
-        {store.description ? (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              소개
-            </h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-              {store.description}
+      {/* 4. Introduction */}
+      {intro ? (
+        <section className="border-b border-border-light px-4 py-5">
+          <h2 className="text-sm font-bold text-foreground">업체 소개</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            {intro}
+          </p>
+        </section>
+      ) : null}
+
+      {/* 5. Timeline */}
+      {timelineItems.length > 0 ? (
+        <div className="border-b border-border-light">
+          <StoreTimelineSection items={timelineItems} storeSlug={store.slug} />
+        </div>
+      ) : null}
+
+      {/* 6. Information */}
+      {hoursText ? (
+        <section className="border-b border-border-light px-4 py-5">
+          <h2 className="text-sm font-bold text-foreground">이용 안내</h2>
+          <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
+            {hoursText}
+          </pre>
+        </section>
+      ) : null}
+
+      {/* 7. Location */}
+      {(embedSrc || address || locationTips) ? (
+        <section className="border-b border-border-light px-4 py-5">
+          <h2 className="text-sm font-bold text-foreground">오시는 길</h2>
+          {embedSrc ? (
+            <div className="mt-3 overflow-hidden rounded-xl border border-border-light">
+              <iframe
+                title={`${store.name} 지도`}
+                src={embedSrc}
+                className="h-52 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+          ) : null}
+          {address ? (
+            <p className="mt-3 text-sm leading-relaxed text-foreground">
+              📍 {address}
             </p>
-          </section>
-        ) : null}
-
-        {store.hoursText ? (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              영업시간
-            </h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
-              🕐 {store.hoursText}
+          ) : null}
+          {locationTips ? (
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+              {locationTips}
             </p>
-          </section>
-        ) : null}
+          ) : null}
+        </section>
+      ) : null}
 
-        {store.address ? (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              주소
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foreground">
-              📍 {store.address}
-            </p>
-          </section>
-        ) : null}
-      </div>
+      {/* Comments */}
+      {commentPost ? (
+        <StoreCommentsSection
+          postId={commentPost.id}
+          comments={commentPost.comments}
+        />
+      ) : null}
 
-      <footer className="border-t border-border-light px-4 py-4 text-center">
+      <footer className="border-t border-border-light px-4 py-5 text-center">
         <p className="text-[11px] text-muted-foreground">호케이 제휴 업소</p>
         <Link
           href="/partners"
@@ -108,6 +157,13 @@ export function StoreLanding({
           제휴 업소 더 보기 →
         </Link>
       </footer>
+
+      <StoreCtaBar
+        slug={store.slug}
+        kakaoLink={store.kakaoLink}
+        phone={store.phone}
+        mapsUrl={store.mapsUrl}
+      />
     </div>
   );
 }

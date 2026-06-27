@@ -64,12 +64,16 @@ type SeedFile = {
     slug: string;
     name: string;
     tagline: string;
+    introText?: string;
     description: string;
+    menuText?: string;
     address: string;
+    locationTips?: string;
     mapsUrl: string;
     hoursText: string;
     thumbnail?: string;
     bannerImage?: string;
+    mobileBannerImage?: string;
   };
   post: {
     categorySlug: string;
@@ -120,10 +124,13 @@ async function main() {
       slug: seed.partner.slug,
       name: seed.partner.name,
       tagline: seed.partner.tagline,
+      introText: seed.partner.introText ?? null,
       description: seed.partner.description,
+      menuText: seed.partner.menuText ?? null,
       category: "FOOD",
       mapsUrl: seed.partner.mapsUrl,
       address: seed.partner.address,
+      locationTips: seed.partner.locationTips ?? null,
       hoursText: seed.partner.hoursText,
       thumbnail: seed.partner.thumbnail ?? null,
       plan: "PREMIUM",
@@ -135,9 +142,12 @@ async function main() {
     update: {
       name: seed.partner.name,
       tagline: seed.partner.tagline,
+      introText: seed.partner.introText ?? null,
       description: seed.partner.description,
+      menuText: seed.partner.menuText ?? null,
       mapsUrl: seed.partner.mapsUrl,
       address: seed.partner.address,
+      locationTips: seed.partner.locationTips ?? null,
       hoursText: seed.partner.hoursText,
       thumbnail: seed.partner.thumbnail ?? null,
       status: "PUBLISHED",
@@ -146,7 +156,10 @@ async function main() {
   });
 
   const bannerImage =
-    seed.partner.bannerImage ?? "/partners/2d-sketch-cafe-event-banner.jpg";
+    seed.partner.bannerImage ?? "/partners/2d-sketch-cafe-home-top-banner.jpg";
+  const mobileBannerImage =
+    seed.partner.mobileBannerImage ??
+    "/partners/2d-sketch-cafe-home-top-banner-mobile.png";
   const existingTop = await prisma.partnerBanner.findFirst({
     where: { storeId: store.id, slot: "HOME_TOP" },
   });
@@ -155,7 +168,8 @@ async function main() {
       where: { id: existingTop.id },
       data: {
         imageUrl: bannerImage,
-        altText: "2D SKETCH CAFE — Korean Sketch Event",
+        mobileImageUrl: mobileBannerImage,
+        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
         isActive: true,
         sortOrder: 0,
       },
@@ -166,7 +180,8 @@ async function main() {
         storeId: store.id,
         slot: "HOME_TOP",
         imageUrl: bannerImage,
-        altText: "2D SKETCH CAFE — Korean Sketch Event",
+        mobileImageUrl: mobileBannerImage,
+        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
         isActive: true,
         sortOrder: 0,
       },
@@ -206,7 +221,7 @@ async function main() {
   console.log(`  LP: /store/${store.slug}`);
   console.log(`  글: /posts/${post.id}`);
   console.log(`  타임라인: /promo/timeline/2d-sketch-cafe`);
-  console.log(`  홈 상단 배너: HOME_TOP → ${bannerImage}`);
+  console.log(`  홈 상단 배너: HOME_TOP → PC ${bannerImage} / MO ${mobileBannerImage}`);
 
   await prisma.$disconnect();
 }

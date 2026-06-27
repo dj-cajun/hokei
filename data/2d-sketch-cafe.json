@@ -3,12 +3,16 @@
     "slug": "2d-sketch-cafe",
     "name": "2D SKETCH CAFE",
     "tagline": "Korean Sketch Event · 부이비엔 도보 1분",
-    "description": "호치민 1군 부이비엔 워킹스트릿 근처 2D 콘셉트 카페입니다. 벽·가구까지 흑백 스케치로 그려진 만화 속 같은 공간이에요.\n\n🎨 Korean Sketch Event (무료)\n• 7월 1일(화)부터 — 평일(월~토) 13:00~17:00\n• 하루 최대 10명 · 현장 라이브 스케치만 (사진 대행 없음)\n• 한국 화가 정대용(Daelyong Jung) — 카카오 이모티콘 「딩글댕글」 작가\n• 인스타 @dingdang_gom\n\n📍 74 Nguyễn Cư Trinh, Quận 1 (부이비엔 워킹스트릿 인근)",
+    "introText": "벽·가구까지 흑백 스케치로 그려진, 만화 속 세상에 들어온 듯한 2D 콘셉트 카페입니다.",
+    "description": "🎨 Korean Sketch Event (무료)\n• 7월 1일(화)부터 — 평일(월~토) 13:00~17:00\n• 하루 최대 10명 · 현장 라이브 스케치만 (사진 대행 없음)\n• 한국 화가 정대용(Daelyong Jung) — 카카오 이모티콘 「딩글댕글」 작가\n• 인스타 @dingdang_gom",
+    "menuText": "아메리카노 · 45,000₫\n카페라떼 · 55,000₫\n콜드브루 · 50,000₫\n디저트 · 35,000₫~",
     "address": "74 Nguyễn Cư Trinh, Quận 1, Hồ Chí Minh",
+    "locationTips": "부이비엔 워킹스트릿 도보 1분 · Pullman 호텔 맞은편\nGrab 검색: 2D Sketch Cafe",
     "mapsUrl": "https://maps.app.goo.gl/b3wZWs2uQcFrFGhc7",
-    "hoursText": "카페 운영 · 스케치 이벤트 평일 13:00–17:00 (7/1~)",
+    "hoursText": "영업시간: 매일 09:00 ~ 22:00 (Last Order 21:30)\n\n🎨 Korean Sketch Event\n평일(월~토) 13:00 ~ 17:00 · 7월 1일부터\n하루 최대 10명 · 현장 라이브 스케치만",
     "thumbnail": "/partners/2d-sketch-cafe-event-banner.jpg",
-    "bannerImage": "/partners/2d-sketch-cafe-event-banner.jpg"
+    "bannerImage": "/partners/2d-sketch-cafe-home-top-banner.jpg",
+    "mobileBannerImage": "/partners/2d-sketch-cafe-home-top-banner-mobile.png"
   },
   "post": {
     "categorySlug": "promo-store-hungry",
