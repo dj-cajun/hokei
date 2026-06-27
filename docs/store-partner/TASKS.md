@@ -12,9 +12,9 @@
 - [x] **T1-3** `src/lib/partner/queries.ts` — getBySlug, listPublished
 
 ### T2. 모바일 LP
-- [ ] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
-- [ ] **T2-2** `store-landing.tsx`, `store-cta-bar.tsx`
-- [ ] **T2-3** 404 / expired / draft 처리
+- [x] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
+- [x] **T2-2** `store-landing.tsx`, `store-cta-bar.tsx`
+- [x] **T2-3** 404 / expired / draft 처리
 
 ### T3. 제휴 허브
 - [ ] **T3-1** `src/app/partners/page.tsx`
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T2-1** (`loop.md` 필수 통과)
+**→ T3-1** (`loop.md` 필수 통과)
 
 ---
 
