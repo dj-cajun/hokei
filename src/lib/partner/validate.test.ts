@@ -55,4 +55,15 @@ describe("partnerStoreCreateSchema", () => {
       })
     ).toThrow();
   });
+
+  it("rejects non-partners local thumbnail paths", () => {
+    expect(() =>
+      partnerStoreCreateSchema.parse({
+        name: "Test",
+        slug: "test-store",
+        category: "FOOD",
+        thumbnail: "//evil.example/x.png",
+      })
+    ).toThrow();
+  });
 });

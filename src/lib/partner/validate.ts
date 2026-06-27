@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { isValidKakaoLink } from "@/lib/kakao-link";
 import {
+  isValidOptionalPartnerMediaUrl,
+  isValidPartnerMediaUrl,
+} from "@/lib/partner/media-url";
+import {
   isValidPartnerSlug,
   PARTNER_SLUG_MAX,
   PARTNER_SLUG_MIN,
@@ -41,13 +45,21 @@ export const partnerPlanSchema = z.enum(["BASIC", "STANDARD", "PREMIUM"]);
 
 export const partnerStatusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
 
-const optionalHttpsUrl = z
+/** LP·배너 — Blob https 또는 /partners/… 정적 경로 */
+const optionalMediaUrl = z
   .string()
   .max(500)
-  .refine((v) => v === "" || /^https:\/\/.+/i.test(v), {
-    message: "https URL만 입력할 수 있습니다.",
+  .refine((v) => isValidOptionalPartnerMediaUrl(v), {
+    message: "https URL 또는 /partners/… 경로를 입력해 주세요.",
   })
   .optional();
+
+const requiredMediaUrl = z
+  .string()
+  .max(500)
+  .refine((v) => isValidPartnerMediaUrl(v), {
+    message: "https URL 또는 /partners/… 경로를 입력해 주세요.",
+  });
 
 const kakaoLinkField = z
   .string()
@@ -96,7 +108,7 @@ export const partnerStoreCreateSchema = z.object({
   locationTips: z.string().max(2000).optional(),
   hoursText: z.string().max(1000).optional(),
   commentPostId: z.string().max(64).optional().nullable(),
-  thumbnail: optionalHttpsUrl,
+  thumbnail: optionalMediaUrl,
   plan: partnerPlanSchema.default("BASIC"),
   status: partnerStatusSchema.default("DRAFT"),
   sortOrder: z.number().int().min(0).max(9999).default(0),
@@ -125,11 +137,13 @@ export const partnerBannerSlotSchema = z.enum([
 export const partnerBannerCreateSchema = z.object({
   storeId: z.string().min(1),
   slot: partnerBannerSlotSchema.default("HOME_BOTTOM"),
-  imageUrl: z.string().url("배너 이미지 URL을 입력해 주세요.").max(500),
+  imageUrl: requiredMediaUrl,
   mobileImageUrl: z
     .string()
-    .url("모바일 배너 URL 형식이 올바르지 않습니다.")
     .max(500)
+    .refine((v) => v === "" || isValidPartnerMediaUrl(v), {
+      message: "모바일 배너 URL 형식이 올바르지 않습니다.",
+    })
     .optional()
     .nullable(),
   altText: z.string().max(200).optional(),
@@ -151,8 +165,13 @@ export const partnerBannerUpdateSchema = partnerBannerCreateSchema
   .extend({
     storeId: z.string().min(1).optional(),
     slot: partnerBannerSlotSchema.optional(),
-    imageUrl: z.string().url().max(500).optional(),
-    mobileImageUrl: z.string().url().max(500).optional().nullable(),
+    imageUrl: requiredMediaUrl.optional(),
+    mobileImageUrl: z
+      .string()
+      .max(500)
+      .refine((v) => v === "" || isValidPartnerMediaUrl(v))
+      .optional()
+      .nullable(),
   });
 
 export const partnerEventTypeSchema = z.enum([
@@ -168,7 +187,7 @@ export const partnerEventCreateSchema = z.object({
   eventType: partnerEventTypeSchema,
 });
 
-/** 사장님 셀프 수정 — 노출·플랜·slug 제외 */
+/** 사장님 셀프 수정 — 노출·플랜·slug·commentPostId 제외 */
 export const partnerStoreOwnerUpdateSchema = z.object({
   tagline: z.string().max(200).optional(),
   introText: z.string().max(2000).optional(),
@@ -180,7 +199,7 @@ export const partnerStoreOwnerUpdateSchema = z.object({
   address: z.string().max(300).optional(),
   locationTips: z.string().max(2000).optional(),
   hoursText: z.string().max(1000).optional(),
-  thumbnail: optionalHttpsUrl,
+  thumbnail: optionalMediaUrl,
 });
 
 export type PartnerStoreOwnerUpdateInput = z.infer<

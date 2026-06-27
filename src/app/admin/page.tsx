@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { AdminQuickLinks } from "@/components/admin/admin-quick-links";
 import { NewsIngestPanel } from "@/components/admin/news-ingest-panel";
 import { HomeYoutubePanel } from "@/components/admin/home-youtube-panel";
 import { SearchReindexPanel } from "@/components/admin/search-reindex-panel";
@@ -12,8 +13,15 @@ export default async function AdminDashboardPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalUsers, adminCount, todaySignups, newsToday, recentUsers] =
-    await Promise.all([
+  const [
+    totalUsers,
+    adminCount,
+    todaySignups,
+    newsToday,
+    recentUsers,
+    partnerStoreCount,
+    publishedPartnerCount,
+  ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: "ADMIN" } }),
       prisma.user.count({ where: { createdAt: { gte: today } } }),
@@ -31,6 +39,8 @@ export default async function AdminDashboardPage() {
           createdAt: true,
         },
       }),
+      prisma.partnerStore.count(),
+      prisma.partnerStore.count({ where: { status: "PUBLISHED" } }),
     ]);
 
   return (
@@ -46,6 +56,11 @@ export default async function AdminDashboardPage() {
         totalUsers={totalUsers}
         adminCount={adminCount}
         todaySignups={todaySignups}
+      />
+
+      <AdminQuickLinks
+        partnerStoreCount={partnerStoreCount}
+        publishedPartnerCount={publishedPartnerCount}
       />
 
       <HomeYoutubePanel />

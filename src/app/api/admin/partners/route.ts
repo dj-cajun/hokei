@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from "@/lib/api-response";
 import { writeAdminAudit } from "@/lib/admin/audit-log";
 import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { partnerStoreToPrismaData } from "@/lib/partner/admin-map";
+import { assertCommentPostIdForStore } from "@/lib/partner/comment-post";
 import {
   extractOwnerEmailFromBody,
   resolveOwnerEmailInput,
@@ -60,6 +61,16 @@ export async function POST(request: Request) {
 
   if (await isPartnerSlugTaken(parsed.data.slug)) {
     return apiError("이미 사용 중인 slug입니다.", 409);
+  }
+
+  if (parsed.data.commentPostId) {
+    const checked = await assertCommentPostIdForStore(
+      { slug: parsed.data.slug, name: parsed.data.name },
+      parsed.data.commentPostId
+    );
+    if (checked !== null && typeof checked === "object") {
+      return apiError(checked.error, 400);
+    }
   }
 
   const ownerResolved = await resolveOwnerEmailInput(ownerEmail);

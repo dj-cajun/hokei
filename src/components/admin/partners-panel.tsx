@@ -324,15 +324,37 @@ export function PartnersPanel() {
 
       const savedStoreId = (editingStoreId ?? data.store?.id) as string | undefined;
       if (savedStoreId && homeTopBannerForm.imageUrl.trim()) {
-        const bannerPayload = {
-          storeId: savedStoreId,
-          slot: "HOME_TOP",
+        if (editingHomeTopBannerId) {
+          const existingBanner = banners.find(
+            (b) => b.id === editingHomeTopBannerId
+          );
+          if (
+            !existingBanner ||
+            existingBanner.storeId !== savedStoreId ||
+            existingBanner.slot !== "HOME_TOP"
+          ) {
+            showToast(
+              "홈 배너 정보가 일치하지 않습니다. 새로고침 후 다시 저장해 주세요.",
+              "error"
+            );
+            return;
+          }
+        }
+
+        const bannerFields = {
           imageUrl: homeTopBannerForm.imageUrl.trim(),
           mobileImageUrl: homeTopBannerForm.mobileImageUrl || undefined,
           altText: homeTopBannerForm.altText || undefined,
           linkSlug: homeTopBannerForm.linkSlug || undefined,
           isActive: homeTopBannerForm.isActive,
         };
+        const bannerPayload = editingHomeTopBannerId
+          ? bannerFields
+          : {
+              ...bannerFields,
+              storeId: savedStoreId,
+              slot: "HOME_TOP",
+            };
         const bannerRes = await fetch(
           editingHomeTopBannerId
             ? `/api/admin/partner-banners/${editingHomeTopBannerId}`

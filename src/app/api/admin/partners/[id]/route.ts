@@ -7,6 +7,7 @@ import {
   nullIfEmpty,
   partnerStoreToPrismaData,
 } from "@/lib/partner/admin-map";
+import { assertCommentPostIdForStore } from "@/lib/partner/comment-post";
 import {
   extractOwnerEmailFromBody,
   resolveOwnerEmailInput,
@@ -66,9 +67,24 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
   }
 
+  const nextSlug = parsed.data.slug ?? existing.slug;
+  const nextName = parsed.data.name ?? existing.name;
+
+  let resolvedCommentPostId = existing.commentPostId;
+  if (parsed.data.commentPostId !== undefined) {
+    const checked = await assertCommentPostIdForStore(
+      { slug: nextSlug, name: nextName },
+      parsed.data.commentPostId
+    );
+    if (checked !== null && typeof checked === "object") {
+      return apiError(checked.error, 400);
+    }
+    resolvedCommentPostId = checked;
+  }
+
   const merged = {
-    name: parsed.data.name ?? existing.name,
-    slug: parsed.data.slug ?? existing.slug,
+    name: nextName,
+    slug: nextSlug,
     tagline:
       parsed.data.tagline !== undefined
         ? nullIfEmpty(parsed.data.tagline)
@@ -118,6 +134,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.thumbnail !== undefined
         ? nullIfEmpty(parsed.data.thumbnail)
         : existing.thumbnail,
+    commentPostId: resolvedCommentPostId,
     plan: parsed.data.plan ?? existing.plan,
     status: parsed.data.status ?? existing.status,
     sortOrder: parsed.data.sortOrder ?? existing.sortOrder,
