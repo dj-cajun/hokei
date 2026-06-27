@@ -14,6 +14,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim() ?? "";
+  const storeName = searchParams.get("storeName")?.trim() ?? "";
   const moderation = searchParams.get("moderation") as ModerationStatus | "ALL" | null;
   const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit")) || 20));
   const cursor = searchParams.get("cursor") ?? undefined;
@@ -29,6 +30,9 @@ export async function GET(request: Request) {
       { guestName: { contains: q } },
       { author: { name: { contains: q } } },
     ];
+  }
+  if (storeName) {
+    where.storeName = { contains: storeName, mode: "insensitive" };
   }
 
   const posts = await prisma.post.findMany({

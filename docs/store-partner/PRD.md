@@ -2,7 +2,7 @@
 
 **버전:** 0.1  
 **작성:** 2026-06-27  
-**상태:** 기획 확정 → Phase 1 개발 대기
+**상태:** Phase 4 완료 → 프로덕션 운영
 
 ---
 
@@ -30,23 +30,30 @@
 
 ### Must (Phase 1 — MVP)
 
-- [ ] **모바일 LP** `/store/[slug]` — 히어로, 카톡·전화·지도 CTA, 영업시간, 한 줄 소개
-- [ ] **제휴 허브** `/partners` — 등록 업소 목록 + `ads@` 문의 CTA
-- [ ] **관리자** — 업소 CRUD (이름, slug, 카톡, 전화, 지도 URL, 썸네일, 플랜, 노출 on/off)
-- [ ] **홈 하단 배너 슬롯 1개** — 활성 `PartnerBanner` 수동 연결
-- [ ] **SEO** — LP `metadata`, JSON-LD `LocalBusiness` (선택)
+- [x] **모바일 LP** `/store/[slug]` — 히어로, 카톡·전화·지도 CTA, 영업시간, 한 줄 소개
+- [x] **제휴 허브** `/partners` — 등록 업소 목록 + `ads@` 문의 CTA
+- [x] **관리자** — 업소 CRUD (이름, slug, 카톡, 전화, 지도 URL, 썸네일, 플랜, 노출 on/off)
+- [x] **홈 하단 배너 슬롯 1개** — 활성 `PartnerBanner` 수동 연결
+- [x] **SEO** — LP `metadata`, JSON-LD `LocalBusiness`
 
 ### Should (Phase 2)
 
-- [ ] 다중 배너 슬롯 (홈·뉴스·/promo)
-- [ ] 클릭·조회 통계 (`PartnerEvent`)
-- [ ] `/promo/timeline/[store]` ↔ `/store/[slug]` 상호 링크
-- [ ] 만료일·플랜별 자동 비노출
+- [x] 다중 배너 슬롯 (홈·뉴스·/promo)
+- [x] 클릭·조회 통계 (`PartnerEvent`)
+- [x] `/promo/timeline/[store]` ↔ `/store/[slug]` 상호 링크
+- [x] 만료일·플랜별 자동 비노출
 
-### Won't (코드 범위 밖 · 미구현 예정)
+### Phase 3–4 (완료)
 
-- **PG·자동 결제** — 수금은 `ads@` 수동 계약·이체만 (앱 내 결제 없음)
-- 사장님 셀프 서비스 대시보드 (Phase 3 검토)
+- [x] 사장님 셀프 LP 수정 (`/account/partner`)
+- [x] admin LP 7섹션 + HOME_TOP 통합 폼
+- [x] `/partners` 카테고리 필터
+- [x] commentPostId 홍보글 검색 연동
+
+### Won't (코드 범위 밖)
+
+- **PG·자동 결제** — 수금은 `ads@` 수동 계약·이체만
+- `Post.partnerStoreId` FK — 스키마 breaking (필요 시 인간 확인)
 - 다국어(베트남어) LP
 
 ---

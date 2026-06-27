@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { StoreLanding } from "@/components/partner/store-landing";
+import { LocalBusinessJsonLd } from "@/components/seo/local-business-json-ld";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import {
   getPartnerStoreBySlug,
@@ -112,6 +113,7 @@ export default async function PartnerStorePage({
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
+      <LocalBusinessJsonLd store={store} />
       <Sidebar />
       <StoreLanding
         store={store}
