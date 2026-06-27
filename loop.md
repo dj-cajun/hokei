@@ -60,7 +60,7 @@
 ### 반드시 인간 확인 (멈추고 질문)
 
 - **DB 스키마 breaking change** (컬럼 삭제, 대량 rename)
-- **결제·요금제** 실제 PG 연동
+- **PG·자동 결제** — 제휴 상품 범위 외 (수동 계약·이체만)
 - **PRD Must 항목 삭제·변경**
 - **프로덕션 env** 추가/변경 (`vercel env`)
 - **force push**, main 직접 destructive git

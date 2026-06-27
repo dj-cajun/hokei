@@ -13,5 +13,5 @@
 
 ## 진행 중 / 완료
 
-- **업소 제휴 · 배너 · 모바일 LP** — Phase 1 MVP (2026-06-27) + Phase 2 T7 (2026-06-21): 클릭 통계, 배너 슬롯 확장, promo↔store, sitemap, admin draft 미리보기
+- **업소 제휴 · 배너 · 모바일 LP** — Phase 1~2 완료. **PG·자동 결제 없음** — 수금은 ads@ 수동 계약만. Phase 3(보류): 사장님 셀프 LP 수정
 - 뉴스 중복 제거 보강 (`dedupe.ts`, URL canonical, ingest 교차 비교) — 지역 확장과 별개로 유지
