@@ -581,6 +581,9 @@ async function main() {
   await exec(
     `ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "locationTips" TEXT`
   );
+  await exec(
+    `ALTER TABLE "PartnerStore" ADD COLUMN IF NOT EXISTS "commentPostId" TEXT`
+  );
 
   const critical = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.columns

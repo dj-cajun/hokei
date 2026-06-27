@@ -489,6 +489,8 @@ model PartnerStore {
   expiresAt   DateTime?
   ownerId     String?
   owner       User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  /** LP 하단 댓글 게시글 (없으면 홍보 글 첫 건) */
+  commentPostId String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   banners     PartnerBanner[]

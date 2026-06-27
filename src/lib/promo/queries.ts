@@ -58,7 +58,8 @@ export async function getPromoStores(limit = 24): Promise<PromoStoreSummary[]> {
 
 export async function getPromoPostsByStore(
   storeSlug: string,
-  limit = 50
+  limit = 50,
+  storeName?: string | null
 ): Promise<{
   storeName: string | null;
   items: {
@@ -87,14 +88,21 @@ export async function getPromoPostsByStore(
     },
   });
 
-  const filtered = posts.filter(
-    (p) => p.storeName && slugifyStoreName(p.storeName) === storeSlug
-  );
+  const normalizedName = storeName?.trim().toLowerCase();
 
-  const storeName = filtered[0]?.storeName ?? null;
+  const filtered = posts.filter((p) => {
+    if (!p.storeName) return false;
+    if (slugifyStoreName(p.storeName) === storeSlug) return true;
+    if (normalizedName && p.storeName.trim().toLowerCase() === normalizedName) {
+      return true;
+    }
+    return false;
+  });
+
+  const resolvedStoreName = filtered[0]?.storeName ?? null;
 
   return {
-    storeName,
+    storeName: resolvedStoreName,
     items: filtered.slice(0, limit),
   };
 }

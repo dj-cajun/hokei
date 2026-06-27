@@ -8,16 +8,13 @@ import { StoreViewTracker } from "@/components/partner/store-view-tracker";
 import { mapsEmbedSrc } from "@/lib/partner/maps-embed";
 import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
 import { storeIntroBody, storeTaglineDisplay } from "@/lib/partner/store-copy";
-import { mapPostComments } from "@/lib/map-post-comments";
+import type { resolveStoreCommentPost } from "@/lib/partner/store-page";
 
 type StoreLandingProps = {
   store: PartnerStore;
   isPreview?: boolean;
   timelineItems?: StoreTimelineItem[];
-  commentPost?: {
-    id: string;
-    comments: Parameters<typeof mapPostComments>[0];
-  } | null;
+  commentPost?: Awaited<ReturnType<typeof resolveStoreCommentPost>>;
 };
 
 export function StoreLanding({

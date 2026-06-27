@@ -14,9 +14,14 @@ export type { CommentItem } from "@/components/posts/comment-types";
 type PostCommentsProps = {
   postId: string;
   initialComments: CommentItem[];
+  embedded?: boolean;
 };
 
-export function PostComments({ postId, initialComments }: PostCommentsProps) {
+export function PostComments({
+  postId,
+  initialComments,
+  embedded = false,
+}: PostCommentsProps) {
   const pathname = usePathname();
   const { status } = useSession();
   const { openLogin } = useLoginModal();
@@ -43,11 +48,21 @@ export function PostComments({ postId, initialComments }: PostCommentsProps) {
   }
 
   return (
-    <section className="mt-4 border-t border-border-light pt-4">
+    <section
+      className={
+        embedded ? undefined : "mt-4 border-t border-border-light pt-4"
+      }
+    >
       <h2 className="text-sm font-bold text-foreground">
         댓글 {comments.length}
       </h2>
+      {embedded ? (
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          방문 후기·질문을 남겨 주세요. (로그인 필요)
+        </p>
+      ) : null}
 
+      <div className={embedded ? "mt-4" : undefined}>
       <CommentList
         postId={postId}
         threads={threads}
@@ -77,6 +92,7 @@ export function PostComments({ postId, initialComments }: PostCommentsProps) {
           onRollback={rollbackComment}
         />
       )}
+      </div>
     </section>
   );
 }

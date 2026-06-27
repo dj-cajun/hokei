@@ -8,7 +8,7 @@ import {
   getPartnerStoreBySlug,
   getPartnerStoreBySlugAnyStatus,
 } from "@/lib/partner/queries";
-import { getPostById } from "@/lib/posts";
+import { resolveStoreCommentPost } from "@/lib/partner/store-page";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { resolveSiteUrl } from "@/lib/site-url";
 
@@ -96,23 +96,19 @@ export default async function PartnerStorePage({
     notFound();
   }
 
-  const promo = await getPromoPostsByStore(store.slug, 8);
+  const [promo, commentPost] = await Promise.all([
+    getPromoPostsByStore(store.slug, 8, store.name),
+    resolveStoreCommentPost(store),
+  ]);
+
   const timelineItems = promo.items.map((item) => ({
     id: item.id,
     title: item.title,
     summary: item.summary,
     publishedAt: item.publishedAt,
+    thumbnail: item.thumbnail,
     isCrawl: item.isCrawl,
   }));
-
-  const commentPostId = promo.items[0]?.id;
-  const commentPostRaw = commentPostId
-    ? await getPostById(commentPostId)
-    : null;
-  const commentPost =
-    commentPostRaw && commentPostRaw.comments
-      ? { id: commentPostRaw.id, comments: commentPostRaw.comments }
-      : null;
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">

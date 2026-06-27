@@ -10,11 +10,14 @@ type CommentSource = Parameters<typeof mapPostComments>[0];
 type PostCommentsSessionProps = {
   postId: string;
   comments: CommentSource;
+  /** 업체 LP 등 — 바깥 섹션 제목과 중복 방지 */
+  embedded?: boolean;
 };
 
 export function PostCommentsSession({
   postId,
   comments,
+  embedded = false,
 }: PostCommentsSessionProps) {
   const { data: session } = useSession();
   const sessionKey = session?.user?.id ?? "guest";
@@ -30,6 +33,7 @@ export function PostCommentsSession({
       key={sessionKey}
       postId={postId}
       initialComments={initialComments}
+      embedded={embedded}
     />
   );
 }

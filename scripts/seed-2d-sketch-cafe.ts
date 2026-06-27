@@ -217,6 +217,11 @@ async function main() {
     },
   });
 
+  await prisma.partnerStore.update({
+    where: { id: store.id },
+    data: { commentPostId: post.id },
+  });
+
   console.log(`[seed-2d-sketch-cafe] OK`);
   console.log(`  LP: /store/${store.slug}`);
   console.log(`  글: /posts/${post.id}`);
