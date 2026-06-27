@@ -42,14 +42,14 @@ export function StoreLanding({
         </div>
       ) : null}
 
-      {/* 1. Hero */}
+      {/* 1. Hero — 세로·가로 포스터 모두 잘리지 않게 contain */}
       <div className="relative w-full bg-[#ebe6dc]">
         {store.thumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={store.thumbnail}
             alt={store.name}
-            className="max-h-[min(70vh,520px)] min-h-[240px] w-full object-cover object-center"
+            className="block h-auto w-full object-contain object-center"
           />
         ) : (
           <div className="flex min-h-[min(50vh,360px)] w-full items-center justify-center bg-secondary text-sm text-muted-foreground">

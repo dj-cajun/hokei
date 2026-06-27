@@ -44,7 +44,7 @@ export function StoreTimelineSection({
                 <img
                   src={item.thumbnail}
                   alt=""
-                  className="aspect-[2.2/1] w-full object-cover"
+                  className="block h-auto max-h-64 w-full bg-muted/20 object-contain object-center"
                   loading="lazy"
                 />
               ) : null}
