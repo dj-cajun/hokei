@@ -8,7 +8,19 @@ import { mapSeedRegion } from "../prisma/seed-kakao-posts";
 
 const SOURCE_URL = `${AI_CURATE_SOURCE_PREFIX}editorial:2d-sketch-cafe-review-202606`;
 
-const POST_BODY = `호치민 1군 부이비엔 워킹스트릿 근처에 있는 2D SKETCH CAFE를 다녀왔습니다. 아직 많이 알려지지 않았지만, 앞으로 부이비엔 대표 포토스팟이 될 만한 곳이에요.
+const POST_BODY = `🎨 Korean Sketch Event — 2D SKETCH CAFE (무료)
+
+7월 1일(화)부터 평일(월~토) 13:00~17:00, 하루 최대 10명 라이브 스케치 이벤트가 열립니다.
+한국 화가 정대용(Daelyong Jung) — 카카오 이모티콘 「딩글댕글」 작가 · @dingdang_gom
+현장에서만 스케치 (사진 대행 없음) · 문화 교류 이벤트
+
+📍 74 Nguyễn Cư Trinh, Quận 1 · 부이비엔 워킹스트릿 도보 1분
+지도: https://maps.app.goo.gl/b3wZWs2uQcFrFGhc7
+제휴 LP: https://www.hokei.vn/store/2d-sketch-cafe
+
+---
+
+호치민 1군 부이비엔 워킹스트릿 근처에 있는 2D SKETCH CAFE를 다녀왔습니다. 아직 많이 알려지지 않았지만, 앞으로 부이비엔 대표 포토스팟이 될 만한 곳이에요.
 
 📍 위치
 • 부이비엔 워킹스트릿 입구 쪽 푹롱(PHUC LONG) 카페에서 도보 약 1분
@@ -56,6 +68,8 @@ type SeedFile = {
     address: string;
     mapsUrl: string;
     hoursText: string;
+    thumbnail?: string;
+    bannerImage?: string;
   };
   post: {
     categorySlug: string;
@@ -111,6 +125,7 @@ async function main() {
       mapsUrl: seed.partner.mapsUrl,
       address: seed.partner.address,
       hoursText: seed.partner.hoursText,
+      thumbnail: seed.partner.thumbnail ?? null,
       plan: "PREMIUM",
       status: "PUBLISHED",
       sortOrder: 1,
@@ -124,12 +139,14 @@ async function main() {
       mapsUrl: seed.partner.mapsUrl,
       address: seed.partner.address,
       hoursText: seed.partner.hoursText,
+      thumbnail: seed.partner.thumbnail ?? null,
       status: "PUBLISHED",
       plan: "PREMIUM",
     },
   });
 
-  const bannerImage = "/partners/2d-sketch-cafe-banner.svg";
+  const bannerImage =
+    seed.partner.bannerImage ?? "/partners/2d-sketch-cafe-event-banner.jpg";
   const existingTop = await prisma.partnerBanner.findFirst({
     where: { storeId: store.id, slot: "HOME_TOP" },
   });
@@ -138,7 +155,7 @@ async function main() {
       where: { id: existingTop.id },
       data: {
         imageUrl: bannerImage,
-        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
+        altText: "2D SKETCH CAFE — Korean Sketch Event",
         isActive: true,
         sortOrder: 0,
       },
@@ -149,7 +166,7 @@ async function main() {
         storeId: store.id,
         slot: "HOME_TOP",
         imageUrl: bannerImage,
-        altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
+        altText: "2D SKETCH CAFE — Korean Sketch Event",
         isActive: true,
         sortOrder: 0,
       },

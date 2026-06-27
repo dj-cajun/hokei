@@ -2,22 +2,24 @@
   "partner": {
     "slug": "2d-sketch-cafe",
     "name": "2D SKETCH CAFE",
-    "tagline": "부이비엔 도보 1분 · 만화 속 2D 포토카페",
-    "description": "호치민 1군 부이비엔 워킹스트릿 근처, 2026년 6월 중순 오픈한 2D 콘셉트 카페입니다.\n\n벽·천장·가구까지 전부 흑백 스케치로 그려져 마치 만화책 안에 들어온 듯한 경험을 줍니다. 계단 구간, 벤탄시장 착시 벽화, 3층 드럼존·야외 발코니가 대표 포토존이에요.\n\n한국인 사장님 운영, 영사관 별관 맞은편이라 찾기 쉽습니다. 아직 많이 알려지지 않은 숨은 명소로 추천합니다.",
+    "tagline": "Korean Sketch Event · 부이비엔 도보 1분",
+    "description": "호치민 1군 부이비엔 워킹스트릿 근처 2D 콘셉트 카페입니다. 벽·가구까지 흑백 스케치로 그려진 만화 속 같은 공간이에요.\n\n🎨 Korean Sketch Event (무료)\n• 7월 1일(화)부터 — 평일(월~토) 13:00~17:00\n• 하루 최대 10명 · 현장 라이브 스케치만 (사진 대행 없음)\n• 한국 화가 정대용(Daelyong Jung) — 카카오 이모티콘 「딩글댕글」 작가\n• 인스타 @dingdang_gom\n\n📍 74 Nguyễn Cư Trinh, Quận 1 (부이비엔 워킹스트릿 인근)",
     "address": "74 Nguyễn Cư Trinh, Quận 1, Hồ Chí Minh",
     "mapsUrl": "https://maps.app.goo.gl/b3wZWs2uQcFrFGhc7",
-    "hoursText": "카페 운영 (오픈 2026년 6월 중순 · 상세 시간은 매장 확인)"
+    "hoursText": "카페 운영 · 스케치 이벤트 평일 13:00–17:00 (7/1~)",
+    "thumbnail": "/partners/2d-sketch-cafe-event-banner.jpg",
+    "bannerImage": "/partners/2d-sketch-cafe-event-banner.jpg"
   },
   "post": {
     "categorySlug": "promo-store-hungry",
-    "title": "[부이비엔 포토스팟] 2D SKETCH CAFE 후기 — 만화 속 세상에 들어온 기분",
-    "summary": "부이비엔 워킹스트릿 도보 1분, 흑백 2D 벽화 카페. 계단·벤탄 착시·3층 드럼존이 포토존. 2026년 6월 오픈 숨은 명소.",
+    "title": "[부이비엔] 2D SKETCH CAFE — Korean Sketch Event 무료 라이브 스케치",
+    "summary": "7/1부터 평일 13–17시, 하루 10명 한정. 카카오 이모티콘 작가 정대용 화가의 라이브 스케치. 부이비엔 도보 1분.",
     "storeName": "2D SKETCH CAFE",
     "region": "D1",
     "topic": "TOURIST",
     "sourceKey": "editorial:2d-sketch-cafe-review-202606",
     "sourceName": "호케이 에디터",
     "externalUrl": "https://m.blog.naver.com/unkibass/224328356051",
-    "publishedAtDate": "2026-06-15"
+    "publishedAtDate": "2026-06-28"
   }
 }

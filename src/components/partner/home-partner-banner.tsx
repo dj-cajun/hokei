@@ -9,8 +9,8 @@ export async function HomePartnerBannerTop() {
     <PartnerBannerSlot
       slot="HOME_TOP"
       limit={1}
+      fit="contain"
       className="px-3 pt-2"
-      imageClassName="aspect-[3/1] w-full rounded-xl object-cover shadow-md ring-1 ring-black/5"
     />
   );
 }

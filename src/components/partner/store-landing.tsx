@@ -31,8 +31,8 @@ export function StoreLanding({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={store.thumbnail}
-          alt=""
-          className="aspect-[16/10] w-full object-cover"
+          alt={store.name}
+          className="w-full bg-[#ebe6dc] object-contain"
           fetchPriority="high"
         />
       ) : (

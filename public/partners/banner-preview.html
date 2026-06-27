@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2D SKETCH CAFE — 홈 배너 미리보기</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+      gap: 20px;
+    }
+    h1 { font-size: 1.1rem; margin: 0; color: #111; }
+    p { margin: 0; font-size: 0.85rem; color: #555; text-align: center; max-width: 420px; line-height: 1.5; }
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.12);
+      overflow: hidden;
+      border: 1px solid #d1d5db;
+    }
+    .status {
+      background: #111;
+      color: #fff;
+      font-size: 12px;
+      text-align: center;
+      padding: 8px;
+    }
+    .weather {
+      padding: 12px 12px 4px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .banner-wrap {
+      padding: 8px 12px 0;
+    }
+    .banner-wrap a {
+      display: block;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+      background: #ebe6dc;
+    }
+    .banner-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+    }
+    .headline {
+      margin: 12px;
+      height: 80px;
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .links a {
+      color: #2563eb;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>홈 상단 배너 — Korean Sketch Event</h1>
+  <p>실제 홈(모바일) 날씨 위젯 바로 아래에 이 포스터가 전체 보이게 나옵니다.</p>
+
+  <div class="phone">
+    <div class="status">9:41 · 호케이 Hokei</div>
+    <div class="weather">☀️ 호치민 32°C · 환율 · 날씨</div>
+    <div class="banner-wrap">
+      <a href="/store/2d-sketch-cafe" title="2D SKETCH CAFE">
+        <img src="/partners/2d-sketch-cafe-event-banner.jpg" alt="Korean Sketch Event at 2D SKETCH CAFE" />
+      </a>
+    </div>
+    <div class="headline">헤드라인 뉴스 (아래)</div>
+  </div>
+
+  <div class="links">
+    <a href="/partners/2d-sketch-cafe-event-banner.jpg" target="_blank">포스터 원본</a>
+    <a href="/store/2d-sketch-cafe">가게 LP</a>
+    <a href="/">실제 홈</a>
+  </div>
+</body>
+</html>

@@ -8,6 +8,8 @@ type PartnerBannerSlotProps = {
   limit?: number;
   className?: string;
   imageClassName?: string;
+  /** 세로 포스터 등 — 잘리지 않게 전체 노출 */
+  fit?: "cover" | "contain";
 };
 
 export async function PartnerBannerSlot({
@@ -15,6 +17,7 @@ export async function PartnerBannerSlot({
   limit = 3,
   className = "space-y-2 px-3 py-2",
   imageClassName = "aspect-[3/1] w-full object-cover",
+  fit = "cover",
 }: PartnerBannerSlotProps) {
   if (!isDatabaseAvailable()) return null;
 
@@ -30,13 +33,19 @@ export async function PartnerBannerSlot({
             key={banner.id}
             href={`/store/${slug}`}
             slug={slug}
-            className="block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm"
+            className={`block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm${
+              fit === "contain" ? " bg-[#ebe6dc]" : ""
+            }`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={banner.imageUrl}
               alt={banner.altText ?? banner.store.name}
-              className={imageClassName}
+              className={
+                fit === "contain"
+                  ? "w-full object-contain"
+                  : imageClassName
+              }
             />
           </PartnerBannerLink>
         );
