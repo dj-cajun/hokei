@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { normalizePartnerBannerImageSrc } from "@/lib/partner/banner-image-src";
 import { cn } from "@/lib/utils";
 
 type PartnerBannerImageProps = {
@@ -19,14 +20,15 @@ export function PartnerBannerImage({
   sizes = "100vw",
   className,
 }: PartnerBannerImageProps) {
+  const normalized = normalizePartnerBannerImageSrc(src);
   return (
     <Image
-      src={src}
+      src={normalized}
       alt={alt}
       fill
       priority={priority}
       sizes={sizes}
-      unoptimized={src.endsWith(".svg")}
+      unoptimized={normalized.endsWith(".svg")}
       className={cn(
         fit === "contain"
           ? "object-contain object-center"

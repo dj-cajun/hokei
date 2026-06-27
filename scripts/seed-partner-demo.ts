@@ -3,56 +3,17 @@ import { createPostgresPrisma } from "../src/lib/prisma-pg";
 
 const DEMO_SLUG = "saigon-bbq-demo";
 
-const DEMO_BANNER_PC = "https://www.hokei.vn/icons/hokei-icon-512.png";
-
-async function upsertHomeTopBanner(
+/** 홈 배너는 2D SKETCH CAFE 전용 — 데모 업소 배너 비활성 */
+async function deactivateHomeBanners(
   prisma: ReturnType<typeof createPostgresPrisma>,
-  storeId: string,
-  altText: string
+  storeId: string
 ) {
-  const existing = await prisma.partnerBanner.findFirst({
-    where: { storeId, slot: "HOME_TOP" },
-  });
-  const data = {
-    imageUrl: DEMO_BANNER_PC,
-    mobileImageUrl: null as string | null,
-    altText,
-    isActive: true,
-    sortOrder: 0,
-  };
-  if (existing) {
-    await prisma.partnerBanner.update({ where: { id: existing.id }, data });
-  } else {
-    await prisma.partnerBanner.create({
-      data: { storeId, slot: "HOME_TOP", ...data },
-    });
-  }
-}
-
-async function upsertHomeBottomBanner(
-  prisma: ReturnType<typeof createPostgresPrisma>,
-  storeId: string,
-  altText: string
-) {
-  const existing = await prisma.partnerBanner.findFirst({
-    where: { storeId, slot: "HOME_BOTTOM" },
-  });
-  if (existing) {
-    await prisma.partnerBanner.update({
-      where: { id: existing.id },
-      data: { altText, isActive: true },
-    });
-    return;
-  }
-  await prisma.partnerBanner.create({
-    data: {
+  await prisma.partnerBanner.updateMany({
+    where: {
       storeId,
-      slot: "HOME_BOTTOM",
-      imageUrl: DEMO_BANNER_PC,
-      altText,
-      isActive: true,
-      sortOrder: 0,
+      slot: { in: ["HOME_TOP", "HOME_BOTTOM"] },
     },
+    data: { isActive: false },
   });
 }
 
@@ -84,10 +45,10 @@ async function main() {
       address: "District 1, Ho Chi Minh City",
       locationTips: "1군 중심 · Grab 검색: Saigon BBQ Demo",
       hoursText: "매일 10:00 – 22:00\n\n🎉 데모 이벤트 — 관리자가 hoursText로 자유 입력",
-      thumbnail: DEMO_BANNER_PC,
-      plan: "PREMIUM",
+      thumbnail: "/partners/2d-sketch-cafe-event-banner.jpg",
+      plan: "STANDARD",
       status: "PUBLISHED",
-      sortOrder: 0,
+      sortOrder: 10,
       publishedAt: new Date(),
       expiresAt: null,
     },
@@ -100,21 +61,19 @@ async function main() {
         "삼겹살 세트 · 350,000₫\n갈비 · 420,000₫\n냉면 · 80,000₫",
       locationTips: "1군 중심 · Grab 검색: Saigon BBQ Demo",
       hoursText: "매일 10:00 – 22:00\n\n🎉 데모 이벤트 — 관리자가 hoursText로 자유 입력",
-      thumbnail: DEMO_BANNER_PC,
+      thumbnail: "/partners/2d-sketch-cafe-event-banner.jpg",
       status: "PUBLISHED",
-      plan: "PREMIUM",
+      plan: "STANDARD",
+      sortOrder: 10,
       publishedAt: new Date(),
     },
   });
 
-  const altText = "사이공 BBQ (데모) — 호케이 제휴";
-  await upsertHomeTopBanner(prisma, store.id, altText);
-  await upsertHomeBottomBanner(prisma, store.id, altText);
+  await deactivateHomeBanners(prisma, store.id);
 
   console.log(`[seed-partner-demo] OK`);
-  console.log(`  LP: /store/${store.slug}`);
+  console.log(`  LP: /store/${store.slug} (홈 배너 없음 — 2D SKETCH CAFE 우선)`);
   console.log(`  허브: /partners`);
-  console.log(`  HOME_TOP · HOME_BOTTOM 배너 활성`);
 
   await prisma.$disconnect();
 }

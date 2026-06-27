@@ -1,17 +1,30 @@
 import { PartnerBannerSlot } from "@/components/partner/partner-banner-slot";
+import { PartnerStripBannerView } from "@/components/partner/partner-strip-banner-view";
 import type { PartnerBannerWithStore } from "@/lib/partner/queries";
+import { listBannersForSlot } from "@/lib/partner/queries";
+import { isDatabaseAvailable } from "@/lib/database-available";
 
 type HomePartnerBannerProps = {
   banners?: PartnerBannerWithStore[];
   className?: string;
 };
 
+/** 홈 중간 — 상단과 동일 스트립 배너 (PC·MO 분리) */
 export async function HomePartnerBanner({
   banners,
-  className,
+  className = "",
 }: HomePartnerBannerProps = {}) {
+  if (!isDatabaseAvailable()) return null;
+
+  const items = banners ?? (await listBannersForSlot("HOME_BOTTOM", 3));
+  if (items.length === 0) return null;
+
   return (
-    <PartnerBannerSlot slot="HOME_BOTTOM" banners={banners} className={className} />
+    <div className={className}>
+      {items.map((banner) => (
+        <PartnerStripBannerView key={banner.id} banner={banner} />
+      ))}
+    </div>
   );
 }
 

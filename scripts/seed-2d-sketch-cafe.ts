@@ -191,6 +191,30 @@ async function main() {
     });
   }
 
+  const homeBottomImage = bannerImage;
+  const homeBottomMobile = mobileBannerImage;
+  const existingBottom = await prisma.partnerBanner.findFirst({
+    where: { storeId: store.id, slot: "HOME_BOTTOM" },
+  });
+  const bottomData = {
+    imageUrl: homeBottomImage,
+    mobileImageUrl: homeBottomMobile,
+    altText: "2D SKETCH CAFE — 부이비엔 포토스팟",
+    linkSlug: store.slug,
+    isActive: true,
+    sortOrder: 0,
+  };
+  if (existingBottom) {
+    await prisma.partnerBanner.update({
+      where: { id: existingBottom.id },
+      data: bottomData,
+    });
+  } else {
+    await prisma.partnerBanner.create({
+      data: { storeId: store.id, slot: "HOME_BOTTOM", ...bottomData },
+    });
+  }
+
   const post = await prisma.post.upsert({
     where: { sourceUrl: SOURCE_URL },
     create: {
@@ -230,6 +254,9 @@ async function main() {
   console.log(`  글: /posts/${post.id}`);
   console.log(`  타임라인: /promo/timeline/2d-sketch-cafe`);
   console.log(`  홈 상단 배너: HOME_TOP → PC ${bannerImage} / MO ${mobileBannerImage}`);
+  console.log(
+    `  홈 하단 배너: HOME_BOTTOM → PC ${homeBottomImage} / MO ${homeBottomMobile}`
+  );
   if (seed.partner.ogImageUrl) {
     console.log(`  OG 이미지: ${seed.partner.ogImageUrl}`);
   }
