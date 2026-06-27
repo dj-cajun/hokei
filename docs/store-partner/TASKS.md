@@ -17,8 +17,8 @@
 - [x] **T2-3** 404 / expired / draft 처리
 
 ### T3. 제휴 허브
-- [ ] **T3-1** `src/app/partners/page.tsx`
-- [ ] **T3-2** `partner-card.tsx` + ads CTA
+- [x] **T3-1** `src/app/partners/page.tsx`
+- [x] **T3-2** `partner-card.tsx` + ads CTA
 
 ### T4. 관리자
 - [ ] **T4-1** `/api/admin/partners` CRUD + requireAdmin
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T3-1** (`loop.md` 필수 통과)
+**→ T4-1** (`loop.md` 필수 통과)
 
 ---
 
@@ -64,5 +64,6 @@
 
 | 날짜 | 태스크 | 커밋 |
 |------|--------|------|
-| 2026-06-27 | T1-1 PartnerStore 스키마 | 8b7cdd6 |
+| 2026-06-27 | T3-1~2 /partners 허브 | (pending) |
+| 2026-06-27 | T2 모바일 LP | 6e9e14e |
 | 2026-06-27 | 기획 문서·loop.md | 11665df |
