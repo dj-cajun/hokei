@@ -14,6 +14,7 @@ import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { isCommunityPost, isUserBoardPost } from "@/lib/community";
 import { getNextPostsInBoard, getPostById } from "@/lib/posts";
 import { sanitizeNewsPostTitle } from "@/lib/news/source-display";
+import { isOfficialNoticeSource } from "@/lib/news/official-notice-feeds";
 import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
@@ -162,10 +163,14 @@ export default async function PostPage({ params }: PageProps) {
               </p>
             ) : null}
 
-            {post.isOutlink ? (
+            {post.sourceUrl.startsWith("http") &&
+            (post.isOutlink ||
+              (post.content &&
+                isOfficialNoticeSource(post.sourceName, post.sourceUrl))) ? (
               <PostOutlinkCta
                 sourceUrl={post.sourceUrl}
                 sourceName={post.sourceName}
+                withFullBody={Boolean(post.content) && !post.isOutlink}
               />
             ) : null}
 

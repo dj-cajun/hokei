@@ -4,13 +4,16 @@ import { formatOutlinkCtaLabel } from "@/lib/admin/curate-outlink-metadata";
 type PostOutlinkCtaProps = {
   sourceUrl: string;
   sourceName?: string | null;
+  /** 본문 전문이 함께 있을 때 안내 문구 */
+  withFullBody?: boolean;
   className?: string;
 };
 
-/** 총영사관·한인회 등 아웃링크 큐레이션 — 원문 공지 직행 */
+/** 총영사관·한인회 등 공식 공지 — 원문 바로가기 */
 export function PostOutlinkCta({
   sourceUrl,
   sourceName,
+  withFullBody = false,
   className,
 }: PostOutlinkCtaProps) {
   if (!sourceUrl.startsWith("http")) return null;
@@ -25,8 +28,9 @@ export function PostOutlinkCta({
       }
     >
       <p className="text-xs text-muted-foreground">
-        이 글은 공식 기관 공지를 요약한 아웃링크입니다. 전체 내용은 원문에서
-        확인해 주세요.
+        {withFullBody
+          ? "아래 본문은 원문 공지를 바탕으로 합니다. 최신·세부 내용은 원문에서 확인해 주세요."
+          : "이 글은 공식 기관 공지를 요약한 아웃링크입니다. 전체 내용은 원문에서 확인해 주세요."}
       </p>
       <a
         href={sourceUrl}

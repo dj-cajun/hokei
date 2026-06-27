@@ -50,7 +50,7 @@ export const CATEGORY_MASTER: SectionSeed[] = [
         slug: "consulate-association",
         label: "총영사관 / 한인회",
         description:
-          "주호치민 총영사관·한인회·상공회의소 등 공식 공지 (원문 아웃링크)",
+          "주호치민 총영사관·한인회·상공회의소 등 공식 공지 (본문 + 원문 바로가기)",
         icon: "Landmark",
         sortOrder: 3,
       },
