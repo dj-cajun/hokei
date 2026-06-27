@@ -13,5 +13,9 @@
 
 ## 진행 중 / 완료
 
-- **업소 제휴 · 배너 · 모바일 LP** — 기획 문서 `docs/store-partner/`, 감독 `loop.md` (2026-06-27). 개발: TASKS T1-1~
+- **업소 제휴 · 배너 · 모바일 LP** — Phase 1 MVP 완료 (2026-06-27)
+  - `/store/[slug]` 모바일 LP, `/partners` 허브, `/admin/partners` CRUD
+  - `PartnerBanner` HOME_BOTTOM 홈 배너, `scripts/seed-partner-demo.ts`
+  - 기획: `docs/store-partner/`, 감독: `loop.md`
+  - Phase 2: 클릭 통계, 추가 슬롯, sitemap, draft preview
 - 뉴스 중복 제거 보강 (`dedupe.ts`, URL canonical, ingest 교차 비교) — 지역 확장과 별개로 유지

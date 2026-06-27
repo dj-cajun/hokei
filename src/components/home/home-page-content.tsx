@@ -9,6 +9,7 @@ import {
 } from "@/components/home/safe-home-sections";
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
+import { HomePartnerBanner } from "@/components/partner/home-partner-banner";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { HomeLifeStrip } from "@/components/home/home-life-strip";
@@ -97,6 +98,7 @@ export async function HomePageContent() {
           startSeconds={homeYoutube.startSeconds}
         />
         <PopularPostsStrip items={popular} />
+        <HomePartnerBanner />
         <AdSenseUnit slotKind="home" className="px-3" />
         <SafeBoardPreviewList />
         <HomeMobileFeed
@@ -126,6 +128,7 @@ export async function HomePageContent() {
           videoId={homeYoutube.videoId}
           startSeconds={homeYoutube.startSeconds}
         />
+        <HomePartnerBanner className="hidden lg:block" />
         <SafeBoardPreviewList />
       </div>
     </>

@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StoreLanding } from "@/components/partner/store-landing";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { getPartnerStoreBySlug } from "@/lib/partner/queries";
+import {
+  getPartnerStoreRecordBySlug,
+  isPartnerStorePublic,
+} from "@/lib/partner/queries";
+import { isValidPartnerSlug } from "@/lib/partner/slug";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -18,12 +22,12 @@ function buildStoreCanonical(slug: string): string {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  if (!isDatabaseAvailable()) {
+  if (!isDatabaseAvailable() || !isValidPartnerSlug(slug)) {
     return { title: "제휴 업소 | 호케이" };
   }
 
-  const store = await getPartnerStoreBySlug(slug);
-  if (!store) {
+  const store = await getPartnerStoreRecordBySlug(slug);
+  if (!store || !isPartnerStorePublic(store)) {
     return { title: "제휴 업소 | 호케이" };
   }
 
@@ -59,10 +63,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PartnerStorePage({ params }: PageProps) {
   const { slug } = await params;
 
-  if (!isDatabaseAvailable()) notFound();
+  if (!isDatabaseAvailable() || !isValidPartnerSlug(slug)) notFound();
 
-  const store = await getPartnerStoreBySlug(slug);
-  if (!store) notFound();
+  const store = await getPartnerStoreRecordBySlug(slug);
+  if (!store || !isPartnerStorePublic(store)) notFound();
 
   return (
     <div className="mx-auto w-full max-w-[480px] flex-1">

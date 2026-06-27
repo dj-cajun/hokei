@@ -1,5 +1,5 @@
 const base = process.argv[2] ?? "https://www.hokei.vn";
-const paths = ["/", "/news", "/community", "/login", "/search"];
+const paths = ["/", "/news", "/community", "/login", "/search", "/partners"];
 
 async function main() {
   for (const path of paths) {

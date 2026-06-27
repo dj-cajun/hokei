@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   getPartnerStoreBySlug,
+  getPartnerStoreRecordBySlug,
+  isPartnerStorePublic,
   listPublishedPartners,
   publishedPartnerWhere,
 } from "./queries";
@@ -22,6 +24,54 @@ describe("publishedPartnerWhere", () => {
     expect(publishedPartnerWhere(now)).toEqual({
       status: "PUBLISHED",
       OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    });
+  });
+});
+
+describe("isPartnerStorePublic", () => {
+  const now = new Date("2026-06-21T00:00:00Z");
+
+  it("accepts published non-expired store", () => {
+    expect(
+      isPartnerStorePublic(
+        { status: "PUBLISHED", expiresAt: new Date("2026-12-01") },
+        now
+      )
+    ).toBe(true);
+  });
+
+  it("rejects draft store", () => {
+    expect(
+      isPartnerStorePublic({ status: "DRAFT", expiresAt: null }, now)
+    ).toBe(false);
+  });
+
+  it("rejects expired store", () => {
+    expect(
+      isPartnerStorePublic(
+        { status: "PUBLISHED", expiresAt: new Date("2026-01-01") },
+        now
+      )
+    ).toBe(false);
+  });
+});
+
+describe("getPartnerStoreRecordBySlug", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.partnerStore.findUnique).mockReset();
+  });
+
+  it("queries by slug without status filter", async () => {
+    vi.mocked(prisma.partnerStore.findUnique).mockResolvedValue({
+      id: "c1",
+      slug: "draft-store",
+      status: "DRAFT",
+    } as never);
+
+    const store = await getPartnerStoreRecordBySlug("draft-store");
+    expect(store?.status).toBe("DRAFT");
+    expect(prisma.partnerStore.findUnique).toHaveBeenCalledWith({
+      where: { slug: "draft-store" },
     });
   });
 });

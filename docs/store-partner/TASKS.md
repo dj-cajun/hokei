@@ -14,26 +14,26 @@
 ### T2. 모바일 LP
 - [x] **T2-1** `src/app/store/[slug]/page.tsx` + `generateMetadata`
 - [x] **T2-2** `store-landing.tsx`, `store-cta-bar.tsx`
-- [ ] **T2-3** 404 / expired / draft 처리
+- [x] **T2-3** 404 / expired / draft 처리
 
 ### T3. 제휴 허브
-- [ ] **T3-1** `src/app/partners/page.tsx`
-- [ ] **T3-2** `partner-card.tsx` + ads CTA
+- [x] **T3-1** `src/app/partners/page.tsx`
+- [x] **T3-2** `partner-card.tsx` + ads CTA
 
 ### T4. 관리자
-- [ ] **T4-1** `/api/admin/partners` CRUD + requireAdmin
-- [ ] **T4-2** `/admin/partners` + `partners-panel.tsx`
-- [ ] **T4-3** 썸네일 — 기존 Blob upload API 재사용
+- [x] **T4-1** `/api/admin/partners` CRUD + requireAdmin
+- [x] **T4-2** `/admin/partners` + `partners-panel.tsx`
+- [x] **T4-3** 썸네일 — 기존 Blob upload API 재사용
 
 ### T5. 홈 배너
-- [ ] **T5-1** Prisma `PartnerBanner` + slot enum
-- [ ] **T5-2** `/api/admin/partner-banners` CRUD
-- [ ] **T5-3** `home-partner-banner.tsx` → `home-page-content.tsx` 삽입
+- [x] **T5-1** Prisma `PartnerBanner` + slot enum
+- [x] **T5-2** `/api/admin/partner-banners` CRUD
+- [x] **T5-3** `home-partner-banner.tsx` → `home-page-content.tsx` 삽입
 
 ### T6. 시드 · QA
-- [ ] **T6-1** `scripts/seed-partner-demo.ts` — 데모 업소 1곳
-- [ ] **T6-2** route test 1개 + `npm run check:prod` on www.hokei.vn
-- [ ] **T6-3** `docs/BACKLOG.md` 업데이트
+- [x] **T6-1** `scripts/seed-partner-demo.ts` — 데모 업소 1곳
+- [x] **T6-2** route test 1개 + `npm run check:prod` on www.hokei.vn
+- [x] **T6-3** `docs/BACKLOG.md` 업데이트
 
 ---
 
@@ -56,7 +56,7 @@
 
 ## 현재 다음 작업
 
-**→ T2-3** (`loop.md` 필수 통과)
+**→ Phase 2 T7** (클릭 통계·추가 슬롯 등)
 
 ---
 
@@ -66,4 +66,5 @@
 |------|--------|------|
 | 2026-06-27 | T1-1 PartnerStore 스키마 | 8b7cdd6 |
 | 2026-06-27 | 기획 문서·loop.md | 11665df |
-| 2026-06-27 | T2-1 LP 라우트·metadata, T2-2 UI | (this PR) |
+| 2026-06-27 | T2-1 LP 라우트·metadata, T2-2 UI | bf453b4 |
+| 2026-06-27 | T2-3~T6 Phase 1 MVP 완료 | (this PR) |

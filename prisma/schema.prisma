@@ -454,6 +454,13 @@ enum PartnerStatus {
   ARCHIVED
 }
 
+enum PartnerBannerSlot {
+  HOME_BOTTOM
+  HOME_TOP
+  NEWS_INLINE
+  PROMO_TOP
+}
+
 /// 제휴 업소 — 모바일 LP `/store/{slug}`
 model PartnerStore {
   id          String          @id @default(cuid())
@@ -475,11 +482,32 @@ model PartnerStore {
   expiresAt   DateTime?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  banners     PartnerBanner[]
 
   @@index([status])
   @@index([category])
   @@index([expiresAt])
   @@index([sortOrder])
+}
+
+/// 홈·뉴스 등 배너 슬롯
+model PartnerBanner {
+  id        String            @id @default(cuid())
+  storeId   String
+  store     PartnerStore      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  slot      PartnerBannerSlot
+  imageUrl  String
+  altText   String?
+  linkSlug  String?
+  sortOrder Int               @default(0)
+  isActive  Boolean           @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([slot, isActive])
+  @@index([storeId])
 }
 
 /// 일별 자동 수집 로그 (하루 10건 제한 추적)
