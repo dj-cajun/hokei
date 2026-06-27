@@ -11,7 +11,9 @@ import { parseApiError } from "@/lib/api-response";
 import { uploadClientImage } from "@/lib/upload-client";
 import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
 import { slugifyPartnerName } from "@/lib/partner/slug";
+import { PartnerAssetGuideBox } from "@/components/admin/partner-asset-guide";
 import { PartnerPromoPostField } from "@/components/admin/partner-promo-post-field";
+import type { PartnerAssetGuideKey } from "@/lib/partner/asset-guide";
 import type {
   PartnerCategory,
   PartnerPlan,
@@ -37,6 +39,7 @@ type StoreRow = {
   hoursText: string | null;
   commentPostId: string | null;
   thumbnail: string | null;
+  ogImageUrl: string | null;
   plan: PartnerPlan;
   status: PartnerStatus;
   sortOrder: number;
@@ -85,6 +88,7 @@ const emptyStoreForm = {
   hoursText: "",
   commentPostId: "",
   thumbnail: "",
+  ogImageUrl: "",
   plan: "BASIC" as PartnerPlan,
   status: "DRAFT" as PartnerStatus,
   sortOrder: 0,
@@ -127,6 +131,7 @@ export function PartnersPanel() {
   const [editingHomeTopBannerId, setEditingHomeTopBannerId] = useState<string | null>(null);
   const [bannerForm, setBannerForm] = useState(emptyBannerForm);
   const thumbInputRef = useRef<HTMLInputElement>(null);
+  const ogInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const bannerMobileInputRef = useRef<HTMLInputElement>(null);
   const homeTopPcInputRef = useRef<HTMLInputElement>(null);
@@ -201,6 +206,7 @@ export function PartnersPanel() {
       hoursText: row.hoursText ?? "",
       commentPostId: row.commentPostId ?? "",
       thumbnail: row.thumbnail ?? "",
+      ogImageUrl: row.ogImageUrl ?? "",
       plan: row.plan,
       status: row.status,
       sortOrder: row.sortOrder,
@@ -257,6 +263,7 @@ export function PartnersPanel() {
         hoursText: storeForm.hoursText || undefined,
         commentPostId: storeForm.commentPostId || null,
         thumbnail: storeForm.thumbnail || undefined,
+        ogImageUrl: storeForm.ogImageUrl || undefined,
         expiresAt: storeForm.expiresAt
           ? new Date(storeForm.expiresAt).toISOString()
           : null,
@@ -414,6 +421,23 @@ export function PartnersPanel() {
     setStoreForm((f) => ({ ...f, thumbnail: url }));
     showToast("썸네일을 업로드했습니다.");
   }
+
+  async function handleOgUpload(file: File) {
+    setUploading(true);
+    const url = await uploadClientImage(file);
+    setUploading(false);
+    if (!url) {
+      showToast("업로드 실패", "error");
+      return;
+    }
+    setStoreForm((f) => ({ ...f, ogImageUrl: url }));
+    showToast("OG 이미지를 업로드했습니다.");
+  }
+
+  const bannerSlotGuideKeys: PartnerAssetGuideKey[] =
+    bannerForm.slot === "HOME_TOP"
+      ? ["homeTopPc", "homeTopMobile"]
+      : ["homeBottom"];
 
   async function handleBannerUpload(file: File) {
     setUploading(true);
@@ -790,6 +814,10 @@ export function PartnersPanel() {
                 호케이 가입 이메일. 비우면 연결 해제.
               </p>
             </div>
+            <PartnerAssetGuideBox
+              keys={["lpThumbnail", "ogImage"]}
+              className="mb-1"
+            />
             <div>
               <Label htmlFor="thumbnail">썸네일 URL</Label>
               <div className="mt-1 flex gap-2">
@@ -824,10 +852,50 @@ export function PartnersPanel() {
                 </Button>
               </div>
             </div>
+            <div>
+              <Label htmlFor="ogImageUrl">SNS 공유 OG 이미지 URL</Label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  id="ogImageUrl"
+                  value={storeForm.ogImageUrl}
+                  onChange={(e) =>
+                    setStoreForm((f) => ({ ...f, ogImageUrl: e.target.value }))
+                  }
+                  placeholder="비우면 썸네일 사용"
+                />
+                <input
+                  ref={ogInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleOgUpload(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() => ogInputRef.current?.click()}
+                  aria-label="OG 이미지 업로드"
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                카카오·Facebook·X 링크 미리보기. 1200×630 권장.
+              </p>
+            </div>
             <fieldset className="space-y-3 rounded-lg border border-border-light p-3">
               <legend className="px-1 text-sm font-semibold">
                 홈 상단 배너 (HOME_TOP)
               </legend>
+              <PartnerAssetGuideBox keys={["homeTopPc", "homeTopMobile"]} />
               <p className="text-[10px] text-muted-foreground">
                 PC 배너 URL이 있으면 등록·수정과 함께 저장됩니다. 비우면 배너는
                 건드리지 않습니다.
@@ -1038,6 +1106,7 @@ export function PartnersPanel() {
             <h2 className="text-sm font-semibold">
               {editingBannerId ? "배너 수정" : "새 배너"}
             </h2>
+            <PartnerAssetGuideBox keys={bannerSlotGuideKeys} />
             <div>
               <Label htmlFor="bannerStore">업소</Label>
               <select

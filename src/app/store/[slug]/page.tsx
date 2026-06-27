@@ -11,6 +11,7 @@ import {
 } from "@/lib/partner/queries";
 import { resolveStoreCommentPost } from "@/lib/partner/store-page";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
+import { resolvePartnerOgImageUrl } from "@/lib/partner/asset-guide";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -60,12 +61,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     store.description?.replace(/\s+/g, " ").trim().slice(0, 160) ||
     `${store.name} - 호케이 제휴 업소`;
   const canonical = `${resolveSiteUrl()}/store/${store.slug}`;
-  const thumb = store.thumbnail?.trim();
-  const ogImage = thumb
-    ? thumb.startsWith("http")
-      ? thumb
-      : `${resolveSiteUrl()}${thumb.startsWith("/") ? thumb : `/${thumb}`}`
-    : undefined;
+  const ogImage = resolvePartnerOgImageUrl(store, resolveSiteUrl());
 
   return {
     title: `${store.name} | 호케이`,
@@ -76,7 +72,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url: canonical,
       type: "website",
-      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+      locale: "ko_KR",
+      siteName: "호케이 Hokei",
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title: store.name,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }

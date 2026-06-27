@@ -32,7 +32,8 @@ PartnerStore (optional) ── link ── Post.storeName  [Phase 2, soft string
 | address | String? | 주소 텍스트 |
 | hoursText | String? | 영업시간·이벤트 (자유 텍스트) |
 | commentPostId | String? | LP 하단 댓글 연결 Post ID |
-| thumbnail | String? | Blob or HTTPS |
+| thumbnail | String? | Blob or HTTPS — LP Hero |
+| ogImageUrl | String? | SNS OG (1200×630 권장). 없으면 thumbnail fallback |
 | plan | PartnerPlan | BASIC, STANDARD, PREMIUM |
 | status | PartnerStatus | DRAFT, PUBLISHED, ARCHIVED |
 | sortOrder | Int @default(0) | /partners 정렬 |

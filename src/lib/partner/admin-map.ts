@@ -20,6 +20,7 @@ export type PartnerStorePrismaInput = {
   hoursText?: string | null;
   commentPostId?: string | null;
   thumbnail?: string | null;
+  ogImageUrl?: string | null;
   plan?: PartnerPlan;
   status?: PartnerStatus;
   sortOrder?: number;
@@ -56,6 +57,7 @@ export function partnerStoreToPrismaData(input: PartnerStorePrismaInput) {
     hoursText: nullIfEmpty(input.hoursText),
     commentPostId: nullIfEmpty(input.commentPostId),
     thumbnail: nullIfEmpty(input.thumbnail),
+    ogImageUrl: nullIfEmpty(input.ogImageUrl),
     plan: input.plan ?? "BASIC",
     status,
     sortOrder: input.sortOrder ?? 0,

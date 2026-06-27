@@ -75,11 +75,16 @@
 - [x] **T15-4** partner queries·events·배너 view 테스트
 - [x] **T15-5** upload-client 공통화 + promo 필드 분리 + 배너 모바일 업로드
 
+## Phase 7 — SNS·에셋 가이드
+
+- [x] **T16-1** admin·배너 폼 이미지 사이즈 가이드 (`PARTNER_ASSET_GUIDE`, `PartnerAssetGuideBox`)
+- [x] **T16-2** `PartnerStore.ogImageUrl` — DB·admin 입력·LP `generateMetadata` OG/Twitter (썸네일 fallback)
+
 ---
 
 ## 현재 다음 작업
 
-**→ Phase C (이미지 next/image, store cache, revalidate 통일) · 프로덕션 시드·영업 데모**
+**→ Phase C (이미지 next/image, store cache, revalidate 통일) · `db:pg:patch`·프로덕션 시드·영업 데모**
 
 ---
 

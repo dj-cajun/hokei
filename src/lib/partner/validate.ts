@@ -109,6 +109,7 @@ export const partnerStoreCreateSchema = z.object({
   hoursText: z.string().max(1000).optional(),
   commentPostId: z.string().max(64).optional().nullable(),
   thumbnail: optionalMediaUrl,
+  ogImageUrl: optionalMediaUrl,
   plan: partnerPlanSchema.default("BASIC"),
   status: partnerStatusSchema.default("DRAFT"),
   sortOrder: z.number().int().min(0).max(9999).default(0),

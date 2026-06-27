@@ -482,6 +482,8 @@ model PartnerStore {
   locationTips String?        @db.Text
   hoursText   String?
   thumbnail   String?
+  /** SNS 공유 OG 전용 (없으면 thumbnail fallback) */
+  ogImageUrl  String?
   plan        PartnerPlan     @default(BASIC)
   status      PartnerStatus   @default(DRAFT)
   sortOrder   Int             @default(0)

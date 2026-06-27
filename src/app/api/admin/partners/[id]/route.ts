@@ -130,6 +130,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.thumbnail !== undefined
         ? nullIfEmpty(parsed.data.thumbnail)
         : existing.thumbnail,
+    ogImageUrl:
+      parsed.data.ogImageUrl !== undefined
+        ? nullIfEmpty(parsed.data.ogImageUrl)
+        : existing.ogImageUrl,
     commentPostId: resolvedCommentPostId,
     plan: parsed.data.plan ?? existing.plan,
     status: parsed.data.status ?? existing.status,
