@@ -72,6 +72,7 @@ type SeedFile = {
     mapsUrl: string;
     hoursText: string;
     thumbnail?: string;
+    ogImageUrl?: string;
     bannerImage?: string;
     mobileBannerImage?: string;
   };
@@ -133,6 +134,7 @@ async function main() {
       locationTips: seed.partner.locationTips ?? null,
       hoursText: seed.partner.hoursText,
       thumbnail: seed.partner.thumbnail ?? null,
+      ogImageUrl: seed.partner.ogImageUrl ?? null,
       plan: "PREMIUM",
       status: "PUBLISHED",
       sortOrder: 1,
@@ -150,6 +152,7 @@ async function main() {
       locationTips: seed.partner.locationTips ?? null,
       hoursText: seed.partner.hoursText,
       thumbnail: seed.partner.thumbnail ?? null,
+      ogImageUrl: seed.partner.ogImageUrl ?? null,
       status: "PUBLISHED",
       plan: "PREMIUM",
     },
@@ -227,6 +230,9 @@ async function main() {
   console.log(`  글: /posts/${post.id}`);
   console.log(`  타임라인: /promo/timeline/2d-sketch-cafe`);
   console.log(`  홈 상단 배너: HOME_TOP → PC ${bannerImage} / MO ${mobileBannerImage}`);
+  if (seed.partner.ogImageUrl) {
+    console.log(`  OG 이미지: ${seed.partner.ogImageUrl}`);
+  }
 
   await prisma.$disconnect();
 }

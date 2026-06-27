@@ -42,6 +42,7 @@
     "launch:setup": "tsx scripts/launch-setup.ts",
     "launch:setup:prod": "vercel env run --environment production -- tsx scripts/launch-setup.ts",
     "check:prod": "node scripts/check-prod-pages.mjs",
+    "check:partner-assets": "node scripts/check-partner-demo-assets.mjs",
     "check:prod:browser": "node scripts/check-prod-browser.mjs",
     "search:pg:setup": "tsx scripts/setup-pg-search.ts",
     "db:generate": "tsx scripts/prisma-generate-for-deploy.ts",

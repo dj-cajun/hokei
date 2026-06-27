@@ -25,14 +25,20 @@ async function checkPath(path) {
   const video = html.includes("youtube-nocookie.com/embed");
 
   let bannerOk = true;
+  let ogOk = true;
   if (path === "/") {
     bannerOk = homeBannerChecks.every((needle) => html.includes(needle));
   }
+  if (path === "/store/2d-sketch-cafe") {
+    ogOk =
+      html.includes('property="og:image"') &&
+      html.includes("2d-sketch-cafe-og.jpg");
+  }
 
-  const ok = res.status === 200 && !errorUi && bannerOk;
+  const ok = res.status === 200 && !errorUi && bannerOk && ogOk;
 
   console.log(
-    `${path} ${res.status} ${errorUi ? "ERROR_UI" : "no-error-ui"} digests=${digests} video=${video}${path === "/" ? ` banner=${bannerOk ? "ok" : "MISSING"}` : ""} ${ok ? "OK" : "FAIL"}`
+    `${path} ${res.status} ${errorUi ? "ERROR_UI" : "no-error-ui"} digests=${digests} video=${video}${path === "/" ? ` banner=${bannerOk ? "ok" : "MISSING"}` : ""}${path === "/store/2d-sketch-cafe" ? ` og=${ogOk ? "ok" : "MISSING"}` : ""} ${ok ? "OK" : "FAIL"}`
   );
 
   return ok;

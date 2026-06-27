@@ -40,7 +40,8 @@ bash scripts/with-pg-env.sh npm run seed:life-v2
 
 # 스모크 (non-200·홈 배너 없으면 exit 1)
 npm run check:prod
-# → /, /partners, /store/saigon-bbq-demo, /store/2d-sketch-cafe 포함
+npm run check:partner-assets   # 2d-sketch-cafe 로컬 public/ 치수
+# → /, /partners, /store/saigon-bbq-demo, /store/2d-sketch-cafe (OG assert)
 ```
 
 | URL | 용도 |
