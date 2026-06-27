@@ -8,6 +8,7 @@ import { LifeSourceNotice } from "@/components/life/life-source-notice";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getLifeGuideBySlug } from "@/lib/life/guides";
 import { LIFE_DOMAIN_LABELS, LIFE_KIND_LABELS } from "@/lib/life/labels";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,13 @@ export default async function LifeDetailPage({ params }: PageProps) {
           {isPhrase && guide.vnText && (
             <LifeShowModeToggle vnText={guide.vnText} title={guide.title}>
               <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-4">
-                <p className="text-2xl font-bold leading-snug text-primary">
+                <p
+                  className={cn(
+                    guide.vnText.length > 72
+                      ? "text-lg font-bold leading-snug text-primary sm:text-xl"
+                      : "text-2xl font-bold leading-snug text-primary"
+                  )}
+                >
                   {guide.vnText}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">

@@ -32,7 +32,7 @@ export function LifeGuideList({
           </p>
           <p className="mt-0.5 text-sm font-medium">{item.title}</p>
           {item.vnText && (
-            <p className="mt-1 text-xs text-primary">{item.vnText}</p>
+            <p className="mt-1 line-clamp-2 text-xs text-primary">{item.vnText}</p>
           )}
         </Link>
       ))}

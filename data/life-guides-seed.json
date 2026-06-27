@@ -73,14 +73,14 @@
   },
   {
     "slug": "intl-driving-license",
-    "kind": "DOC",
+    "kind": "PHRASE",
     "domain": "ADMIN",
-    "title": "한-베 국제운전면허 (IDP) 안내",
-    "vnText": null,
-    "body": "한국에서 발급한 국제운전면허증(IDP)과 한국 면허증 원본을 함께 지참해야 합니다. 베트남 현지에서 면허 교환 절차는 거주 목적·체류 기간에 따라 다릅니다.\n\n※ 최신 규정은 총영사관 공지를 확인하세요.",
+    "title": "한-베 국제운전면허 상호인정",
+    "vnText": "Hiệp định công nhận lẫn nhau Giấy phép lái xe quốc tế giữa Việt Nam và Hàn Quốc có hiệu lực từ ngày 23/7/2023",
+    "body": "베트남과 한국은 2023년 7월 23일부터 국제운전면허증(IDP) 상호인정 협정이 시행됩니다.\n\n한국에서 발급한 IDP와 한국 면허증 원본을 함께 지참하세요. 교통·행정 기관에 설명이 필요할 때 아래 베트남어 문구를 보여주거나 「화면 보여주기」를 사용하세요.\n\n※ 최신 규정·교환 절차는 총영사관 공지를 확인하세요.",
     "sourceLabel": "참고: 교통안전공단·총영사관",
     "externalUrl": "https://www.hochiminhcg.mofa.go.kr",
-    "sortOrder": 10
+    "sortOrder": 1
   },
   {
     "slug": "zero-fee-atm",

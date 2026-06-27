@@ -4,6 +4,12 @@ import { useState } from "react";
 import { Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function vnDisplayClass(text: string) {
+  return text.length > 72
+    ? "mt-4 max-w-lg text-xl font-bold leading-snug sm:text-2xl"
+    : "mt-4 text-4xl font-bold leading-tight";
+}
+
 type LifeShowModeToggleProps = {
   children: React.ReactNode;
   vnText?: string | null;
@@ -37,7 +43,7 @@ export function LifeShowModeToggle({
         >
           <p className="text-lg text-muted-foreground">{title}</p>
           {vnText && (
-            <p className="mt-4 text-4xl font-bold leading-tight text-foreground">
+            <p className={cn(vnDisplayClass(vnText), "text-foreground")}>
               {vnText}
             </p>
           )}
