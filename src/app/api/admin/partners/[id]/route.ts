@@ -126,10 +126,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       parsed.data.hoursText !== undefined
         ? nullIfEmpty(parsed.data.hoursText)
         : existing.hoursText,
-    commentPostId:
-      parsed.data.commentPostId !== undefined
-        ? nullIfEmpty(parsed.data.commentPostId ?? undefined)
-        : existing.commentPostId,
     thumbnail:
       parsed.data.thumbnail !== undefined
         ? nullIfEmpty(parsed.data.thumbnail)

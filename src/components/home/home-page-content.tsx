@@ -7,7 +7,7 @@ import {
   SafeBoardPreviewList,
   SafeWeatherQuickGrid,
 } from "@/components/home/safe-home-sections";
-import { HomeTopBanner } from "@/components/partner/home-top-banner";
+import { HomeTopBannerView } from "@/components/partner/home-top-banner";
 import { FeedListClient } from "@/components/home/feed-list-client";
 import { PopularPostsStrip } from "@/components/home/popular-posts-strip";
 import { HomePartnerBanner } from "@/components/partner/home-partner-banner";
@@ -17,6 +17,7 @@ import { HomeLifeStrip } from "@/components/home/home-life-strip";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getFeaturedLifeGuide } from "@/lib/life/guides";
 import { formatUnknownError, log } from "@/lib/logger";
+import { listBannersForSlotCached } from "@/lib/partner/queries";
 import { getHomeYouTubeHighlight } from "@/lib/site-settings";
 import {
   getAutomatedNewsPosts,
@@ -63,13 +64,13 @@ export async function HomePageContent() {
     );
   }
 
-  // 1) 뉴스·v2 생활 — 우선 로드 (뉴스가 홈에서 가장 먼저 보이도록)
-  const [news, featuredLife] = await Promise.all([
+  const [news, featuredLife, homeTopBanners, homeBottomBanners] = await Promise.all([
     loadHomeNews(),
     safeLoad("featuredLife", () => getFeaturedLifeGuide(), null),
+    safeLoad("homeTopBanners", () => listBannersForSlotCached("HOME_TOP", 1), []),
+    safeLoad("homeBottomBanners", () => listBannersForSlotCached("HOME_BOTTOM", 3), []),
   ]);
 
-  // 2) 커뮤니티 피드 — 뉴스 다음
   const [latest, popular, notices, homeYoutube] = await Promise.all([
     safeLoad("latest", () => getLatestCommunityPosts(12), emptyFeed),
     safeLoad("popular", () => getPopularUserPosts(12), emptyFeed),
@@ -87,8 +88,8 @@ export async function HomePageContent() {
 
   return (
     <>
+      <HomeTopBannerView banner={homeTopBanners[0]} />
       {news.length === 0 ? <HomeNewsLoadAlert /> : null}
-      <HomeTopBanner />
       {/* 모바일 — 뉴스 우선 */}
       <div className="block lg:hidden">
         <SafeWeatherQuickGrid />
@@ -100,7 +101,7 @@ export async function HomePageContent() {
           startSeconds={homeYoutube.startSeconds}
         />
         <PopularPostsStrip items={popular} />
-        <HomePartnerBanner />
+        <HomePartnerBanner banners={homeBottomBanners} />
         <AdSenseUnit slotKind="home" className="px-3" />
         <SafeBoardPreviewList />
         <HomeMobileFeed

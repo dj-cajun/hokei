@@ -20,19 +20,26 @@
 
 배포 후 제휴 기능 점검 순서:
 
+| 환경 | DB | 명령 |
+|------|-----|------|
+| **로컬 dev** | `.env` + `.env.local` (Neon dev) | `npm run db:pg:patch` → `npm run db:seed:2d-sketch-cafe` → `npm run dev` (**http://localhost:3001**) |
+| **프로덕션** | `.env.production.pg` | `bash scripts/with-pg-env.sh npm run db:pg:patch` → `bash scripts/with-pg-env.sh npm run db:seed:2d-sketch-cafe` |
+
+`with-pg-env`는 **프로덕션 DB만** 대상입니다. 로컬에서 `with-pg-env`로 시드해도 dev 서버에는 반영되지 않습니다.
+
 ```bash
-# 1) 스키마 패치 (Vercel 빌드 훅 또는 로컬)
+# 로컬
 npm run db:pg:patch
+npm run db:seed:2d-sketch-cafe   # 또는 npm run db:seed:partner-demo
+npm run dev                      # → http://localhost:3001 (3000 아님)
 
-# 2) 데모 업소 시드 (경량 · 영업 미팅용)
-DATABASE_URL="postgresql://..." npm run db:seed:partner-demo
+# 프로덕션
+bash scripts/with-pg-env.sh npm run db:pg:patch
+bash scripts/with-pg-env.sh npm run db:seed:2d-sketch-cafe
 
-# 3) 풀 데모 (2D Sketch Cafe — LP 7섹션 + 홍보글 + HOME_TOP)
-DATABASE_URL="postgresql://..." npm run db:seed:2d-sketch-cafe
-
-# 4) 프로덕션 스모크
+# 스모크 (non-200·홈 배너 없으면 exit 1)
 npm run check:prod
-# → /, /partners, /store/saigon-bbq-demo 포함
+# → /, /partners, /store/saigon-bbq-demo, /store/2d-sketch-cafe 포함
 ```
 
 | URL | 용도 |

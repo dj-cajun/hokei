@@ -1,12 +1,12 @@
 import { PartnerBannerSlot } from "@/components/partner/partner-banner-slot";
-import { HomeTopBanner } from "@/components/partner/home-top-banner";
+import type { PartnerBannerWithStore } from "@/lib/partner/queries";
 
-export async function HomePartnerBanner() {
-  return <PartnerBannerSlot slot="HOME_BOTTOM" />;
-}
+type HomePartnerBannerProps = {
+  banners?: PartnerBannerWithStore[];
+};
 
-export async function HomePartnerBannerTop() {
-  return <HomeTopBanner />;
+export async function HomePartnerBanner({ banners }: HomePartnerBannerProps = {}) {
+  return <PartnerBannerSlot slot="HOME_BOTTOM" banners={banners} />;
 }
 
 export async function NewsPartnerBanner() {

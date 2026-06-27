@@ -1,10 +1,13 @@
 import type { PartnerBannerSlot as BannerSlot } from "@/generated/prisma/client";
-import { isDatabaseAvailable } from "@/lib/database-available";
+import type { PartnerBannerWithStore } from "@/lib/partner/queries";
 import { listBannersForSlot } from "@/lib/partner/queries";
+import { isDatabaseAvailable } from "@/lib/database-available";
 import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
 
 type PartnerBannerSlotProps = {
   slot: BannerSlot;
+  /** 홈 등에서 선조회한 배너 — DB 재조회 생략 */
+  banners?: PartnerBannerWithStore[];
   limit?: number;
   className?: string;
   imageClassName?: string;
@@ -14,6 +17,7 @@ type PartnerBannerSlotProps = {
 
 export async function PartnerBannerSlot({
   slot,
+  banners: preloaded,
   limit = 3,
   className = "space-y-2 px-3 py-2",
   imageClassName = "aspect-[3/1] w-full object-cover",
@@ -21,7 +25,7 @@ export async function PartnerBannerSlot({
 }: PartnerBannerSlotProps) {
   if (!isDatabaseAvailable()) return null;
 
-  const banners = await listBannersForSlot(slot, limit);
+  const banners = preloaded ?? (await listBannersForSlot(slot, limit));
   if (banners.length === 0) return null;
 
   return (

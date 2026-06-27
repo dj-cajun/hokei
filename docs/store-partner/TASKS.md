@@ -67,11 +67,19 @@
 - [x] **T13** LP `LocalBusiness` JSON-LD
 - [x] **T14** commentPostId — admin 홍보글 `storeName` 검색 UI (스키마 변경 없음)
 
+## Phase 6 — 최적화·품질
+
+- [x] **T15-1** 홈 LCP·배너 쿼리 병렬화 + `fetchPriority`
+- [x] **T15-2** check:prod 강화 (2d-sketch, 배너 assert, exit 1)
+- [x] **T15-3** BANNER_CLICK 쿠키 dedup
+- [x] **T15-4** partner queries·events·배너 view 테스트
+- [x] **T15-5** upload-client 공통화 + promo 필드 분리 + 배너 모바일 업로드
+
 ---
 
 ## 현재 다음 작업
 
-**→ PR 머지·배포 완료. 프로덕션 시드·영업 데모.**
+**→ Phase C (이미지 next/image, store cache, revalidate 통일) · 프로덕션 시드·영업 데모**
 
 ---
 

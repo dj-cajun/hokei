@@ -1,47 +1,29 @@
 import { PartnerBannerLink } from "@/components/partner/partner-banner-link";
+import type { PartnerBannerWithStore } from "@/lib/partner/queries";
+import { listBannersForSlotCached } from "@/lib/partner/queries";
 import { isDatabaseAvailable } from "@/lib/database-available";
-import { listBannersForSlot } from "@/lib/partner/queries";
-import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
-/** stale Prisma 클라이언트가 mobileImageUrl을 안 읽을 때 DB 직접 조회 */
-async function resolveMobileImageUrl(
-  bannerId: string,
-  fromModel: string | null | undefined,
+function resolveMobileImageUrl(
+  mobileImageUrl: string | null | undefined,
   pcFallback: string
-): Promise<string> {
-  const trimmed = fromModel?.trim();
-  if (trimmed) return trimmed;
-
-  try {
-    const rows = await prisma.$queryRaw<{ mobileImageUrl: string | null }[]>`
-      SELECT "mobileImageUrl" FROM "PartnerBanner" WHERE "id" = ${bannerId} LIMIT 1
-    `;
-    const raw = rows[0]?.mobileImageUrl?.trim();
-    if (raw) return raw;
-  } catch {
-    /* column 없거나 조회 실패 시 PC 이미지 */
-  }
-
-  return pcFallback;
+): string {
+  const trimmed = mobileImageUrl?.trim();
+  return trimmed || pcFallback;
 }
 
-/** 홈 최상단 — PC·모바일 배너 분리 (breakpoint: lg = 홈 레이아웃과 동일) */
-export async function HomeTopBanner() {
-  if (!isDatabaseAvailable()) return null;
+type HomeTopBannerViewProps = {
+  banner: PartnerBannerWithStore | null | undefined;
+};
 
-  const banners = await listBannersForSlot("HOME_TOP", 1);
-  const banner = banners[0];
+/** 홈 최상단 — PC·모바일 배너 분리 (breakpoint: lg) */
+export function HomeTopBannerView({ banner }: HomeTopBannerViewProps) {
   if (!banner) return null;
 
   const slug = banner.linkSlug?.trim() || banner.store.slug;
   const href = `/store/${slug}`;
   const alt = banner.altText ?? banner.store.name;
-  const mobileSrc = await resolveMobileImageUrl(
-    banner.id,
-    banner.mobileImageUrl,
-    banner.imageUrl
-  );
+  const mobileSrc = resolveMobileImageUrl(banner.mobileImageUrl, banner.imageUrl);
   const hasDedicatedMobile = mobileSrc !== banner.imageUrl;
 
   return (
@@ -61,6 +43,8 @@ export async function HomeTopBanner() {
         <img
           src={mobileSrc}
           alt={alt}
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-contain object-center"
         />
       </PartnerBannerLink>
@@ -74,9 +58,18 @@ export async function HomeTopBanner() {
         <img
           src={banner.imageUrl}
           alt={alt}
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-cover object-center"
         />
       </PartnerBannerLink>
     </section>
   );
+}
+
+/** 단독 사용 시 — 요청 내 react/cache로 1회 조회 */
+export async function HomeTopBanner() {
+  if (!isDatabaseAvailable()) return null;
+  const banners = await listBannersForSlotCached("HOME_TOP", 1);
+  return <HomeTopBannerView banner={banners[0]} />;
 }

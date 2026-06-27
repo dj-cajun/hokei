@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
+import { uploadClientImage } from "@/lib/upload-client";
 import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
 import { slugifyPartnerName } from "@/lib/partner/slug";
+import { PartnerPromoPostField } from "@/components/admin/partner-promo-post-field";
 import type {
   PartnerCategory,
   PartnerPlan,
@@ -109,15 +111,6 @@ const emptyBannerForm = {
   isActive: true,
 };
 
-async function uploadImage(file: File): Promise<string | null> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/uploads", { method: "POST", body: form });
-  const data = await res.json();
-  if (!res.ok || !data.ok) return null;
-  return data.url as string;
-}
-
 export function PartnersPanel() {
   const { showToast } = useToast();
   const [tab, setTab] = useState<Tab>("stores");
@@ -132,14 +125,10 @@ export function PartnersPanel() {
   const [storeForm, setStoreForm] = useState(emptyStoreForm);
   const [homeTopBannerForm, setHomeTopBannerForm] = useState(emptyHomeTopBannerForm);
   const [editingHomeTopBannerId, setEditingHomeTopBannerId] = useState<string | null>(null);
-  const [promoPostQuery, setPromoPostQuery] = useState("");
-  const [promoPostHits, setPromoPostHits] = useState<
-    { id: string; title: string }[]
-  >([]);
-  const [searchingPromoPosts, setSearchingPromoPosts] = useState(false);
   const [bannerForm, setBannerForm] = useState(emptyBannerForm);
   const thumbInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const bannerMobileInputRef = useRef<HTMLInputElement>(null);
   const homeTopPcInputRef = useRef<HTMLInputElement>(null);
   const homeTopMobileInputRef = useRef<HTMLInputElement>(null);
 
@@ -187,8 +176,6 @@ export function PartnersPanel() {
     setStoreForm(emptyStoreForm);
     setHomeTopBannerForm(emptyHomeTopBannerForm);
     setEditingHomeTopBannerId(null);
-    setPromoPostQuery("");
-    setPromoPostHits([]);
   }
 
   function resetBannerForm() {
@@ -235,37 +222,6 @@ export function PartnersPanel() {
     } else {
       setEditingHomeTopBannerId(null);
       setHomeTopBannerForm(emptyHomeTopBannerForm);
-    }
-    setPromoPostQuery(row.name);
-    setPromoPostHits([]);
-  }
-
-  async function searchPromoPosts() {
-    const storeName = promoPostQuery.trim() || storeForm.name.trim();
-    if (!storeName) {
-      showToast("업소명 또는 검색어를 입력해 주세요.", "error");
-      return;
-    }
-    setSearchingPromoPosts(true);
-    try {
-      const res = await fetch(
-        `/api/admin/posts?storeName=${encodeURIComponent(storeName)}&limit=8`
-      );
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        showToast(parseApiError(data) ?? "홍보 글 검색 실패", "error");
-        return;
-      }
-      setPromoPostHits(
-        (data.posts as { id: string; title: string }[] | undefined)?.map(
-          (post) => ({ id: post.id, title: post.title })
-        ) ?? []
-      );
-      if (!data.posts?.length) {
-        showToast("일치하는 홍보 글이 없습니다.", "error");
-      }
-    } finally {
-      setSearchingPromoPosts(false);
     }
   }
 
@@ -449,7 +405,7 @@ export function PartnersPanel() {
 
   async function handleThumbUpload(file: File) {
     setUploading(true);
-    const url = await uploadImage(file);
+    const url = await uploadClientImage(file);
     setUploading(false);
     if (!url) {
       showToast("업로드 실패", "error");
@@ -461,7 +417,7 @@ export function PartnersPanel() {
 
   async function handleBannerUpload(file: File) {
     setUploading(true);
-    const url = await uploadImage(file);
+    const url = await uploadClientImage(file);
     setUploading(false);
     if (!url) {
       showToast("업로드 실패", "error");
@@ -471,12 +427,24 @@ export function PartnersPanel() {
     showToast("배너 이미지를 업로드했습니다.");
   }
 
+  async function handleBannerMobileUpload(file: File) {
+    setUploading(true);
+    const url = await uploadClientImage(file);
+    setUploading(false);
+    if (!url) {
+      showToast("업로드 실패", "error");
+      return;
+    }
+    setBannerForm((f) => ({ ...f, mobileImageUrl: url }));
+    showToast("모바일 배너를 업로드했습니다.");
+  }
+
   async function handleHomeTopUpload(
     file: File,
     target: "pc" | "mobile"
   ) {
     setUploading(true);
-    const url = await uploadImage(file);
+    const url = await uploadClientImage(file);
     setUploading(false);
     if (!url) {
       showToast("업로드 실패", "error");
@@ -752,63 +720,14 @@ export function PartnersPanel() {
                 className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
-            <div>
-              <Label htmlFor="commentPostId">댓글 연결 Post ID</Label>
-              <Input
-                id="commentPostId"
-                value={storeForm.commentPostId}
-                onChange={(e) =>
-                  setStoreForm((f) => ({ ...f, commentPostId: e.target.value }))
-                }
-                placeholder="LP 하단 댓글용 홍보 글 ID"
-                className="mt-1"
-              />
-              <div className="mt-2 flex gap-2">
-                <Input
-                  value={promoPostQuery}
-                  onChange={(e) => setPromoPostQuery(e.target.value)}
-                  placeholder={`홍보 글 검색 (기본: ${storeForm.name || "업소명"})`}
-                  className="text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={searchingPromoPosts}
-                  onClick={() => void searchPromoPosts()}
-                >
-                  {searchingPromoPosts ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "검색"
-                  )}
-                </Button>
-              </div>
-              {promoPostHits.length > 0 ? (
-                <ul className="mt-2 max-h-36 overflow-y-auto rounded-md border border-border-light text-xs">
-                  {promoPostHits.map((post) => (
-                    <li key={post.id} className="border-b border-border-light last:border-0">
-                      <button
-                        type="button"
-                        className="w-full px-2 py-2 text-left hover:bg-secondary/60"
-                        onClick={() => {
-                          setStoreForm((f) => ({
-                            ...f,
-                            commentPostId: post.id,
-                          }));
-                          showToast("댓글 글을 연결했습니다.");
-                        }}
-                      >
-                        <span className="font-medium">{post.title}</span>
-                        <span className="ml-1 text-muted-foreground">
-                          {post.id.slice(0, 10)}…
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
+            <PartnerPromoPostField
+              commentPostId={storeForm.commentPostId}
+              storeName={storeForm.name}
+              initialQuery={storeForm.name}
+              onCommentPostIdChange={(id) =>
+                setStoreForm((f) => ({ ...f, commentPostId: id }))
+              }
+            />
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="kakaoLink">카카오 링크</Label>
@@ -1195,18 +1114,38 @@ export function PartnersPanel() {
                 <Label htmlFor="bannerMobileImage">
                   모바일 배너 URL (768px 미만, 선택)
                 </Label>
-                <Input
-                  id="bannerMobileImage"
-                  value={bannerForm.mobileImageUrl}
-                  onChange={(e) =>
-                    setBannerForm((f) => ({
-                      ...f,
-                      mobileImageUrl: e.target.value,
-                    }))
-                  }
-                  placeholder="/partners/…-mobile.png"
-                  className="mt-1"
-                />
+                <div className="mt-1 flex gap-2">
+                  <Input
+                    id="bannerMobileImage"
+                    value={bannerForm.mobileImageUrl}
+                    onChange={(e) =>
+                      setBannerForm((f) => ({
+                        ...f,
+                        mobileImageUrl: e.target.value,
+                      }))
+                    }
+                    placeholder="/partners/…-mobile.png"
+                  />
+                  <input
+                    ref={bannerMobileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleBannerMobileUpload(file);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => bannerMobileInputRef.current?.click()}
+                    aria-label="모바일 배너 업로드"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                </div>
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   PC용(위)과 별도 이미지. 비우면 PC 이미지를 모바일에도 사용합니다.
                 </p>

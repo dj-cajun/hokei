@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
+  activePartnerBannerWhere,
   getPartnerStoreBySlug,
+  listBannersForSlot,
   listPublishedPartners,
   publishedPartnerWhere,
 } from "./queries";
@@ -13,6 +15,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
     },
+    partnerBanner: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -23,6 +28,38 @@ describe("publishedPartnerWhere", () => {
       status: "PUBLISHED",
       OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
     });
+  });
+});
+
+describe("activePartnerBannerWhere", () => {
+  it("requires active flag and valid date window", () => {
+    const now = new Date("2026-06-21T12:00:00Z");
+    expect(activePartnerBannerWhere(now)).toEqual({
+      isActive: true,
+      AND: [
+        { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+        { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
+      ],
+    });
+  });
+});
+
+describe("listBannersForSlot", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.partnerBanner.findMany).mockReset();
+  });
+
+  it("queries slot with published store filter", async () => {
+    vi.mocked(prisma.partnerBanner.findMany).mockResolvedValue([]);
+
+    await listBannersForSlot("HOME_TOP", 1);
+
+    expect(prisma.partnerBanner.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ slot: "HOME_TOP" }),
+        take: 1,
+      })
+    );
   });
 });
 

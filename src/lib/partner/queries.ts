@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { PartnerBannerSlot, PartnerCategory } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -132,6 +133,15 @@ export async function listBannersForSlot(
     take,
   });
 }
+
+export type PartnerBannerWithStore = Awaited<
+  ReturnType<typeof listBannersForSlot>
+>[number];
+
+/** 동일 RSC 요청 내 배너 조회 dedup */
+export const listBannersForSlotCached = cache(
+  (slot: PartnerBannerSlot, limit = 5) => listBannersForSlot(slot, limit)
+);
 
 /** slug 중복 확인 (admin·resolveUniquePartnerSlug) */
 export async function isPartnerSlugTaken(

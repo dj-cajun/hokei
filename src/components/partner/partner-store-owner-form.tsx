@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
+import { uploadClientImage } from "@/lib/upload-client";
 import type { PartnerStatus } from "@/generated/prisma/client";
 
 type StoreData = {
@@ -43,12 +44,7 @@ const emptyForm = {
 };
 
 async function uploadImage(file: File): Promise<string | null> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/uploads", { method: "POST", body: form });
-  const data = await res.json();
-  if (!res.ok || !data.ok) return null;
-  return data.url as string;
+  return uploadClientImage(file);
 }
 
 export function PartnerStoreOwnerForm() {

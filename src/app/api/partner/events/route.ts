@@ -4,8 +4,11 @@ import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { log } from "@/lib/logger";
 import {
+  hasPartnerClickCookie,
   hasPartnerViewCookie,
+  partnerClickCookieName,
   partnerViewCookieName,
+  PARTNER_CLICK_COOKIE_MAX_AGE_SEC,
   PARTNER_VIEW_COOKIE_MAX_AGE_SEC,
 } from "@/lib/partner/partner-event-cookie";
 import { publishedPartnerWhere } from "@/lib/partner/queries";
@@ -63,6 +66,12 @@ export async function POST(request: Request) {
       }
     }
 
+    if (eventType === "BANNER_CLICK") {
+      if (hasPartnerClickCookie(request, store.id)) {
+        return apiSuccess({ counted: false });
+      }
+    }
+
     const ua = request.headers.get("user-agent") ?? "";
 
     await prisma.partnerEvent.create({
@@ -77,6 +86,15 @@ export async function POST(request: Request) {
     if (eventType === "VIEW") {
       res.cookies.set(partnerViewCookieName(store.id), "1", {
         maxAge: PARTNER_VIEW_COOKIE_MAX_AGE_SEC,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+    }
+    if (eventType === "BANNER_CLICK") {
+      res.cookies.set(partnerClickCookieName(store.id), "1", {
+        maxAge: PARTNER_CLICK_COOKIE_MAX_AGE_SEC,
         path: "/",
         sameSite: "lax",
         httpOnly: true,

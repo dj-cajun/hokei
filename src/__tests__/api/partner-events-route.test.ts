@@ -49,4 +49,25 @@ describe("POST /api/partner/events", () => {
     expect(res.status).toBe(200);
     expect(prisma.partnerEvent.create).toHaveBeenCalled();
   });
+
+  it("skips duplicate BANNER_CLICK when click cookie present", async () => {
+    vi.mocked(prisma.partnerStore.findFirst).mockResolvedValue({
+      id: "store-1",
+    } as never);
+
+    const res = await POST(
+      new Request("http://localhost/api/partner/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "hokei_pec_store-1=1",
+        },
+        body: JSON.stringify({ slug: "saigon-bbq-demo", eventType: "BANNER_CLICK" }),
+      })
+    );
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.counted).toBe(false);
+    expect(prisma.partnerEvent.create).not.toHaveBeenCalled();
+  });
 });
