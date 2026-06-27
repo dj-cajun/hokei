@@ -1,0 +1,23 @@
+{
+  "partner": {
+    "slug": "2d-sketch-cafe",
+    "name": "2D SKETCH CAFE",
+    "tagline": "부이비엔 도보 1분 · 만화 속 2D 포토카페",
+    "description": "호치민 1군 부이비엔 워킹스트릿 근처, 2026년 6월 중순 오픈한 2D 콘셉트 카페입니다.\n\n벽·천장·가구까지 전부 흑백 스케치로 그려져 마치 만화책 안에 들어온 듯한 경험을 줍니다. 계단 구간, 벤탄시장 착시 벽화, 3층 드럼존·야외 발코니가 대표 포토존이에요.\n\n한국인 사장님 운영, 영사관 별관 맞은편이라 찾기 쉽습니다. 아직 많이 알려지지 않은 숨은 명소로 추천합니다.",
+    "address": "74 Nguyễn Cư Trinh, Quận 1, Hồ Chí Minh",
+    "mapsUrl": "https://maps.app.goo.gl/b3wZWs2uQcFrFGhc7",
+    "hoursText": "카페 운영 (오픈 2026년 6월 중순 · 상세 시간은 매장 확인)"
+  },
+  "post": {
+    "categorySlug": "promo-store-hungry",
+    "title": "[부이비엔 포토스팟] 2D SKETCH CAFE 후기 — 만화 속 세상에 들어온 기분",
+    "summary": "부이비엔 워킹스트릿 도보 1분, 흑백 2D 벽화 카페. 계단·벤탄 착시·3층 드럼존이 포토존. 2026년 6월 오픈 숨은 명소.",
+    "storeName": "2D SKETCH CAFE",
+    "region": "D1",
+    "topic": "TOURIST",
+    "sourceKey": "editorial:2d-sketch-cafe-review-202606",
+    "sourceName": "호케이 에디터",
+    "externalUrl": "https://m.blog.naver.com/unkibass/224328356051",
+    "publishedAtDate": "2026-06-15"
+  }
+}
