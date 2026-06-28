@@ -1,3 +1,4 @@
+import { AuthError } from "@auth/core/errors";
 import { NextResponse } from "next/server";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { readGoogleCallbackFromCookie } from "@/lib/auth/google-callback-cookie";
@@ -49,17 +50,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const signInResult = await signInWithGoogleCredential(credential, {
-      redirect: false,
+    await signInWithGoogleCredential(credential, {
+      redirect: true,
+      redirectTo: callbackUrl,
     });
-    if (!signInResult) {
-      return NextResponse.redirect(
-        new URL("/?login_error=google_session_failed", request.url)
-      );
+  } catch (err) {
+    if (!(err instanceof AuthError)) {
+      throw err;
     }
 
-    return NextResponse.redirect(new URL(callbackUrl, request.url));
-  } catch (err) {
     const code = googleLoginErrorCodeFromUnknown(err);
     const detail = err instanceof Error ? err.message : String(err);
     console.error("[google redirect]", code, detail, err);
@@ -67,4 +66,6 @@ export async function POST(request: Request) {
       new URL(`/?login_error=${code}`, request.url)
     );
   }
+
+  return NextResponse.redirect(new URL(callbackUrl, request.url));
 }

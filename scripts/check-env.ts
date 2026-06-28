@@ -158,6 +158,30 @@ if (production) {
     failed = true;
   }
 
+  const authUrl = prodValue("AUTH_URL");
+  const siteUrl = prodValue("NEXT_PUBLIC_SITE_URL");
+  if (authUrl && siteUrl) {
+    try {
+      const authHost = new URL(authUrl).host;
+      const siteHost = new URL(siteUrl).host;
+      if (authHost !== siteHost) {
+        console.error(
+          "[env:check] 프로덕션: AUTH_URL과 NEXT_PUBLIC_SITE_URL 호스트가 다릅니다 (세션 쿠키 불안정)"
+        );
+        failed = true;
+      } else {
+        console.log("[env:check] OK AUTH_URL / NEXT_PUBLIC_SITE_URL 호스트 일치");
+      }
+    } catch {
+      console.error("[env:check] 프로덕션: AUTH_URL 또는 NEXT_PUBLIC_SITE_URL URL 형식 오류");
+      failed = true;
+    }
+  } else if (!authUrl && siteUrl) {
+    console.warn(
+      "[env:check] 프로덕션: AUTH_URL 미설정 — Vercel에 https://www.hokei.vn 설정 권장"
+    );
+  }
+
   const resend = getValue(pickContent("RESEND_API_KEY"), "RESEND_API_KEY")?.replace(/^["']|["']$/g, "") ?? "";
   const emailFrom = getValue(pickContent("EMAIL_FROM"), "EMAIL_FROM")?.replace(/^["']|["']$/g, "") ?? "";
   if (!resend || isPlaceholder(resend) || !emailFrom || isPlaceholder(emailFrom)) {

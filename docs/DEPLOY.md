@@ -33,7 +33,8 @@ npm run vercel:env               # Vercel에 넣을 변수 목록
 | 변수 | 설명 |
 |------|------|
 | `DATABASE_URL` | **PostgreSQL** (Neon production). `file:./dev.db` 미지원. **Production·Preview·Development(빌드) 모두** 체크 |
-| `AUTH_SECRET` | 32자+ 랜덤 (`npm run env:auth-secret`) |
+| `AUTH_SECRET` | 32자+ 랜덤 (`npm run env:auth-secret`) — **배포마다 바꾸지 말 것** (기존 로그인 전부 풀림) |
+| `AUTH_URL` | `https://www.hokei.vn` (Auth.js canonical URL, `NEXT_PUBLIC_SITE_URL`과 동일 호스트 권장) |
 | `CRON_SECRET` | Cron API 보호 (`npm run env:cron-secret`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://실제도메인` (localhost 금지) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob (글 첨부·뉴스 썸네일 ingest 복사) |

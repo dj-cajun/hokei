@@ -2,6 +2,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiError, apiSuccess } from "@/lib/api-response";
+import { toLifeGuideImageFields } from "@/lib/life/guide-images";
 import { prisma } from "@/lib/prisma";
 
 const createSchema = z.object({
@@ -24,6 +25,7 @@ const createSchema = z.object({
   vnText: z.string().max(500).optional(),
   body: z.string().min(1).max(20000),
   imageUrl: z.string().url().max(500).optional(),
+  imageUrls: z.array(z.string().url().max(500)).max(10).optional(),
 });
 
 export const dynamic = "force-dynamic";
@@ -59,6 +61,11 @@ export async function POST(request: Request) {
     return apiError("이미 사용 중인 slug입니다. 제목을 조금 바꿔 주세요.", 409);
   }
 
+  const imageFields = toLifeGuideImageFields(
+    parsed.data.imageUrls ??
+      (parsed.data.imageUrl ? [parsed.data.imageUrl] : [])
+  );
+
   const item = await prisma.lifeGuide.create({
     data: {
       slug: parsed.data.slug,
@@ -67,7 +74,8 @@ export async function POST(request: Request) {
       title: parsed.data.title,
       vnText: parsed.data.vnText ?? null,
       body: parsed.data.body,
-      imageUrl: parsed.data.imageUrl ?? null,
+      imageUrl: imageFields.imageUrl,
+      imageUrls: imageFields.imageUrls,
       isCrawl: false,
       authorId: session.user.id,
     },

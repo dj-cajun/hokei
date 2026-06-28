@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import { Download, ExternalLink } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { LifeAudioButton } from "@/components/life/life-audio-button";
+import { AdminLifeGuideDeleteButton } from "@/components/life/admin-life-guide-delete-button";
 import { LifeShowModeToggle } from "@/components/life/life-show-mode";
 import { LifeSourceNotice } from "@/components/life/life-source-notice";
+import { LifeGuideImageGrid } from "@/components/life/life-guide-image-grid";
+import { normalizeLifeGuideImageUrls } from "@/lib/life/guide-images";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getLifeGuideBySlug } from "@/lib/life/guides";
 import { LIFE_DOMAIN_LABELS, LIFE_KIND_LABELS } from "@/lib/life/labels";
@@ -49,6 +52,16 @@ export default async function LifeDetailPage({ params }: PageProps) {
           </p>
           <h1 className="mt-2 text-lg font-bold">{guide.title}</h1>
 
+          {isStudy && (
+            <div className="mt-3">
+              <AdminLifeGuideDeleteButton
+                guideId={guide.id}
+                title={guide.title}
+                redirectHref="/life/study"
+              />
+            </div>
+          )}
+
           <LifeSourceNotice isCrawl={guide.isCrawl} domainStudy={isStudy} />
 
           {guide.sourceLabel && (
@@ -57,13 +70,8 @@ export default async function LifeDetailPage({ params }: PageProps) {
             </p>
           )}
 
-          {guide.imageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={guide.imageUrl}
-              alt=""
-              className="mt-4 w-full rounded-xl border border-border object-cover"
-            />
+          {normalizeLifeGuideImageUrls(guide).length > 0 && (
+            <LifeGuideImageGrid urls={normalizeLifeGuideImageUrls(guide)} />
           )}
 
           {isPhrase && guide.vnText && (

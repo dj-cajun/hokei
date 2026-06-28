@@ -10,6 +10,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/providers/toast-provider";
 import { parseApiError } from "@/lib/api-response";
 import { slugifyLifeTitle } from "@/lib/life/slugify-title";
+import {
+  WriteAttachmentBar,
+  uploadPendingAttachments,
+  type PendingAttachment,
+} from "@/components/write/write-attachment-bar";
 import type { LifeDomain } from "@/generated/prisma/client";
 
 export function LifeWriteForm() {
@@ -22,6 +27,7 @@ export function LifeWriteForm() {
   const [title, setTitle] = useState("");
   const [vnText, setVnText] = useState("");
   const [body, setBody] = useState("");
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const [saving, setSaving] = useState(false);
 
   async function onSubmit(e: FormEvent) {
@@ -29,6 +35,14 @@ export function LifeWriteForm() {
     setSaving(true);
     try {
       const slug = slugifyLifeTitle(title);
+      let imageUrls: string[] | undefined;
+      if (attachments.length > 0) {
+        const uploaded = await uploadPendingAttachments(attachments);
+        imageUrls = uploaded
+          .filter((item) => item.kind === "IMAGE")
+          .map((item) => item.url);
+      }
+
       const res = await fetch("/api/life/guides", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,6 +53,7 @@ export function LifeWriteForm() {
           title,
           vnText: vnText || undefined,
           body,
+          imageUrls,
         }),
       });
       const data = await res.json();
@@ -48,8 +63,11 @@ export function LifeWriteForm() {
       }
       showToast("등록했습니다.", "success");
       router.push(`/life/${data.item.slug}`);
-    } catch {
-      showToast("등록에 실패했습니다.", "error");
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "등록에 실패했습니다.",
+        "error"
+      );
     } finally {
       setSaving(false);
     }
@@ -86,9 +104,22 @@ export function LifeWriteForm() {
           onChange={(e) => setBody(e.target.value)}
           required
           rows={8}
+          disabled={saving}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           placeholder="성조, 뉘앙스, 현지에서 쓰는 상황을 적어 주세요."
         />
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          사진을 여러 장 올리면 글에서 작은 썸네일로 모두 보입니다.
+        </p>
+        <div className="mt-2 overflow-hidden rounded-md border border-border-light">
+          <WriteAttachmentBar
+            attachments={attachments}
+            onChange={setAttachments}
+            disabled={saving}
+            imagesOnly
+            previewGrid
+          />
+        </div>
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={saving}>

@@ -428,6 +428,7 @@ async function main() {
       CONSTRAINT "LifeGuide_pkey" PRIMARY KEY ("id")
     )`);
   await exec(`ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT`);
+  await exec(`ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "imageUrls" JSONB`);
   await exec(
     `ALTER TABLE "LifeGuide" ADD COLUMN IF NOT EXISTS "isCrawl" BOOLEAN NOT NULL DEFAULT false`
   );

@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { PartnerBannerSlot, PartnerCategory } from "@/generated/prisma/client";
+import { pickPartnerBannerForOg } from "@/lib/partner/banner-og-pick";
 import { prisma } from "@/lib/prisma";
 
 /** 공개 LP·허브 — PUBLISHED 이고 만료 전만 */
@@ -142,6 +143,23 @@ export async function listBannersForSlot(
 export type PartnerBannerWithStore = Awaited<
   ReturnType<typeof listBannersForSlot>
 >[number];
+
+/** 업소별 활성 배너 (OG·운영 확인용) */
+export async function getActivePartnerBannerForStore(storeId: string) {
+  const trimmed = storeId.trim();
+  if (!trimmed) return null;
+
+  const now = new Date();
+  const banners = await prisma.partnerBanner.findMany({
+    where: {
+      storeId: trimmed,
+      ...activePartnerBannerWhere(now),
+    },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
+
+  return pickPartnerBannerForOg(banners);
+}
 
 /** 동일 RSC 요청 내 배너 조회 dedup */
 export const listBannersForSlotCached = cache(

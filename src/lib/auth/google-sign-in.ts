@@ -1,4 +1,4 @@
-import { AuthError } from "next-auth";
+import { AuthError } from "@auth/core/errors";
 import { signIn } from "@/auth";
 
 type GoogleSignInOptions = {
@@ -6,6 +6,13 @@ type GoogleSignInOptions = {
   redirect?: boolean;
   redirectTo?: string;
 };
+
+function isGoogleSignInFailureRedirect(result: unknown): boolean {
+  return (
+    typeof result === "string" &&
+    (result.includes("error=") || result.includes("/signin"))
+  );
+}
 
 export async function signInWithGoogleCredential(
   credential: string,
@@ -19,28 +26,24 @@ export async function signInWithGoogleCredential(
   const redirectTo = options.redirectTo ?? "/";
 
   try {
+    const result = await signIn("google-id-token", {
+      credential,
+      redirectTo,
+      redirect,
+    });
+
     if (redirect) {
-      await signIn("google-id-token", {
-        credential,
-        redirectTo,
-        redirect: true,
-      });
       return;
     }
 
-    const result = await signIn("google-id-token", {
-      credential,
-      redirect: false,
-    });
-
-    if (result?.error) {
+    if (isGoogleSignInFailureRedirect(result)) {
       throw new Error("구글 로그인에 실패했습니다.");
     }
   } catch (err) {
-    if (err instanceof AuthError) {
-      throw new Error(err.message || "구글 로그인에 실패했습니다.");
+    if (!(err instanceof AuthError)) {
+      throw err;
     }
-    throw err;
+    throw new Error("구글 로그인에 실패했습니다.");
   }
 
   return { ok: true };

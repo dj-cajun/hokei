@@ -5,7 +5,7 @@
  */
 const production = process.argv.includes("--production");
 const base = production
-  ? "https://hokei-peach.vercel.app"
+  ? "https://www.hokei.vn"
   : process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3001";
 
 const GOOGLE_REDIRECT = `${base}/api/auth/google/redirect`;

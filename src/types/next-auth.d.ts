@@ -27,5 +27,6 @@ declare module "next-auth/jwt" {
     role: Role;
     isSuspended?: boolean;
     writeBanned?: boolean;
+    userSyncedAt?: number;
   }
 }

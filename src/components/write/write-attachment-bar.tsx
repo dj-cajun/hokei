@@ -25,12 +25,18 @@ type WriteAttachmentBarProps = {
   attachments: PendingAttachment[];
   onChange: (next: PendingAttachment[]) => void;
   disabled?: boolean;
+  /** true면 사진만 (LifeGuide 등 imageUrl 단일 필드) */
+  imagesOnly?: boolean;
+  /** imagesOnly일 때 미리보기를 작은 그리드로 */
+  previewGrid?: boolean;
 };
 
 export function WriteAttachmentBar({
   attachments,
   onChange,
   disabled,
+  imagesOnly = false,
+  previewGrid = false,
 }: WriteAttachmentBarProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,17 +67,27 @@ export function WriteAttachmentBar({
   return (
     <div>
       {attachments.length > 0 && (
-        <div className="scrollbar-none flex gap-2 overflow-x-auto border-b border-border-light bg-surface px-4 py-2">
+        <div
+          className={
+            previewGrid
+              ? "flex flex-wrap gap-2 border-b border-border-light bg-surface px-4 py-2"
+              : "scrollbar-none flex gap-2 overflow-x-auto border-b border-border-light bg-surface px-4 py-2"
+          }
+        >
           {attachments.map((item) => (
             <div key={item.id} className="relative shrink-0">
               {item.type === "image" && (item.previewUrl || item.uploaded?.url) ? (
                 <Image
                   src={item.previewUrl || item.uploaded!.url}
                   alt=""
-                  width={56}
-                  height={56}
+                  width={previewGrid ? 64 : 56}
+                  height={previewGrid ? 64 : 56}
                   unoptimized
-                  className="h-14 w-14 rounded-sm object-cover"
+                  className={
+                    previewGrid
+                      ? "h-16 w-16 rounded-md object-cover"
+                      : "h-14 w-14 rounded-sm object-cover"
+                  }
                 />
               ) : (
                 <div className="flex h-14 w-24 items-center justify-center rounded-sm bg-muted px-1 text-[10px] text-muted-foreground">
@@ -129,15 +145,17 @@ export function WriteAttachmentBar({
         >
           <Camera className="h-5 w-5" />
         </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => fileInputRef.current?.click()}
-          className="text-muted-foreground focus-ring disabled:opacity-40"
-          aria-label="파일 첨부"
-        >
-          <Paperclip className="h-5 w-5" />
-        </button>
+        {!imagesOnly && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => fileInputRef.current?.click()}
+            className="text-muted-foreground focus-ring disabled:opacity-40"
+            aria-label="파일 첨부"
+          >
+            <Paperclip className="h-5 w-5" />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
-import { LifeGuideList } from "@/components/life/life-guide-list";
+import { LifeGuideStudyList } from "@/components/life/life-guide-study-list";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getStudyGuides } from "@/lib/life/guides";
 
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function LifeStudyPage() {
-  const items = isDatabaseAvailable() ? await getStudyGuides(100) : [];
+  const items = isDatabaseAvailable() ? await getStudyGuides(200) : [];
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
@@ -32,7 +32,7 @@ export default async function LifeStudyPage() {
             </Link>
           </div>
         </header>
-        <LifeGuideList items={items} emptyMessage="아직 등록된 표현이 없습니다." />
+        <LifeGuideStudyList items={items} emptyMessage="아직 등록된 표현이 없습니다." />
         <div className="flex justify-center gap-4 border-t border-border-light px-3 py-3 text-center">
           <Link href="/life" className="text-xs text-primary hover:underline">
             생활 위키

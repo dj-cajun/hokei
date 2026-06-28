@@ -412,6 +412,7 @@ model LifeGuide {
   audioUrl    String?
   fileUrl     String?
   imageUrl    String?
+  imageUrls   Json?
   sourceLabel String?
   externalUrl String?
   isCrawl     Boolean       @default(false)

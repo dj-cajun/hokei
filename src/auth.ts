@@ -4,6 +4,7 @@ import { compare } from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { findOrCreateUserFromGoogle } from "@/lib/auth/google-user";
+import { AUTH_JWT_USER_SYNC_MS } from "@/lib/auth/session-config";
 import { verifyGoogleIdToken } from "@/lib/auth/verify-google-token";
 import { prisma } from "@/lib/prisma";
 
@@ -23,8 +24,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.isSuspended = user.isSuspended ?? false;
         token.writeBanned = user.writeBanned ?? false;
+        token.userSyncedAt = Date.now();
       }
-      if (token.id) {
+
+      const syncedAt =
+        typeof token.userSyncedAt === "number" ? token.userSyncedAt : 0;
+      const shouldSyncUser =
+        Boolean(token.id) && Date.now() - syncedAt >= AUTH_JWT_USER_SYNC_MS;
+
+      if (shouldSyncUser) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
@@ -35,10 +43,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.isSuspended = dbUser.isSuspended;
             token.writeBanned = dbUser.writeBanned;
           }
+          token.userSyncedAt = Date.now();
         } catch {
-          /* DB 일시 오류 시 authorize·기존 토큰 값 유지 */
+          /* DB 일시 오류 시 기존 토큰 값 유지 */
         }
       }
+
       return token;
     },
     async session({ session, token }) {

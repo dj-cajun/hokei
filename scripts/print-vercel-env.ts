@@ -5,9 +5,10 @@
 
 const required = [
   ["DATABASE_URL", "Neon/Supabase PostgreSQL URL (file: 금지)"],
-  ["AUTH_SECRET", "openssl rand -base64 32"],
+  ["AUTH_SECRET", "openssl rand -base64 32 — 배포 후 변경 금지"],
+  ["AUTH_URL", "https://www.hokei.vn (Auth.js canonical URL)"],
   ["CRON_SECRET", "openssl rand -base64 32"],
-  ["NEXT_PUBLIC_SITE_URL", "https://your-domain.vercel.app"],
+  ["NEXT_PUBLIC_SITE_URL", "https://www.hokei.vn"],
 ] as const;
 
 const recommended = [
