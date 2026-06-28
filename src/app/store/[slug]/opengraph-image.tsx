@@ -9,20 +9,32 @@ export const alt = "호케이 제휴 업소";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-let fontDataPromise: Promise<ArrayBuffer> | null = null;
+const PRETENDARD_CDN =
+  "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/woff2/Pretendard-Bold.woff2";
 
-async function loadPretendardFont(): Promise<ArrayBuffer> {
-  if (!fontDataPromise) {
-    fontDataPromise = readFile(
+async function loadOgFont(): Promise<ArrayBuffer | null> {
+  try {
+    const buffer = await readFile(
       join(
         process.cwd(),
-        "node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2"
+        "node_modules/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2"
       )
-    ).then((buffer) =>
-      buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
     );
+    return buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    );
+  } catch {
+    try {
+      const res = await fetch(PRETENDARD_CDN, {
+        next: { revalidate: 60 * 60 * 24 * 7 },
+      });
+      if (!res.ok) return null;
+      return await res.arrayBuffer();
+    } catch {
+      return null;
+    }
   }
-  return fontDataPromise;
 }
 
 function truncateLine(text: string | null | undefined, maxLen: number): string | null {
@@ -39,7 +51,8 @@ export default async function StoreOpenGraphImage({
 }) {
   const { slug } = await params;
   const store = await getPartnerStoreBySlugCached(slug);
-  const fontData = await loadPretendardFont();
+  const fontData = await loadOgFont();
+  const fontFamily = fontData ? "Pretendard" : "sans-serif";
 
   const name = store?.name?.trim() || "제휴 업소";
   const categoryLabel = store ? PARTNER_CATEGORY_LABELS[store.category] : "제휴 업소";
@@ -71,7 +84,7 @@ export default async function StoreOpenGraphImage({
               justifyContent: "center",
               fontSize: 24,
               fontWeight: 700,
-              fontFamily: "Pretendard",
+              fontFamily,
             }}
           >
             H
@@ -81,7 +94,7 @@ export default async function StoreOpenGraphImage({
               fontSize: 28,
               fontWeight: 600,
               color: "#0064ff",
-              fontFamily: "Pretendard",
+              fontFamily,
             }}
           >
             호케이 Hokei
@@ -98,7 +111,7 @@ export default async function StoreOpenGraphImage({
               fontSize: 24,
               fontWeight: 600,
               padding: "10px 22px",
-              fontFamily: "Pretendard",
+              fontFamily,
             }}
           >
             {categoryLabel}
@@ -110,7 +123,7 @@ export default async function StoreOpenGraphImage({
               lineHeight: 1.15,
               color: "#111827",
               letterSpacing: "-0.02em",
-              fontFamily: "Pretendard",
+              fontFamily,
             }}
           >
             {name}
@@ -121,7 +134,7 @@ export default async function StoreOpenGraphImage({
                 fontSize: 30,
                 lineHeight: 1.4,
                 color: "#4b5563",
-                fontFamily: "Pretendard",
+                fontFamily,
               }}
             >
               {tagline}
@@ -133,7 +146,7 @@ export default async function StoreOpenGraphImage({
           style={{
             fontSize: 22,
             color: "#9ca3af",
-            fontFamily: "Pretendard",
+            fontFamily,
           }}
         >
           hokei.vn/store/{store?.slug ?? slug}
@@ -142,32 +155,18 @@ export default async function StoreOpenGraphImage({
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: "Pretendard",
-          data: fontData,
-          style: "normal",
-          weight: 400,
-        },
-        {
-          name: "Pretendard",
-          data: fontData,
-          style: "normal",
-          weight: 600,
-        },
-        {
-          name: "Pretendard",
-          data: fontData,
-          style: "normal",
-          weight: 700,
-        },
-        {
-          name: "Pretendard",
-          data: fontData,
-          style: "normal",
-          weight: 800,
-        },
-      ],
+      ...(fontData
+        ? {
+            fonts: [
+              {
+                name: "Pretendard",
+                data: fontData,
+                style: "normal" as const,
+                weight: 700,
+              },
+            ],
+          }
+        : {}),
     }
   );
 }
