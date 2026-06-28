@@ -50,6 +50,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:kakao": "tsx scripts/seed-kakao-posts.ts",
+    "db:seed:kakao-v4": "tsx scripts/seed-kakao-v4.ts",
+    "db:seed:kakao-edu": "tsx scripts/seed-kakao-edu.ts",
     "db:seed:2d-sketch-cafe": "tsx scripts/seed-2d-sketch-cafe.ts",
     "db:seed:partner-demo": "tsx scripts/seed-partner-demo.ts",
     "db:seed:categories": "tsx prisma/run-seed-categories.ts",

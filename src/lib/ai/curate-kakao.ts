@@ -1,4 +1,7 @@
-import { geminiChat, isGeminiConfigured } from "@/lib/ai/gemini";
+import {
+  isOpenRouterConfigured,
+  openRouterChat,
+} from "@/lib/ai/openrouter";
 import {
   buildCurateAnalyzePrompt,
   CURATE_ANALYZE_SYSTEM,
@@ -20,6 +23,11 @@ import {
   splitKakaoTextIntoChunks,
   subdividePromptChunkForGemini,
 } from "@/lib/ai/curate-kakao-split";
+import {
+  curateKakaoChunkResponseSchema,
+  curateKakaoItemSchema,
+  type CurateKakaoItem,
+} from "@/lib/ai/curate-kakao-schemas";
 
 export class CurateAnalyzeUserError extends Error {
   constructor(message: string) {
@@ -28,24 +36,21 @@ export class CurateAnalyzeUserError extends Error {
   }
 }
 
-function planGeminiPromptChunks(rawText: string): string[] {
+export type CurateAnalyzeProvider = "openrouter";
+
+function planAnalyzePromptChunks(rawText: string): string[] {
   const charChunks = splitKakaoTextIntoChunks(rawText);
-  const geminiChunks: string[] = [];
+  const promptChunks: string[] = [];
   for (const charChunk of charChunks) {
-    geminiChunks.push(
+    promptChunks.push(
       ...subdividePromptChunkForGemini(
         charChunk,
         KAKAO_GEMINI_MAX_BLOCKS_PER_CALL
       )
     );
   }
-  return geminiChunks;
+  return promptChunks;
 }
-import {
-  curateKakaoChunkResponseSchema,
-  curateKakaoItemSchema,
-  type CurateKakaoItem,
-} from "@/lib/ai/curate-kakao-schemas";
 
 function extractJsonObject(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -68,7 +73,7 @@ function dedupeItems(items: CurateKakaoItem[]): CurateKakaoItem[] {
   return out;
 }
 
-function parseGeminiCurateJson(raw: string): {
+function parseCurateAnalyzeJson(raw: string): {
   items: unknown[];
   notes?: string;
 } {
@@ -104,7 +109,7 @@ function parseGeminiCurateJson(raw: string): {
 }
 
 function parseChunkResponse(raw: string) {
-  const { items: rawItems, notes } = parseGeminiCurateJson(raw);
+  const { items: rawItems, notes } = parseCurateAnalyzeJson(raw);
   const items: CurateKakaoItem[] = [];
   const issues: string[] = [];
 
@@ -133,28 +138,32 @@ function parseChunkResponse(raw: string) {
 async function analyzeChunk(
   chunk: string,
   meta?: { part: number; total: number }
-) {
-  let raw: string;
-  try {
-    raw = await geminiChat(
-      [{ role: "user", content: buildCurateAnalyzePrompt(chunk, meta) }],
-      {
-        system: CURATE_ANALYZE_SYSTEM,
-        jsonResponse: true,
-        temperature: 0.2,
-        maxTokens: 16384,
-      }
+): Promise<{
+  items: CurateKakaoItem[];
+  notes?: string;
+  provider: CurateAnalyzeProvider;
+}> {
+  if (!isOpenRouterConfigured()) {
+    throw new Error(
+      "OPENROUTER_API_KEY가 필요합니다. .env.local에 OpenRouter API 키를 설정하세요."
     );
-  } catch (err) {
-    throw err instanceof Error ? err : new Error("Gemini API 요청 실패");
   }
 
+  const raw = await openRouterChat(
+    [
+      { role: "system", content: CURATE_ANALYZE_SYSTEM },
+      { role: "user", content: buildCurateAnalyzePrompt(chunk, meta) },
+    ],
+    { temperature: 0.2, maxTokens: 16384, jsonResponse: true }
+  );
+
   try {
-    return parseChunkResponse(raw);
+    const parsed = parseChunkResponse(raw);
+    return { ...parsed, provider: "openrouter" };
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "AI 응답 파싱 실패";
-    throw new Error(`Gemini JSON 파싱 오류: ${message}`);
+    throw new Error(`AI JSON 파싱 오류: ${message}`);
   }
 }
 
@@ -163,6 +172,7 @@ export type CurateKakaoAnalyzeEnrichedResult = {
   updateItems: CurateUpdateItem[];
   lifeUpdateItems: CurateLifeUpdateItem[];
   notes?: string;
+  provider?: CurateAnalyzeProvider;
   skippedDuplicates: CurateSkippedDuplicate[];
   stats: {
     extracted: number;
@@ -184,26 +194,26 @@ export async function analyzeKakaoPaste(
       `텍스트가 너무 깁니다. 최대 ${KAKAO_RAW_MAX_LENGTH.toLocaleString("ko-KR")}자까지 가능합니다. (현재 ${trimmed.length.toLocaleString("ko-KR")}자)`
     );
   }
-  if (!isGeminiConfigured()) {
+  if (!isOpenRouterConfigured()) {
     throw new Error(
-      "GEMINI_API_KEY가 설정되지 않았습니다. .env.local에 키를 추가하세요."
+      "OPENROUTER_API_KEY가 필요합니다. .env.local에 OpenRouter API 키를 설정하세요."
     );
   }
 
-  const geminiChunks = planGeminiPromptChunks(trimmed);
-  if (geminiChunks.length > KAKAO_ANALYZE_MAX_GEMINI_CALLS) {
+  const promptChunks = planAnalyzePromptChunks(trimmed);
+  if (promptChunks.length > KAKAO_ANALYZE_MAX_GEMINI_CALLS) {
     throw new CurateAnalyzeUserError(
-      `이 구간의 메시지가 너무 많습니다. AI 호출 ${geminiChunks.length}회가 필요합니다(한도 ${KAKAO_ANALYZE_MAX_GEMINI_CALLS}회). 더 짧은 구간으로 나눠 주세요.`
+      `이 구간의 메시지가 너무 많습니다. AI 호출 ${promptChunks.length}회가 필요합니다(한도 ${KAKAO_ANALYZE_MAX_GEMINI_CALLS}회). 더 짧은 구간으로 나눠 주세요.`
     );
   }
 
   const allItems: CurateKakaoItem[] = [];
   const notes: string[] = [];
 
-  for (let i = 0; i < geminiChunks.length; i++) {
-    const result = await analyzeChunk(geminiChunks[i], {
+  for (let i = 0; i < promptChunks.length; i++) {
+    const result = await analyzeChunk(promptChunks[i], {
       part: i + 1,
-      total: geminiChunks.length,
+      total: promptChunks.length,
     });
     allItems.push(...result.items);
     if (result.notes?.trim()) notes.push(result.notes.trim());
@@ -212,17 +222,19 @@ export async function analyzeKakaoPaste(
   const extracted = dedupeItems(allItems).slice(0, KAKAO_MAX_EXTRACTED_ITEMS);
   const classified = await classifyCurateItems(extracted);
 
+  const model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
   const chunkNote =
-    geminiChunks.length > 1
-      ? `${geminiChunks.length}회 AI 분석을 완료했습니다.`
+    promptChunks.length > 1
+      ? `${promptChunks.length}회 AI 분석을 완료했습니다.`
       : undefined;
+  const providerNote = `OpenRouter (${model})로 분석했습니다.`;
 
   const dedupeNote =
     classified.stats.duplicate > 0 || classified.stats.update > 0
       ? `신규 ${classified.stats.new}건 · 업데이트 ${classified.stats.update}건 · 동일 제외 ${classified.stats.duplicate}건`
       : undefined;
 
-  const mergedNotes = [chunkNote, dedupeNote, ...notes]
+  const mergedNotes = [chunkNote, providerNote, dedupeNote, ...notes]
     .filter(Boolean)
     .join("\n");
 
@@ -238,6 +250,7 @@ export async function analyzeKakaoPaste(
       notes:
         mergedNotes ||
         "신규·업데이트 항목이 없습니다. 모두 동일한 내용입니다.",
+      provider: "openrouter",
       skippedDuplicates: classified.skippedDuplicates,
       stats: classified.stats,
     };
@@ -248,10 +261,10 @@ export async function analyzeKakaoPaste(
     updateItems: classified.updateItems,
     lifeUpdateItems: classified.lifeUpdateItems,
     notes: mergedNotes || undefined,
+    provider: "openrouter",
     skippedDuplicates: classified.skippedDuplicates,
     stats: classified.stats,
   };
 }
 
-// 하위 호환·테스트용 re-export
 export { splitKakaoTextIntoChunks } from "@/lib/ai/curate-kakao-split";

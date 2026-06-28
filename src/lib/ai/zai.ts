@@ -46,6 +46,7 @@ export async function zaiChat(
       temperature: options.temperature ?? 0.3,
       max_tokens: options.maxTokens ?? 2048,
       stream: false,
+      thinking: { type: "disabled" },
     }),
     cache: "no-store",
   });
@@ -64,7 +65,9 @@ export async function zaiChat(
   }
 
   const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
+    choices?: {
+      message?: { content?: string; reasoning_content?: string };
+    }[];
     error?: { message?: string };
   };
 
@@ -72,7 +75,9 @@ export async function zaiChat(
     throw new Error(`Z.AI: ${data.error.message}`);
   }
 
-  const content = data.choices?.[0]?.message?.content?.trim();
+  const message = data.choices?.[0]?.message;
+  const content =
+    message?.content?.trim() || message?.reasoning_content?.trim();
   if (!content) {
     throw new Error("Z.AI 응답이 비어 있습니다.");
   }

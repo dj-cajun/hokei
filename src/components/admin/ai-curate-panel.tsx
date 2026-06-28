@@ -24,6 +24,11 @@ import {
   KAKAO_RAW_MIN_LENGTH,
 } from "@/lib/ai/curate-kakao-limits";
 import { splitKakaoTextIntoChunks } from "@/lib/ai/curate-kakao-split";
+import {
+  ingestKakaoCsvTexts,
+  KAKAO_CSV_LOOKBACK_DAYS,
+  type KakaoCsvIngestStats,
+} from "@/lib/kakao/csv-ingest";
 import { cn } from "@/lib/utils";
 
 type PanelEntry = {
@@ -71,6 +76,7 @@ type AnalyzeApiResult = {
     duplicate: number;
   };
   notes?: string;
+  provider?: "openrouter";
 };
 
 function mergeAnalyzeResults(results: AnalyzeApiResult[]) {
@@ -102,6 +108,7 @@ function mergeAnalyzeResults(results: AnalyzeApiResult[]) {
     skippedDuplicates,
     stats,
     notes: notes.join("\n"),
+    provider: "openrouter" as const,
   };
 }
 
@@ -176,7 +183,9 @@ export function AiCuratePanel() {
     useState<CurateKakaoItem["contentType"]>("VIETNAMESE_STUDY");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [csvStats, setCsvStats] = useState<KakaoCsvIngestStats | null>(null);
   const txtRef = useRef<HTMLInputElement>(null);
+  const csvRef = useRef<HTMLInputElement>(null);
 
   const rawLength = rawText.length;
   const rawTooLong = rawLength > KAKAO_RAW_MAX_LENGTH;
@@ -202,6 +211,38 @@ export function AiCuratePanel() {
         : slugifyLifeTitle(item.title)
     );
     setImageUrl(null);
+  }
+
+  async function handleCsvFiles(fileList: FileList | null) {
+    if (!fileList?.length) return;
+    const files = [...fileList];
+    try {
+      const inputs = await Promise.all(
+        files.map(async (file) => ({
+          name: file.name,
+          content: await file.text(),
+        }))
+      );
+      const result = ingestKakaoCsvTexts(inputs);
+      if (!result.text.trim()) {
+        showToast(
+          `최근 ${KAKAO_CSV_LOOKBACK_DAYS}일 내 분석할 메시지가 없습니다.`,
+          "error"
+        );
+        return;
+      }
+      setRawText(result.text);
+      setCsvStats(result.stats);
+      showToast(
+        `CSV ${result.stats.files}개 · 최근 ${KAKAO_CSV_LOOKBACK_DAYS}일 ${result.stats.outputRows}건 (7일 밖 ${result.stats.dateSkipped} · 시스템 ${result.stats.systemSkipped} · 매크로중복 ${result.stats.macroDeduped} 제외)`,
+        "success"
+      );
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "CSV를 읽지 못했습니다.",
+        "error"
+      );
+    }
   }
 
   async function handleAnalyze(e: FormEvent) {
@@ -263,7 +304,7 @@ export function AiCuratePanel() {
       } else {
         const s = merged.stats;
         showToast(
-          `신규 ${s.new}건 · 업데이트 ${s.update}건 · 동일 제외 ${s.duplicate}건`
+          `신규 ${s.new}건 · 업데이트 ${s.update}건 · 동일 제외 ${s.duplicate}건 (OpenRouter)`
         );
       }
     } catch {
@@ -433,8 +474,20 @@ export function AiCuratePanel() {
                   if (!file) return;
                   void file.text().then((text) => {
                     setRawText(text);
+                    setCsvStats(null);
                     showToast(`${file.name} 불러옴 (${text.length.toLocaleString("ko-KR")}자)`);
                   }).catch(() => showToast("파일을 읽지 못했습니다.", "error"));
+                  e.target.value = "";
+                }}
+              />
+              <input
+                ref={csvRef}
+                type="file"
+                accept=".csv,text/csv"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  void handleCsvFiles(e.target.files);
                   e.target.value = "";
                 }}
               />
@@ -447,16 +500,36 @@ export function AiCuratePanel() {
                 <Upload className="mr-1 h-3.5 w-3.5" />
                 .txt 불러오기
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => csvRef.current?.click()}
+              >
+                <Upload className="mr-1 h-3.5 w-3.5" />
+                .csv 불러오기 (최근 7일)
+              </Button>
             </div>
           </div>
           <textarea
             id="rawText"
             value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
+            onChange={(e) => {
+              setRawText(e.target.value);
+              setCsvStats(null);
+            }}
             rows={10}
-            placeholder="카톡보내기 .txt 내용 또는 단톡 대화를 통째로 붙여넣으세요."
+            placeholder="카톡보내기 .txt · CSV(여러 방, 최근 7일) 불러오기 · 또는 단톡 대화를 붙여넣으세요."
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
           />
+          {csvStats ? (
+            <p className="mt-1 text-xs text-primary">
+              CSV {csvStats.files}개 · 원본 {csvStats.totalRows}행 → 최근{" "}
+              {KAKAO_CSV_LOOKBACK_DAYS}일 {csvStats.outputRows}건 (기간 밖{" "}
+              {csvStats.dateSkipped} · 시스템 {csvStats.systemSkipped} · 매크로
+              중복 {csvStats.macroDeduped} 제외)
+            </p>
+          ) : null}
           <p
             className={cn(
               "mt-1 text-xs",
