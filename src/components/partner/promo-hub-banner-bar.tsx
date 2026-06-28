@@ -86,7 +86,6 @@ export async function PromoHubBannerBar({
                 key={slot.banner.id}
                 href={`/store/${slug}`}
                 slug={slug}
-                role="listitem"
                 className={cn(
                   LIFE_INFO_HUB_CELL_CLASS,
                   "bg-[#ebe6dc] transition-opacity hover:opacity-95 dark:bg-transparent"
