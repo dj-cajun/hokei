@@ -18,6 +18,7 @@ type StoreLandingProps = {
   canWriteTimeline?: boolean;
   timelineWriteHref?: string;
   canManageTimeline?: boolean;
+  premiumOwnerIds?: string[];
 };
 
 export function StoreLanding({
@@ -28,6 +29,7 @@ export function StoreLanding({
   canWriteTimeline = false,
   timelineWriteHref,
   canManageTimeline = false,
+  premiumOwnerIds = [],
 }: StoreLandingProps) {
   const categoryLabel = PARTNER_CATEGORY_LABELS[store.category];
   const intro = storeIntroBody(store);
@@ -49,7 +51,7 @@ export function StoreLanding({
       ) : null}
 
       {/* 1. Hero — 세로·가로 포스터 모두 잘리지 않게 contain */}
-      <div className="relative w-full bg-[#ebe6dc]">
+      <div className="relative w-full bg-[#ebe6dc] dark:bg-transparent">
         {store.thumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -154,6 +156,7 @@ export function StoreLanding({
         <StoreCommentsSection
           postId={commentPost.id}
           comments={commentPost.comments}
+          premiumOwnerIds={premiumOwnerIds}
         />
       ) : null}
 

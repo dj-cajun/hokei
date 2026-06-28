@@ -29,15 +29,15 @@ export function PremiumPartnerNameGrid({ stores }: PremiumPartnerNameGridProps) 
         <li key={store.id}>
           <Link
             href={`/store/${store.slug}`}
-            className="group flex min-h-[5rem] flex-col items-center justify-center rounded-xl border-2 border-amber-300/70 bg-gradient-to-b from-amber-50/90 to-white px-2 py-3 text-center shadow-sm transition-all hover:border-amber-500 hover:shadow-md sm:min-h-[5.5rem]"
+            className="group flex min-h-[5rem] flex-col items-center justify-center rounded-xl border-2 border-amber-300/70 bg-transparent px-2 py-3 text-center shadow-none transition-all hover:border-amber-500 dark:border-amber-500/40 sm:min-h-[5.5rem]"
           >
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700/80">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700/80 dark:hidden">
               Premium
             </span>
-            <span className="mt-1 line-clamp-3 text-xs font-bold leading-snug text-foreground group-hover:text-primary sm:text-sm">
+            <span className="mt-1 line-clamp-3 text-xs font-bold leading-snug text-foreground group-hover:text-primary dark:mt-0 sm:text-sm">
               {store.name}
             </span>
-            <span className="mt-1 line-clamp-1 text-[10px] text-muted-foreground">
+            <span className="mt-1 line-clamp-1 text-[10px] text-muted-foreground dark:hidden">
               {PARTNER_CATEGORY_LABELS[store.category]}
             </span>
           </Link>

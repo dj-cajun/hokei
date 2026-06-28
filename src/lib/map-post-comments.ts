@@ -1,5 +1,6 @@
 import type { CommentItem } from "@/components/posts/comment-types";
 import { isCommentOwner } from "@/lib/post-ownership";
+import { isPremiumPartnerOwner } from "@/lib/partner/is-premium-partner-owner";
 
 type CommentForMap = {
   id: string;
@@ -17,7 +18,8 @@ type CommentForMap = {
 export function mapPostComments(
   comments: CommentForMap[],
   sessionUserId?: string,
-  isAdmin?: boolean
+  isAdmin?: boolean,
+  premiumOwnerIds?: ReadonlySet<string>
 ): CommentItem[] {
   return comments.map((c) => ({
     id: c.id,
@@ -33,5 +35,6 @@ export function mapPostComments(
     dislikeCount: c.dislikeCount ?? 0,
     isOwner: Boolean(isAdmin || isCommentOwner(c, sessionUserId)),
     isGuestComment: !c.authorId && Boolean(c.guestPasswordHash),
+    isPremiumOwner: isPremiumPartnerOwner(c.authorId, premiumOwnerIds ?? new Set()),
   }));
 }

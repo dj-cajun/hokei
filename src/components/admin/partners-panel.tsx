@@ -13,6 +13,7 @@ import { PARTNER_CATEGORY_LABELS } from "@/lib/partner/labels";
 import { slugifyPartnerName } from "@/lib/partner/slug";
 import { PartnerAssetGuideBox } from "@/components/admin/partner-asset-guide";
 import { PartnerPromoPostField } from "@/components/admin/partner-promo-post-field";
+import { AuthorNameWithPremiumCrown } from "@/components/user/author-name-with-premium-crown";
 import type { PartnerAssetGuideKey } from "@/lib/partner/asset-guide";
 import type {
   PartnerCategory,
@@ -649,7 +650,10 @@ export function PartnersPanel() {
                     <td className="py-2 pr-2 text-[10px] text-muted-foreground">
                       {row.owner ? (
                         <span title={row.owner.id}>
-                          {row.owner.name}
+                          <AuthorNameWithPremiumCrown
+                            name={row.owner.name}
+                            showPremiumCrown={row.plan === "PREMIUM"}
+                          />
                           <br />
                           <span className="font-mono">{row.owner.email}</span>
                         </span>

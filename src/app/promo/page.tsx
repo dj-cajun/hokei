@@ -2,6 +2,7 @@ import { LifeInfoHubPage } from "@/components/category/life-info-hub-page";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { lifeInfoSectionSlugsForHub } from "@/lib/life-info-hub";
+import { listPublishedPremiumPartners } from "@/lib/partner/queries";
 import {
   countPostsBySectionSlugs,
   getPostsBySectionSlugs,
@@ -21,12 +22,13 @@ export default async function PromoPage({ searchParams }: PageProps) {
   const sectionSlugs = lifeInfoSectionSlugsForHub();
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
-  const [posts, totalCount] = isDatabaseAvailable()
+  const [posts, totalCount, premiumStores] = isDatabaseAvailable()
     ? await Promise.all([
         getPostsBySectionSlugs(sectionSlugs, LIST_PAGE_SIZE, currentPage),
         countPostsBySectionSlugs(sectionSlugs),
+        listPublishedPremiumPartners(4),
       ])
-    : [[], 0];
+    : [[], 0, []];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / LIST_PAGE_SIZE));
 
@@ -36,6 +38,7 @@ export default async function PromoPage({ searchParams }: PageProps) {
       totalCount={totalCount}
       currentPage={Math.min(currentPage, totalPages)}
       totalPages={totalPages}
+      premiumStores={premiumStores}
     />
   );
 }

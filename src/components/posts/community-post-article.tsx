@@ -13,6 +13,8 @@ import { PostActionBar } from "@/components/posts/post-action-bar";
 import { SendMessageButton } from "@/components/messages/send-message-button";
 import { ReportContentButton } from "@/components/posts/report-content-button";
 import { PostNextPostsSection } from "@/components/posts/post-next-posts-section";
+import { AuthorNameWithPremiumCrown } from "@/components/user/author-name-with-premium-crown";
+import { isPremiumPartnerOwner } from "@/lib/partner/is-premium-partner-owner";
 import type { Post, PostAttachment, Comment, User } from "@/generated/prisma/client";
 import type { FeedItem } from "@/types/feed";
 
@@ -31,10 +33,19 @@ type PostWithRelations = Post & {
 type CommunityPostArticleProps = {
   post: PostWithRelations;
   nextPosts?: FeedItem[];
+  premiumOwnerIds?: ReadonlySet<string>;
 };
 
-export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArticleProps) {
+export function CommunityPostArticle({
+  post,
+  nextPosts = [],
+  premiumOwnerIds = new Set(),
+}: CommunityPostArticleProps) {
   const authorName = getAuthorDisplayName(post);
+  const showAuthorPremiumCrown = isPremiumPartnerOwner(
+    post.authorId,
+    premiumOwnerIds
+  );
   const images = post.attachments.filter((a) => a.kind === "IMAGE");
   const files = post.attachments.filter((a) => a.kind === "FILE");
   const isGuestPost = Boolean(post.guestPasswordHash && !post.authorId);
@@ -96,7 +107,15 @@ export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArti
 
         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
           <p>
-            {authorName && `${authorName} · `}
+            {authorName && (
+              <>
+                <AuthorNameWithPremiumCrown
+                  name={authorName}
+                  showPremiumCrown={showAuthorPremiumCrown}
+                />
+                {" · "}
+              </>
+            )}
             {`조회 ${post.views + 1}`}
           </p>
           <PostActionBar
@@ -124,6 +143,7 @@ export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArti
               publishedAt={post.publishedAt}
               content={post.content}
               authorName={authorName}
+              showAuthorPremiumCrown={showAuthorPremiumCrown}
             />
           </PostCopyGuard>
         )}
@@ -156,7 +176,11 @@ export function CommunityPostArticle({ post, nextPosts = [] }: CommunityPostArti
           <ReportContentButton targetType="POST" targetId={post.id} />
         </div>
 
-        <PostCommentsSession postId={post.id} comments={post.comments} />
+        <PostCommentsSession
+          postId={post.id}
+          comments={post.comments}
+          premiumOwnerIds={[...premiumOwnerIds]}
+        />
 
         <PostNextPostsSection
           categoryLabel={post.category.label}

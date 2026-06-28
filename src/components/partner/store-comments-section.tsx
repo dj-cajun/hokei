@@ -6,11 +6,13 @@ type CommentSource = Parameters<typeof mapPostComments>[0];
 type StoreCommentsSectionProps = {
   postId: string;
   comments: CommentSource;
+  premiumOwnerIds?: string[];
 };
 
 export function StoreCommentsSection({
   postId,
   comments,
+  premiumOwnerIds = [],
 }: StoreCommentsSectionProps) {
   return (
     <section className="border-t border-border-light px-4 py-6">
@@ -18,6 +20,7 @@ export function StoreCommentsSection({
         postId={postId}
         comments={comments}
         embedded
+        premiumOwnerIds={premiumOwnerIds}
       />
     </section>
   );

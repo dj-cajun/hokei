@@ -19,6 +19,7 @@ import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 import type { PostTopic } from "@/lib/post-topic";
+import { getPremiumPartnerOwnerIds } from "@/lib/partner/premium-owners";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
@@ -94,7 +95,11 @@ export default async function PostPage({ params }: PageProps) {
     .slice(0, 160);
   const comments = serializeComments(post.comments);
   const community = isUserBoardPost(post.sourceUrl);
-  const nextPosts = await getNextPostsInBoard(post.id, post.categoryId);
+  const [nextPosts, premiumOwnerIds] = await Promise.all([
+    getNextPostsInBoard(post.id, post.categoryId),
+    getPremiumPartnerOwnerIds(),
+  ]);
+  const premiumOwnerIdList = [...premiumOwnerIds];
   const displayTitle = community
     ? post.title
     : sanitizeNewsPostTitle(post.title, {
@@ -116,7 +121,11 @@ export default async function PostPage({ params }: PageProps) {
       <Sidebar />
       <div className="min-w-0 flex-1">
         {community ? (
-          <CommunityPostArticle post={post} nextPosts={nextPosts} />
+          <CommunityPostArticle
+            post={post}
+            nextPosts={nextPosts}
+            premiumOwnerIds={premiumOwnerIds}
+          />
         ) : (
           <article className="bg-surface px-2 py-3 lg:rounded-2xl lg:p-8">
             <nav className="mb-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
@@ -190,7 +199,11 @@ export default async function PostPage({ params }: PageProps) {
             ) : null}
 
             <AdSenseUnit slotKind="article" />
-            <PostCommentsSession postId={post.id} comments={comments} />
+            <PostCommentsSession
+              postId={post.id}
+              comments={comments}
+              premiumOwnerIds={premiumOwnerIdList}
+            />
             <PostNextPostsSection
               categoryLabel={post.category.label}
               categoryHref={post.category.href}

@@ -25,6 +25,7 @@ export function CommentReadOnly({ postId, comment, onReply }: CommentReadOnlyPro
           authorId={comment.authorId}
           authorName={comment.authorName}
           postId={postId}
+          showPremiumCrown={comment.isPremiumOwner}
         />
         <div className="flex items-center gap-2">
           {onReply && (

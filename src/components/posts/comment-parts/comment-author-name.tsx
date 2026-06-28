@@ -6,18 +6,21 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useLoginModal } from "@/components/auth/login-modal-context";
 import { useToast } from "@/components/providers/toast-provider";
+import { AuthorNameWithPremiumCrown } from "@/components/user/author-name-with-premium-crown";
 import { cn } from "@/lib/utils";
 
 type CommentAuthorNameProps = {
   authorId?: string | null;
   authorName: string;
   postId: string;
+  showPremiumCrown?: boolean;
 };
 
 export function CommentAuthorName({
   authorId,
   authorName,
   postId,
+  showPremiumCrown = false,
 }: CommentAuthorNameProps) {
   const { data: session, status } = useSession();
   const { openLogin } = useLoginModal();
@@ -72,7 +75,11 @@ export function CommentAuthorName({
 
   if (!canMessage) {
     return (
-      <span className="text-xs font-semibold text-foreground">{authorName}</span>
+      <AuthorNameWithPremiumCrown
+        name={authorName}
+        showPremiumCrown={showPremiumCrown}
+        className="text-xs font-semibold text-foreground"
+      />
     );
   }
 
@@ -85,7 +92,10 @@ export function CommentAuthorName({
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        {authorName}
+        <AuthorNameWithPremiumCrown
+          name={authorName}
+          showPremiumCrown={showPremiumCrown}
+        />
       </button>
       {open && (
         <div

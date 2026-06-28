@@ -1,10 +1,12 @@
 import { PostContent } from "@/components/posts/post-content";
+import { AuthorNameWithPremiumCrown } from "@/components/user/author-name-with-premium-crown";
 import { cn } from "@/lib/utils";
 
 type PostTimelineBodyProps = {
   publishedAt: Date;
   content: string;
   authorName?: string | null;
+  showAuthorPremiumCrown?: boolean;
   className?: string;
 };
 
@@ -24,6 +26,7 @@ export function PostTimelineBody({
   publishedAt,
   content,
   authorName,
+  showAuthorPremiumCrown = false,
   className,
 }: PostTimelineBodyProps) {
   if (!content.trim()) return null;
@@ -48,7 +51,10 @@ export function PostTimelineBody({
         <div className="rounded-xl border border-border-light bg-muted/30 px-3 py-3 shadow-sm">
           {authorName && (
             <p className="mb-2 text-[11px] font-medium text-muted-foreground">
-              {authorName}
+              <AuthorNameWithPremiumCrown
+                name={authorName}
+                showPremiumCrown={showAuthorPremiumCrown}
+              />
             </p>
           )}
           <PostContent

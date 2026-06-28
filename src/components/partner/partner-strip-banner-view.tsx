@@ -33,7 +33,7 @@ export function PartnerStripBannerView({
   return (
     <div
       className={cn(
-        "relative w-full shrink-0 overflow-hidden bg-[#ebe6dc]",
+        "relative w-full shrink-0 overflow-hidden bg-[#ebe6dc] dark:bg-transparent",
         className
       )}
     >

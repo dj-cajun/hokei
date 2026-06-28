@@ -16,6 +16,7 @@ import {
   canUserWriteStoreTimeline,
   getStoreTimelineWriteHref,
 } from "@/lib/partner/store-timeline-write";
+import { getPremiumPartnerOwnerIds } from "@/lib/partner/premium-owners";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -106,10 +107,11 @@ export default async function PartnerStorePage({
     notFound();
   }
 
-  const [promo, commentPost, session] = await Promise.all([
+  const [promo, commentPost, session, premiumOwnerIds] = await Promise.all([
     getPromoPostsByStore(store.slug, 8, store.name),
     resolveStoreCommentPost(store),
     auth(),
+    getPremiumPartnerOwnerIds(),
   ]);
 
   const timelineItems = promo.items.map((item) => ({
@@ -139,6 +141,7 @@ export default async function PartnerStorePage({
         canWriteTimeline={canWriteTimeline}
         timelineWriteHref={timelineWriteHref}
         canManageTimeline={canManageTimeline}
+        premiumOwnerIds={[...premiumOwnerIds]}
       />
     </div>
   );

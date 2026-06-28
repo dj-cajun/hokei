@@ -37,7 +37,7 @@ export default async function PremiumPartnersPage() {
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <Sidebar />
       <div className="min-w-0 flex-1 bg-surface lg:rounded-lg">
-        <header className="border-b border-amber-200/60 bg-gradient-to-r from-amber-50/80 to-surface px-4 py-4">
+        <header className="border-b border-border-light px-4 py-4">
           <Link
             href="/partners"
             className="text-[10px] font-medium text-primary hover:underline"

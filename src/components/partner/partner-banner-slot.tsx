@@ -44,7 +44,7 @@ export async function PartnerBannerSlot({
             slug={slug}
             className={cn(
               "relative block overflow-hidden rounded-xl border border-border-light bg-surface shadow-sm",
-              fit === "contain" && "bg-[#ebe6dc]",
+              fit === "contain" && "bg-[#ebe6dc] dark:bg-transparent",
               useAspectCover && "aspect-[3/1] w-full"
             )}
           >

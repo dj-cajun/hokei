@@ -9,6 +9,7 @@ export type CommentItem = {
   dislikeCount?: number;
   isOwner: boolean;
   isGuestComment: boolean;
+  isPremiumOwner?: boolean;
   /** optimistic UI 임시 댓글 */
   pending?: boolean;
 };

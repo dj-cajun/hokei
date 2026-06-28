@@ -12,20 +12,32 @@ type PostCommentsSessionProps = {
   comments: CommentSource;
   /** 업체 LP 등 — 바깥 섹션 제목과 중복 방지 */
   embedded?: boolean;
+  premiumOwnerIds?: string[];
 };
 
 export function PostCommentsSession({
   postId,
   comments,
   embedded = false,
+  premiumOwnerIds = [],
 }: PostCommentsSessionProps) {
   const { data: session } = useSession();
   const sessionKey = session?.user?.id ?? "guest";
   const isAdmin = session?.user?.role === "ADMIN";
+  const premiumOwnerIdSet = useMemo(
+    () => new Set(premiumOwnerIds),
+    [premiumOwnerIds]
+  );
 
   const initialComments = useMemo(
-    () => mapPostComments(comments, session?.user?.id, isAdmin),
-    [comments, session?.user?.id, isAdmin]
+    () =>
+      mapPostComments(
+        comments,
+        session?.user?.id,
+        isAdmin,
+        premiumOwnerIdSet
+      ),
+    [comments, session?.user?.id, isAdmin, premiumOwnerIdSet]
   );
 
   return (
