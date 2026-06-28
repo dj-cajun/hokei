@@ -11,6 +11,10 @@ import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { resolveSectionSlugForCategory } from "@/lib/category-tree";
 import { postCreateBodySchema } from "@/lib/validation/post-create";
 import { enforceCanWrite } from "@/lib/user-moderation";
+import {
+  assertPartnerOwnerPromoStoreName,
+  revalidatePromoStoreTimeline,
+} from "@/lib/partner/promo-post-write";
 
 function topicFromSection(sectionSlug: string): PostTopic {
   if (sectionSlug === "news") return "VIETNAM_POLICY";
@@ -83,6 +87,17 @@ export async function POST(request: Request) {
       if (!allowed.ok) {
         return apiError(allowed.error, allowed.status);
       }
+
+      if (sectionSlug === "promo") {
+        const ownerCheck = await assertPartnerOwnerPromoStoreName(
+          userId,
+          session.user.role,
+          storeName
+        );
+        if (!ownerCheck.ok) {
+          return apiError(ownerCheck.message, 403);
+        }
+      }
     }
 
     const summary = content.replace(/\s+/g, " ").trim().slice(0, 160);
@@ -136,6 +151,10 @@ export async function POST(request: Request) {
       sectionSlug: sectionSlug ?? undefined,
       categoryHref: category.href,
     });
+
+    if (sectionSlug === "promo" && post.storeName) {
+      await revalidatePromoStoreTimeline(post.storeName);
+    }
 
     return apiSuccess({ id: post.id }, 201);
   } catch (err) {

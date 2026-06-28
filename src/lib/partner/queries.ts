@@ -109,6 +109,26 @@ export async function listPublishedPartners(options?: {
   });
 }
 
+/** 프리미엄 플랜 — 이름 박스 허브 */
+export async function listPublishedPremiumPartners(limit = 48) {
+  const take = Math.min(Math.max(limit, 1), 100);
+
+  return prisma.partnerStore.findMany({
+    where: {
+      ...publishedPartnerWhere(),
+      plan: "PREMIUM",
+    },
+    orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }],
+    take,
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      category: true,
+    },
+  });
+}
+
 export function activePartnerBannerWhere(now = new Date()) {
   return {
     isActive: true,

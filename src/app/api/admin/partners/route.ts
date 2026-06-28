@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
   const stores = await prisma.partnerStore.findMany({
     orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
-    include: { owner: { select: { email: true } } },
+    include: { owner: { select: { id: true, email: true, name: true } } },
   });
 
   return apiSuccess({ stores });

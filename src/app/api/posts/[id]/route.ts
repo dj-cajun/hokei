@@ -16,8 +16,9 @@ import {
 } from "@/lib/constants";
 import { log } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { isCommunityPost } from "@/lib/community";
+import { isUserBoardPost } from "@/lib/community";
 import { canModifyPost, hashGuestPassword } from "@/lib/post-permissions";
+import { revalidatePromoStoreTimeline } from "@/lib/partner/promo-post-write";
 import {
   indexPostInSearch,
   removePostFromSearch,
@@ -73,7 +74,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       include: { attachments: true },
     });
 
-    if (!post || !isCommunityPost(post.sourceUrl)) {
+    if (!post || !isUserBoardPost(post.sourceUrl)) {
       return apiError("글을 찾을 수 없습니다.", 404);
     }
 
@@ -193,6 +194,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       categoryHref: withCategory?.category.href,
     });
 
+    if (post.storeName?.trim()) {
+      await revalidatePromoStoreTimeline(post.storeName);
+    }
+
     return apiSuccess({ id: updated.id });
   } catch (err) {
     log("error", "posts patch failed", {
@@ -218,7 +223,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       },
     });
 
-    if (!post || !isCommunityPost(post.sourceUrl)) {
+    if (!post || !isUserBoardPost(post.sourceUrl)) {
       return apiError("글을 찾을 수 없습니다.", 404);
     }
 
@@ -252,6 +257,10 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     await prisma.post.delete({ where: { id } });
     await removePostFromSearch(id);
+
+    if (post.storeName?.trim()) {
+      await revalidatePromoStoreTimeline(post.storeName);
+    }
 
     revalidatePostCaches(id, {
       sectionSlug: post.category.parent?.slug,

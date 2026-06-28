@@ -1,6 +1,7 @@
 import { compare, hash } from "bcryptjs";
 import type { Post } from "@/generated/prisma/client";
 import { auth } from "@/auth";
+import { canUserManagePromoPostByStoreName } from "@/lib/partner/store-timeline-write";
 import { isCommentOwner, isPostOwner } from "@/lib/post-ownership";
 
 export { isCommentOwner, isPostOwner } from "@/lib/post-ownership";
@@ -19,7 +20,7 @@ export async function verifyGuestPassword(
 
 type PostWithAuthor = Pick<
   Post,
-  "authorId" | "guestPasswordHash" | "isAutomated"
+  "authorId" | "guestPasswordHash" | "isAutomated" | "storeName"
 >;
 
 type CommentWithAuthor = {
@@ -50,6 +51,9 @@ export async function canModifyPost(
   const session = await auth();
   if (session?.user?.role === "ADMIN") return true;
   if (isPostOwner(post, session?.user?.id)) return true;
+  if (await canUserManagePromoPostByStoreName(session, post.storeName)) {
+    return true;
+  }
   if (post.guestPasswordHash && options?.guestPassword) {
     return verifyGuestPassword(options.guestPassword, post.guestPasswordHash);
   }

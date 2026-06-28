@@ -12,6 +12,10 @@ import {
 import { resolveStoreCommentPost } from "@/lib/partner/store-page";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { resolveStoreOgImage } from "@/lib/partner/resolve-store-og";
+import {
+  canUserWriteStoreTimeline,
+  getStoreTimelineWriteHref,
+} from "@/lib/partner/store-timeline-write";
 import { resolveSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -102,9 +106,10 @@ export default async function PartnerStorePage({
     notFound();
   }
 
-  const [promo, commentPost] = await Promise.all([
+  const [promo, commentPost, session] = await Promise.all([
     getPromoPostsByStore(store.slug, 8, store.name),
     resolveStoreCommentPost(store),
+    auth(),
   ]);
 
   const timelineItems = promo.items.map((item) => ({
@@ -116,6 +121,12 @@ export default async function PartnerStorePage({
     isCrawl: item.isCrawl,
   }));
 
+  const canWriteTimeline = canUserWriteStoreTimeline(session, store);
+  const canManageTimeline = canWriteTimeline;
+  const timelineWriteHref = canWriteTimeline
+    ? getStoreTimelineWriteHref(store.slug)
+    : undefined;
+
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col lg:max-w-6xl lg:flex-row lg:gap-6 lg:px-4 lg:py-6">
       <LocalBusinessJsonLd store={store} />
@@ -125,6 +136,9 @@ export default async function PartnerStorePage({
         isPreview={isPreview}
         timelineItems={timelineItems}
         commentPost={commentPost}
+        canWriteTimeline={canWriteTimeline}
+        timelineWriteHref={timelineWriteHref}
+        canManageTimeline={canManageTimeline}
       />
     </div>
   );

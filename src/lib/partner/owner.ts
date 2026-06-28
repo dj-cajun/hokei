@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { nullIfEmpty } from "@/lib/partner/admin-map";
-import {
-  partnerStoreOwnerEmailSchema,
-  type PartnerStoreOwnerUpdateInput,
-} from "@/lib/partner/validate";
+import type { PartnerStoreOwnerUpdateInput } from "@/lib/partner/validate";
 
 export type OwnerEmailResolveResult =
   | { action: "skip" }
@@ -29,30 +26,7 @@ export function extractOwnerEmailFromBody(body: unknown): {
 export async function resolveOwnerEmailInput(
   ownerEmail: string | undefined
 ): Promise<OwnerEmailResolveResult> {
-  if (ownerEmail === undefined) {
-    return { action: "skip" };
-  }
-  if (!ownerEmail.trim()) {
-    return { action: "clear" };
-  }
-
-  const parsed = partnerStoreOwnerEmailSchema.safeParse(ownerEmail);
-  if (!parsed.success) {
-    return {
-      action: "error",
-      message: parsed.error.issues[0]?.message ?? "이메일 형식이 올바르지 않습니다.",
-    };
-  }
-
-  const ownerId = await resolveOwnerIdFromEmail(ownerEmail.trim());
-  if (!ownerId) {
-    return {
-      action: "error",
-      message: "해당 이메일의 회원을 찾을 수 없습니다.",
-    };
-  }
-
-  return { action: "set", ownerId };
+  return resolveOwnerAccountInputForForm(ownerEmail);
 }
 
 export async function resolveOwnerIdFromEmail(
@@ -66,6 +40,45 @@ export async function resolveOwnerIdFromEmail(
     select: { id: true },
   });
   return user?.id ?? null;
+}
+
+/** 회원 ID(cuid) 또는 이메일 → User */
+export async function resolveOwnerAccountInput(input: string) {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.includes("@")) {
+    return prisma.user.findUnique({
+      where: { email: trimmed.toLowerCase() },
+      select: { id: true, email: true, name: true },
+    });
+  }
+
+  return prisma.user.findUnique({
+    where: { id: trimmed },
+    select: { id: true, email: true, name: true },
+  });
+}
+
+export async function resolveOwnerAccountInputForForm(
+  ownerAccount: string | undefined
+): Promise<OwnerEmailResolveResult> {
+  if (ownerAccount === undefined) {
+    return { action: "skip" };
+  }
+  if (!ownerAccount.trim()) {
+    return { action: "clear" };
+  }
+
+  const user = await resolveOwnerAccountInput(ownerAccount);
+  if (!user) {
+    return {
+      action: "error",
+      message: "해당 회원 ID·이메일을 찾을 수 없습니다.",
+    };
+  }
+
+  return { action: "set", ownerId: user.id };
 }
 
 export function partnerStoreOwnerToPrismaData(

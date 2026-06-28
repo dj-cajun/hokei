@@ -7,24 +7,29 @@ const categories = Object.keys(PARTNER_CATEGORY_LABELS) as PartnerCategory[];
 
 type PartnersCategoryFilterProps = {
   activeCategory?: PartnerCategory;
+  activePremium?: boolean;
 };
 
 export function PartnersCategoryFilter({
   activeCategory,
+  activePremium = false,
 }: PartnersCategoryFilterProps) {
   return (
     <nav
-      className="flex flex-wrap gap-2 px-4 pb-3"
+      className="flex flex-wrap gap-2 px-4 pb-3 pt-3"
       aria-label="업소 카테고리"
     >
-      <CategoryPill href="/partners" active={!activeCategory}>
+      <CategoryPill href="/partners" active={!activeCategory && !activePremium}>
         전체
+      </CategoryPill>
+      <CategoryPill href="/partners/premium" active={activePremium}>
+        프리미엄
       </CategoryPill>
       {categories.map((category) => (
         <CategoryPill
           key={category}
           href={`/partners?category=${category}`}
-          active={activeCategory === category}
+          active={!activePremium && activeCategory === category}
         >
           {PARTNER_CATEGORY_LABELS[category]}
         </CategoryPill>

@@ -45,6 +45,10 @@ type WriteFormProps = {
   mode?: "create" | "edit";
   postId?: string;
   initial?: WriteFormInitial;
+  /** 제휴 업소 사장님 — 업체명 고정 */
+  lockedStoreName?: string;
+  defaultKakaoLink?: string;
+  successRedirectHref?: string;
 };
 
 function groupBySection(categories: WritableCategory[]) {
@@ -87,6 +91,9 @@ export function WriteForm({
   mode = "create",
   postId,
   initial,
+  lockedStoreName,
+  defaultKakaoLink,
+  successRedirectHref,
 }: WriteFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -139,8 +146,8 @@ export function WriteForm({
     parsedInitialTitle?.rawTitle ?? initial?.title ?? ""
   );
   const [region, setRegion] = useState(initial?.region ?? "");
-  const [storeName, setStoreName] = useState("");
-  const [kakaoLink, setKakaoLink] = useState("");
+  const [storeName, setStoreName] = useState(lockedStoreName ?? "");
+  const [kakaoLink, setKakaoLink] = useState(defaultKakaoLink ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
   const [attachments, setAttachments] = useState<PendingAttachment[]>(() =>
     (initial?.attachments ?? []).map((a, i) => ({
@@ -229,10 +236,12 @@ export function WriteForm({
       setError("수정하려면 글 작성 시 입력한 비밀번호가 필요합니다.");
       return;
     }
-    if (isPromoSection && !storeName.trim()) {
+    if (isPromoSection && !(lockedStoreName ?? storeName).trim()) {
       setError("업소명을 입력해 주세요.");
       return;
     }
+
+    const promoStoreName = (lockedStoreName ?? storeName).trim();
 
     const finalTitle = useCascade
       ? buildCascadeTitle(midCategory, subCategory, title)
@@ -271,7 +280,7 @@ export function WriteForm({
           return;
         }
         showToast("글이 수정되었습니다.");
-        router.push(`/posts/${postId}`);
+        router.push(successRedirectHref ?? `/posts/${postId}`);
         router.refresh();
         return;
       }
@@ -287,7 +296,7 @@ export function WriteForm({
           guestPassword: isLoggedIn ? undefined : guestPassword,
           attachments: uploaded,
           region: region || undefined,
-          storeName: isPromoSection ? storeName.trim() : undefined,
+          storeName: isPromoSection ? promoStoreName : undefined,
           kakaoLink: isPromoSection ? kakaoLink.trim() || undefined : undefined,
         }),
       });
@@ -303,7 +312,7 @@ export function WriteForm({
       }
       if (data.id) {
         showToast("글이 등록되었습니다.");
-        router.push(`/posts/${data.id}`);
+        router.push(successRedirectHref ?? `/posts/${data.id}`);
         router.refresh();
       }
     } catch (e) {
@@ -441,16 +450,30 @@ export function WriteForm({
               >
                 업체명 (필수)
               </label>
-              <input
-                id="write-store-name"
-                name="storeName"
-                type="text"
-                placeholder="예: 7군 OO반찬"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                className="w-full text-sm text-gray-800 focus-ring"
-                required
-              />
+              {lockedStoreName ? (
+                <>
+                  <p
+                    id="write-store-name"
+                    className="text-sm font-semibold text-foreground"
+                  >
+                    {lockedStoreName}
+                  </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    제휴 업소 타임라인 전용 · 업체명은 변경할 수 없습니다.
+                  </p>
+                </>
+              ) : (
+                <input
+                  id="write-store-name"
+                  name="storeName"
+                  type="text"
+                  placeholder="예: 7군 OO반찬"
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
+                  className="w-full text-sm text-gray-800 focus-ring"
+                  required
+                />
+              )}
             </div>
             <div>
               <label

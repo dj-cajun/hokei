@@ -15,6 +15,9 @@ type StoreLandingProps = {
   isPreview?: boolean;
   timelineItems?: StoreTimelineItem[];
   commentPost?: Awaited<ReturnType<typeof resolveStoreCommentPost>>;
+  canWriteTimeline?: boolean;
+  timelineWriteHref?: string;
+  canManageTimeline?: boolean;
 };
 
 export function StoreLanding({
@@ -22,6 +25,9 @@ export function StoreLanding({
   isPreview = false,
   timelineItems = [],
   commentPost = null,
+  canWriteTimeline = false,
+  timelineWriteHref,
+  canManageTimeline = false,
 }: StoreLandingProps) {
   const categoryLabel = PARTNER_CATEGORY_LABELS[store.category];
   const intro = storeIntroBody(store);
@@ -92,9 +98,15 @@ export function StoreLanding({
       ) : null}
 
       {/* 5. Timeline */}
-      {timelineItems.length > 0 ? (
+      {timelineItems.length > 0 || canWriteTimeline ? (
         <div className="border-b border-border-light">
-          <StoreTimelineSection items={timelineItems} storeSlug={store.slug} />
+          <StoreTimelineSection
+            items={timelineItems}
+            storeSlug={store.slug}
+            canWriteTimeline={canWriteTimeline}
+            writeHref={timelineWriteHref}
+            canManageTimeline={canManageTimeline}
+          />
         </div>
       ) : null}
 

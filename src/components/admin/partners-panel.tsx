@@ -44,7 +44,7 @@ type StoreRow = {
   status: PartnerStatus;
   sortOrder: number;
   expiresAt: string | null;
-  owner?: { email: string } | null;
+  owner?: { id: string; email: string; name: string } | null;
 };
 
 type BannerRow = {
@@ -136,6 +136,11 @@ export function PartnersPanel() {
   const bannerMobileInputRef = useRef<HTMLInputElement>(null);
   const homeTopPcInputRef = useRef<HTMLInputElement>(null);
   const homeTopMobileInputRef = useRef<HTMLInputElement>(null);
+  const [timelineAccessForm, setTimelineAccessForm] = useState({
+    userAccount: "",
+    storeUrl: "",
+  });
+  const [timelineAccessSaving, setTimelineAccessSaving] = useState(false);
 
   const loadStores = useCallback(async () => {
     const res = await fetch("/api/admin/partners");
@@ -211,7 +216,7 @@ export function PartnersPanel() {
       status: row.status,
       sortOrder: row.sortOrder,
       expiresAt: row.expiresAt ? row.expiresAt.slice(0, 10) : "",
-      ownerEmail: row.owner?.email ?? "",
+      ownerEmail: row.owner?.id ?? row.owner?.email ?? "",
     });
     const homeTop = banners.find(
       (b) => b.storeId === row.id && b.slot === "HOME_TOP"
@@ -243,6 +248,49 @@ export function PartnersPanel() {
       sortOrder: row.sortOrder,
       isActive: row.isActive,
     });
+  }
+
+  async function handleTimelineAccess(action: "grant" | "revoke") {
+    if (action === "grant" && !timelineAccessForm.userAccount.trim()) {
+      showToast("회원 ID 또는 이메일을 입력해 주세요.", "error");
+      return;
+    }
+    if (!timelineAccessForm.storeUrl.trim()) {
+      showToast("업소 페이지 주소를 입력해 주세요.", "error");
+      return;
+    }
+
+    setTimelineAccessSaving(true);
+    try {
+      const res = await fetch("/api/admin/partners/timeline-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          action === "grant"
+            ? {
+                action: "grant",
+                userAccount: timelineAccessForm.userAccount.trim(),
+                storeUrl: timelineAccessForm.storeUrl.trim(),
+              }
+            : {
+                action: "revoke",
+                storeUrl: timelineAccessForm.storeUrl.trim(),
+              }
+        ),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(parseApiError(data) ?? "처리에 실패했습니다.", "error");
+        return;
+      }
+      showToast(data.message ?? "저장했습니다.", "success");
+      if (action === "revoke") {
+        setTimelineAccessForm((f) => ({ ...f, userAccount: "" }));
+      }
+      await loadStores();
+    } finally {
+      setTimelineAccessSaving(false);
+    }
   }
 
   async function onStoreSubmit(e: FormEvent) {
@@ -506,13 +554,79 @@ export function PartnersPanel() {
       {!ready ? (
         <p className="text-sm text-muted-foreground">불러오는 중…</p>
       ) : tab === "stores" ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-sm">
+            <h2 className="text-sm font-semibold text-foreground">
+              타임라인 글쓰기 권한
+            </h2>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              회원 ID(또는 이메일) + 업소 페이지 주소로 LP 타임라인 글쓰기 권한을
+              부여·해제합니다. `/admin/users`에서 회원 ID를 확인할 수 있습니다.
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="timelineAccessUser">회원 ID 또는 이메일</Label>
+                <Input
+                  id="timelineAccessUser"
+                  value={timelineAccessForm.userAccount}
+                  onChange={(e) =>
+                    setTimelineAccessForm((f) => ({
+                      ...f,
+                      userAccount: e.target.value,
+                    }))
+                  }
+                  placeholder="clxxxx… 또는 user@email.com"
+                  className="mt-1 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <Label htmlFor="timelineAccessStore">업소 페이지 주소</Label>
+                <Input
+                  id="timelineAccessStore"
+                  value={timelineAccessForm.storeUrl}
+                  onChange={(e) =>
+                    setTimelineAccessForm((f) => ({
+                      ...f,
+                      storeUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="/store/2d-sketch-cafe"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={timelineAccessSaving}
+                onClick={() => void handleTimelineAccess("grant")}
+              >
+                {timelineAccessSaving ? (
+                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                ) : null}
+                권한 부여
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={timelineAccessSaving}
+                onClick={() => void handleTimelineAccess("revoke")}
+              >
+                권한 해제
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
           <div className="overflow-x-auto rounded-2xl bg-surface p-3 shadow-sm">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="py-2 pr-2">이름</th>
                   <th className="py-2 pr-2">slug</th>
+                  <th className="py-2 pr-2">사장님</th>
                   <th className="py-2 pr-2">플랜</th>
                   <th className="py-2 pr-2">상태</th>
                   <th className="py-2 pr-2">30일</th>
@@ -531,6 +645,17 @@ export function PartnersPanel() {
                       >
                         {row.slug}
                       </Link>
+                    </td>
+                    <td className="py-2 pr-2 text-[10px] text-muted-foreground">
+                      {row.owner ? (
+                        <span title={row.owner.id}>
+                          {row.owner.name}
+                          <br />
+                          <span className="font-mono">{row.owner.email}</span>
+                        </span>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="py-2 pr-2">{row.plan}</td>
                     <td className="py-2 pr-2">{row.status}</td>
@@ -799,19 +924,18 @@ export function PartnersPanel() {
               />
             </div>
             <div>
-              <Label htmlFor="ownerEmail">사장님 계정 이메일</Label>
+              <Label htmlFor="ownerEmail">사장님 계정 (ID 또는 이메일)</Label>
               <Input
                 id="ownerEmail"
-                type="email"
                 value={storeForm.ownerEmail}
                 onChange={(e) =>
                   setStoreForm((f) => ({ ...f, ownerEmail: e.target.value }))
                 }
-                placeholder="셀프 수정 권한 부여"
-                className="mt-1"
+                placeholder="clxxxx… 또는 user@email.com"
+                className="mt-1 font-mono text-xs"
               />
               <p className="mt-1 text-[10px] text-muted-foreground">
-                호케이 가입 이메일. 비우면 연결 해제.
+                LP 셀프 수정 + 타임라인 글쓰기 권한. 비우면 연결 해제.
               </p>
             </div>
             <PartnerAssetGuideBox
@@ -1058,6 +1182,7 @@ export function PartnersPanel() {
               ) : null}
             </div>
           </form>
+        </div>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">

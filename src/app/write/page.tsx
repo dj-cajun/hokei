@@ -6,6 +6,11 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { USER_WRITE_BANNED_MESSAGE } from "@/lib/user-moderation";
+import { getPartnerStoreBySlugAnyStatus } from "@/lib/partner/queries";
+import {
+  canUserWriteStoreTimeline,
+  getStoreTimelineWriteHref,
+} from "@/lib/partner/store-timeline-write";
 
 import type { Metadata } from "next";
 
@@ -16,16 +21,50 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ section?: string }>;
+  searchParams: Promise<{ section?: string; partnerStore?: string }>;
 }
 
 export default async function WritePage({ searchParams }: PageProps) {
-  const { section: sectionParam } = await searchParams;
+  const { section: sectionParam, partnerStore: partnerStoreParam } =
+    await searchParams;
   const sectionSlug =
     sectionParam && isWritableSection(sectionParam) ? sectionParam : undefined;
 
   if (sectionParam && !sectionSlug) {
     notFound();
+  }
+
+  const partnerStoreSlug = partnerStoreParam?.trim() || undefined;
+  let partnerStoreContext:
+    | {
+        name: string;
+        slug: string;
+        kakaoLink: string | null;
+      }
+    | undefined;
+
+  if (partnerStoreSlug) {
+    if (sectionSlug !== "promo") {
+      notFound();
+    }
+
+    const session = await auth();
+    const writeHref = getStoreTimelineWriteHref(partnerStoreSlug);
+
+    if (!session?.user) {
+      redirect(`/login?callbackUrl=${encodeURIComponent(writeHref)}`);
+    }
+
+    const store = await getPartnerStoreBySlugAnyStatus(partnerStoreSlug);
+    if (!store || !canUserWriteStoreTimeline(session, store)) {
+      redirect(`/store/${partnerStoreSlug}`);
+    }
+
+    partnerStoreContext = {
+      name: store.name,
+      slug: store.slug,
+      kakaoLink: store.kakaoLink,
+    };
   }
 
   const categories = await getWritableCategories(
@@ -37,6 +76,9 @@ export default async function WritePage({ searchParams }: PageProps) {
   }
 
   const meta = sectionSlug ? WRITE_SECTION_META[sectionSlug] : null;
+  const pageTitle = partnerStoreContext
+    ? `${partnerStoreContext.name} · 타임라인`
+    : (meta?.title ?? "글쓰기");
   const defaultCategoryId =
     categories.find((c) => c.slug === meta?.defaultCategorySlug)?.id ??
     categories[0]!.id;
@@ -71,11 +113,18 @@ export default async function WritePage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto min-h-[100dvh] w-full max-w-[480px] bg-surface">
       <WriteForm
-        key={sectionSlug ?? "write"}
-        pageTitle={meta?.title ?? "글쓰기"}
+        key={`${sectionSlug ?? "write"}-${partnerStoreContext?.slug ?? ""}`}
+        pageTitle={pageTitle}
         categories={categories}
         defaultCategoryId={defaultCategoryId}
         sectionSlug={sectionSlug}
+        lockedStoreName={partnerStoreContext?.name}
+        defaultKakaoLink={partnerStoreContext?.kakaoLink ?? undefined}
+        successRedirectHref={
+          partnerStoreContext
+            ? `/store/${partnerStoreContext.slug}`
+            : undefined
+        }
       />
     </div>
   );
