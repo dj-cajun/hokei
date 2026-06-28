@@ -11,7 +11,16 @@ import { normalizeLifeGuideImageUrls } from "@/lib/life/guide-images";
 import { isDatabaseAvailable } from "@/lib/database-available";
 import { getLifeGuideBySlug } from "@/lib/life/guides";
 import { LIFE_DOMAIN_LABELS, LIFE_KIND_LABELS } from "@/lib/life/labels";
+import { resolveSiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
+
+function lifeGuideDescription(body: string) {
+  return body
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+}
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +33,30 @@ export async function generateMetadata({ params }: PageProps) {
   if (!isDatabaseAvailable()) return { title: "생활 가이드 - 호케이" };
   const guide = await getLifeGuideBySlug(slug);
   if (!guide) return { title: "생활 가이드 - 호케이" };
+  const description = lifeGuideDescription(guide.body);
+  const siteUrl = resolveSiteUrl();
+  const canonical = `${siteUrl}/life/${guide.slug}`;
+  const images = normalizeLifeGuideImageUrls(guide);
+  const ogImage = images[0] ?? `${siteUrl}/icons/hokei-icon-512.png`;
   return {
     title: `${guide.title} - 호케이`,
-    description: guide.body.slice(0, 160),
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: guide.title,
+      description,
+      url: canonical,
+      type: "article",
+      locale: "ko_KR",
+      siteName: "호케이 Hokei",
+      images: [{ url: ogImage, alt: guide.title }],
+    },
+    twitter: {
+      card: images.length > 0 ? "summary_large_image" : "summary",
+      title: guide.title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 

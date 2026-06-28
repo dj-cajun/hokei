@@ -73,6 +73,19 @@ export async function getLifeGuideBySlug(slug: string) {
   );
 }
 
+export async function listLifeGuidesForSitemap(limit = 500) {
+  return safeLifeQuery(
+    "listLifeGuidesForSitemap",
+    () =>
+      prisma.lifeGuide.findMany({
+        orderBy: { publishedAt: "desc" },
+        take: limit,
+        select: { slug: true, updatedAt: true },
+      }),
+    []
+  );
+}
+
 export async function getFeaturedStudyGuide(): Promise<LifeGuideListItem | null> {
   const rows = await safeLifeQuery(
     "getFeaturedStudyGuide",

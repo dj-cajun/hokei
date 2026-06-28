@@ -19,6 +19,7 @@ import { isNaverNewsAggregatorLink } from "@/lib/news/naver-news";
 import { getFallbackThumbnail } from "@/lib/news/default-thumbnails";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
 import type { PostTopic } from "@/lib/post-topic";
+import { resolveSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -43,14 +44,25 @@ export async function generateMetadata({ params }: PageProps) {
         sourceName: post.sourceName,
         sourceUrl: post.sourceUrl,
       });
+  const canonical = `${resolveSiteUrl()}/posts/${id}`;
   return {
     title: `${displayTitle} - 호케이 Hokei`,
     description,
+    alternates: { canonical },
     openGraph: {
       title: displayTitle,
       description,
+      url: canonical,
       type: "article",
+      locale: "ko_KR",
+      siteName: "호케이 Hokei",
       images: [{ url: ogImage, alt: displayTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: displayTitle,
+      description,
+      images: [ogImage],
     },
   };
 }

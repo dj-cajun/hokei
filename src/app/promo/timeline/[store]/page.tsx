@@ -10,6 +10,7 @@ import {
 } from "@/lib/partner/store-timeline-write";
 import { getPromoPostsByStore } from "@/lib/promo/queries";
 import { formatRelativeTime } from "@/lib/format/date";
+import { resolveSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,28 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { store } = await params;
   if (!isDatabaseAvailable()) return { title: "업소 홍보 - 호케이" };
-  const { storeName } = await getPromoPostsByStore(store, 1);
+  const [{ storeName }, partnerStore] = await Promise.all([
+    getPromoPostsByStore(store, 1),
+    getPartnerStoreBySlugCached(store),
+  ]);
+  const title = storeName
+    ? `${storeName} - 한인 업소 홍보`
+    : "업소 홍보 - 호케이";
+  const siteUrl = resolveSiteUrl();
+  const canonical = partnerStore
+    ? `${siteUrl}/store/${partnerStore.slug}`
+    : `${siteUrl}/promo/timeline/${store}`;
   return {
-    title: storeName
-      ? `${storeName} - 한인 업소 홍보`
-      : "업소 홍보 - 호케이",
+    title,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      url: canonical,
+      type: "website",
+      locale: "ko_KR",
+      siteName: "호케이 Hokei",
+    },
+    robots: partnerStore ? { index: false, follow: true } : undefined,
   };
 }
 

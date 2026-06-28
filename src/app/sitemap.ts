@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isDatabaseAvailable } from "@/lib/database-available";
+import { listLifeGuidesForSitemap } from "@/lib/life/guides";
+import { visiblePostWhere } from "@/lib/moderation";
 import { prisma } from "@/lib/prisma";
 import { publishedPartnerWhere } from "@/lib/partner/queries";
 import { resolveSiteUrl } from "@/lib/site-url";
@@ -33,13 +35,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let posts: { id: string; publishedAt: Date }[] = [];
   let partnerStores: { slug: string; updatedAt: Date }[] = [];
+  let lifeGuides: { slug: string; updatedAt: Date }[] = [];
   if (!isDatabaseAvailable()) {
     return staticRoutes;
   }
   try {
-    [posts, partnerStores] = await Promise.all([
+    [posts, partnerStores, lifeGuides] = await Promise.all([
       prisma.post.findMany({
-        where: { status: "PUBLISHED" },
+        where: visiblePostWhere,
         orderBy: { publishedAt: "desc" },
         take: 500,
         select: { id: true, publishedAt: true },
@@ -50,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         orderBy: { updatedAt: "desc" },
         take: 200,
       }),
+      listLifeGuidesForSitemap(500),
     ]);
   } catch {
     /* build/CI without DB */
@@ -69,5 +73,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...postRoutes, ...storeRoutes];
+  const lifeGuideRoutes: MetadataRoute.Sitemap = lifeGuides.map((g) => ({
+    url: `${base}/life/${g.slug}`,
+    lastModified: g.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.65,
+  }));
+
+  return [...staticRoutes, ...postRoutes, ...storeRoutes, ...lifeGuideRoutes];
 }
