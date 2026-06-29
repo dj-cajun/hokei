@@ -52,7 +52,8 @@ COUPON_INTERNAL_SECRET=dev-coupon-internal-secret
 |-------|------|
 | Baseline I + A (일부) + B + C + D | ✅ |
 | **E 현지 직원·마감** | ✅ |
-| F 프로덕션 | ☐ |
+| **F 프로덕션 준비** | ✅ (배포·env는 인간 실행) |
+| G 확장 | ☐ |
 | G 확장 | ☐ |
 
 상세: [TASKS.md](./TASKS.md) · [ROADMAP.md](./ROADMAP.md)

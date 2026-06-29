@@ -62,6 +62,11 @@ export default async function StoreCouponPage({
       <p className="mt-2 text-center text-xs text-muted-foreground">
         구매·{COUPON_WALLET_SHORT} 이용 시 호케이 로그인이 필요합니다
       </p>
+      <p className="mt-1 text-center text-xs">
+        <Link href={`${base}/terms`} className="text-muted-foreground hover:text-primary">
+          이용 안내 · 약관
+        </Link>
+      </p>
     </div>
   );
 }

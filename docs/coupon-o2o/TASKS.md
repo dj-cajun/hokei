@@ -32,9 +32,9 @@
 |----|------|------|
 | A-01 | UI **쿠폰함** 라벨 (DM 쪽지함과 구분) | ✅ |
 | A-02 | ROADMAP.md + TASKS 정리 | ✅ |
-| A-03 | `PartnerStore.ownerId` ↔ 2D 사장님 | ☐ |
+| A-03 | `PartnerStore.ownerId` ↔ 2D 사장님 | ✅ (스크립트) |
 | A-04 | checkout 업소 계좌 안내 copy | ✅ |
-| A-05 | 프로덕션 checklist (ROADMAP §F) | ☐ |
+| A-05 | 프로덕션 checklist (ROADMAP §F) | ✅ |
 
 ---
 
@@ -92,15 +92,28 @@
 
 | ID | Task | 상태 |
 |----|------|------|
-| F-01 | `ALLOW_DEMO_BUYER=false` · secrets | ☐ |
-| F-02 | coupon API prod | ☐ |
-| F-03 | 제휴서·약관 | ☐ |
-| F-04 | TMĐT / Zalo | ☐ |
-| F-05 | 수수료 송금 SOP | ☐ |
+| F-01 | `ALLOW_DEMO_BUYER=false` · secrets | ✅ |
+| F-02 | coupon API prod | ✅ |
+| F-03 | 제휴서·약관 | ✅ (초안) |
+| F-04 | TMĐT / Zalo | → [PHASE-G.md](./PHASE-G.md) |
+| F-05 | 수수료 송금 SOP | ✅ |
 
 ---
 
-## DB 마이그레이션 (Phase B 이후)
+## Phase G — 확장 (v2)
+
+| ID | Task | 상태 |
+|----|------|------|
+| G-01 | 업소 추가 (slug ↔ agency whitelist) | ✅ |
+| G-02 | 로컬 TNHH · Zalo OA | ☐ |
+| G-03 | Zalo 미니앱 / VietQR 심화 | ☐ |
+| G-04 | POS · 키오스크 연동 | ☐ |
+| G-05 | 수수료 % 옵션 | ☐ |
+
+→ [ONBOARDING-STORE.md](./ONBOARDING-STORE.md) · [PHASE-G.md](./PHASE-G.md)
+
+---
+
 
 coupon-pilot에서 `paymentMethod` 컬럼 추가 후:
 
@@ -112,13 +125,12 @@ pnpm exec prisma generate --schema=prisma/schema.prisma
 
 ## 프로덕션 체크리스트
 
-- [ ] `ALLOW_DEMO_BUYER=false` (coupon API)
-- [ ] `COUPON_INTERNAL_SECRET` / `VIETQR_WEBHOOK_SECRET` 강한 랜덤값
-- [ ] `PartnerStore.ownerId` ← 2D SKETCH CAFE 사장님 호케이 userId
-- [ ] coupon API 별도 Postgres (`cafe_o2o`)
-- [ ] VietQR 웹훅 URL → `https://api.../webhooks/payment/vietqr`
+→ [PRODUCTION-CHECKLIST.md](./PRODUCTION-CHECKLIST.md) (실행 시 인간 확인)
 
-환경 변수: [INTEGRATION.md](./INTEGRATION.md)
+```bash
+npm run coupon:check-env
+cd coupon-pilot && NODE_ENV=production pnpm check:env
+```
 
 ## 호케이 변경 파일 (요약)
 
