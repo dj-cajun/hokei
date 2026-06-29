@@ -105,10 +105,10 @@
 | ID | Task | 상태 |
 |----|------|------|
 | G-01 | 업소 추가 (slug ↔ agency whitelist) | ✅ |
-| G-02 | 로컬 TNHH · Zalo OA | ☐ |
+| G-02 | 로컬 TNHH · Zalo OA | ☐ [ZALO-TMDT.md](./ZALO-TMDT.md) |
 | G-03 | Zalo 미니앱 / VietQR 심화 | ☐ |
 | G-04 | POS · 키오스크 연동 | ☐ |
-| G-05 | 수수료 % 옵션 | ☐ |
+| G-05 | 수수료 % 옵션 | ✅ `commissionPercent` (API) |
 
 → [ONBOARDING-STORE.md](./ONBOARDING-STORE.md) · [PHASE-G.md](./PHASE-G.md)
 
