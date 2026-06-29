@@ -42,6 +42,29 @@ export async function requireAuth() {
   return session;
 }
 
+export async function requireAuthWithCallback(callbackPath: string) {
+  if (isProductionBuildPhase()) {
+    return buildStubSession;
+  }
+  const session = await auth();
+  if (!session?.user) {
+    redirect(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isSuspended: true, writeBanned: true },
+  });
+  if (dbUser?.isSuspended) {
+    redirect("/login?suspended=1");
+  }
+  if (dbUser) {
+    session.user.writeBanned = dbUser.writeBanned;
+  }
+
+  return session;
+}
+
 export async function requireAdmin() {
   const session = await requireAuth();
   const dbUser = await prisma.user.findUnique({

@@ -54,3 +54,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# O2O 쿠폰 파일럿 (호케이 본 코드와 분리 — git 추적 안 함)
+/coupon-pilot/

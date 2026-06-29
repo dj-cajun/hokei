@@ -30,6 +30,19 @@ export default async function AccountPartnerPage() {
           {session.user.name}님 · 소개·연락처·썸네일을 직접 수정할 수 있습니다.
         </p>
         <PartnerStoreOwnerForm />
+
+        <div className="mt-8 border-t border-border-light pt-6">
+          <h2 className="text-base font-bold">쿠폰 · QR 스캔</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            손님 쿠폰 QR 스캔, 매출·정산 확인
+          </p>
+          <Link
+            href="/account/partner/coupon"
+            className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground"
+          >
+            쿠폰 관리 열기
+          </Link>
+        </div>
       </div>
     </div>
   );

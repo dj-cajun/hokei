@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { PartnerStore } from "@/generated/prisma/client";
+import { StoreCouponMenuLink } from "@/components/coupon/store-coupon-menu-link";
+import { isCouponStore } from "@/lib/coupon/config";
 import { StoreCommentsSection } from "@/components/partner/store-comments-section";
 import { StoreCtaBar } from "@/components/partner/store-cta-bar";
 import { StoreTimelineSection } from "@/components/partner/store-timeline-section";
@@ -86,6 +88,9 @@ export function StoreLanding({
           <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
             {menuText}
           </pre>
+          {isCouponStore(store.slug) ? (
+            <StoreCouponMenuLink slug={store.slug} />
+          ) : null}
         </section>
       ) : null}
 

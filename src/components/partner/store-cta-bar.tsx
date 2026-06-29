@@ -1,6 +1,8 @@
 "use client";
 
 import type { PartnerEventType } from "@/generated/prisma/client";
+import Link from "next/link";
+import { isCouponStore, storeCouponBase } from "@/lib/coupon/config";
 import { toTelHref } from "@/lib/partner/phone";
 import { trackPartnerEvent } from "@/lib/partner/track-event";
 
@@ -25,14 +27,23 @@ export function StoreCtaBar({
   const hasKakao = Boolean(kakaoLink?.trim());
   const hasTel = Boolean(telHref);
   const hasMaps = Boolean(mapsUrl?.trim());
+  const couponBase = isCouponStore(slug) ? storeCouponBase(slug) : null;
 
-  if (!hasKakao && !hasTel && !hasMaps) {
+  if (!hasKakao && !hasTel && !hasMaps && !couponBase) {
     return null;
   }
 
   return (
     <div className="sticky bottom-0 z-10 border-t border-border-light bg-surface/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
       <div className="mx-auto flex max-w-[480px] gap-2">
+        {couponBase ? (
+          <Link
+            href={couponBase}
+            className="flex min-h-11 flex-1 items-center justify-center rounded-lg bg-primary px-3 text-sm font-bold text-primary-foreground hover:opacity-90"
+          >
+            쿠폰
+          </Link>
+        ) : null}
         {hasKakao && (
           <a
             href={kakaoLink!}

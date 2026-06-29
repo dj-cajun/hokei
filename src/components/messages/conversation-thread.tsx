@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { useToast } from "@/components/providers/toast-provider";
+import { stripCouponOrderMarker } from "@/lib/coupon/order-conversation-format";
 
 type MessageItem = {
   id: string;
@@ -175,7 +176,7 @@ export function ConversationThread({
                   : "bg-muted text-gray-800"
               }`}
             >
-              {m.body}
+              {stripCouponOrderMarker(m.body)}
             </div>
           </div>
         ))}

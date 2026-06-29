@@ -273,6 +273,13 @@ async function main() {
     `CREATE UNIQUE INDEX IF NOT EXISTS "Conversation_participantAId_participantBId_key"
       ON "Conversation"("participantAId", "participantBId")`
   );
+  await exec(
+    `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "contextCouponOrderId" TEXT`
+  );
+  await exec(
+    `CREATE INDEX IF NOT EXISTS "Conversation_contextCouponOrderId_idx"
+      ON "Conversation"("contextCouponOrderId")`
+  );
 
   await exec(`
     CREATE TABLE IF NOT EXISTS "DirectMessage" (

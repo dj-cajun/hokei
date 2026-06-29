@@ -74,6 +74,7 @@ export async function GET(request: Request) {
         id: c.id,
         peer: { id: peer.id, name: peer.name },
         contextPostId: c.contextPostId,
+        contextCouponOrderId: c.contextCouponOrderId,
         lastMessage: last
           ? {
               body: last.body.slice(0, 120),

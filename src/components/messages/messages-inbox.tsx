@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
+import { stripCouponOrderMarker } from "@/lib/coupon/order-conversation-format";
 
 type ConversationItem = {
   id: string;
   peer: { id: string; name: string };
+  contextCouponOrderId?: string | null;
   lastMessage: {
     body: string;
     isMine: boolean;
@@ -75,11 +77,19 @@ export function MessagesInbox() {
             className="flex items-start justify-between gap-3 px-4 py-3 hover:bg-card-hover"
           >
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground">{item.peer.name}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-medium text-foreground">{item.peer.name}</p>
+                {item.contextCouponOrderId ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                    <MessageCircle className="h-3 w-3" />
+                    쿠폰 주문
+                  </span>
+                ) : null}
+              </div>
               {item.lastMessage && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {item.lastMessage.isMine ? "나: " : ""}
-                  {item.lastMessage.body}
+                  {stripCouponOrderMarker(item.lastMessage.body)}
                 </p>
               )}
             </div>

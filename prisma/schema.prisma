@@ -288,19 +288,22 @@ model SearchQueryStat {
 }
 
 model Conversation {
-  id              String          @id @default(cuid())
-  participantAId  String
-  participantBId  String
-  participantA    User            @relation("ConversationParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
-  participantB    User            @relation("ConversationParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
-  contextPostId   String?
-  lastMessageAt   DateTime        @default(now())
-  createdAt       DateTime        @default(now())
-  messages        DirectMessage[]
+  id                   String          @id @default(cuid())
+  participantAId       String
+  participantBId       String
+  participantA         User            @relation("ConversationParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
+  participantB         User            @relation("ConversationParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
+  contextPostId        String?
+  /// O2O 쿠폰 주문 — 최근 연동 주문 ID (같은 업소 재구매 시 갱신)
+  contextCouponOrderId String?
+  lastMessageAt        DateTime        @default(now())
+  createdAt            DateTime        @default(now())
+  messages             DirectMessage[]
 
   @@unique([participantAId, participantBId])
   @@index([participantAId, lastMessageAt])
   @@index([participantBId, lastMessageAt])
+  @@index([contextCouponOrderId])
 }
 
 model DirectMessage {
