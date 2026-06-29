@@ -2,7 +2,9 @@
 
 > **SSOT:** 호케이에서 쿠폰 구매 → 업소 QR 송금 또는 매장 현금 → 쿠폰함 + (향후) 업소 채팅 → QR 교환 시 플랫폼 수수료 1건 → 주간 정산
 
-관련: [PRD.md](./PRD.md) · [INTEGRATION.md](./INTEGRATION.md) · [TASKS.md](./TASKS.md)
+관련: [PRD.md](./PRD.md) · [INTEGRATION.md](./INTEGRATION.md) · [TASKS.md](./TASKS.md) · [WORKSPACE.md](./WORKSPACE.md)
+
+**개발 폴더:** `~/Desktop/호케이-coupon` · 브랜치 `feat/coupon-o2o`
 
 ---
 
@@ -110,8 +112,10 @@
 ## 5. 실행 순서
 
 ```
-I ✅ → A → B + E(직원) → C → E(마감) → D → F → G
+I ✅ → A → B ✅ → C ✅ → D ✅ → E ✅ → F → G
 ```
+
+일반 호케이(`~/Desktop/호케이` main)와 **폴더 분리** — [WORKSPACE.md](./WORKSPACE.md)
 
 ---
 

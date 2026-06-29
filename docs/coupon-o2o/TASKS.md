@@ -1,6 +1,8 @@
 # TASKS — 호케이 O2O 통합
 
-로드맵: [ROADMAP.md](./ROADMAP.md)
+로드맵: [ROADMAP.md](./ROADMAP.md) · 폴더: [WORKSPACE.md](./WORKSPACE.md)
+
+> 개발 경로: `~/Desktop/호케이-coupon` (`feat/coupon-o2o`) · API: `coupon-pilot/`
 
 ## Baseline ✅ (I-01 ~ I-15)
 
@@ -77,12 +79,12 @@
 
 | ID | Task | 상태 |
 |----|------|------|
-| E-01 | AgencyStaff / staff allowlist | ☐ |
-| E-02 | cashier / scanner / manager | ☐ |
-| E-03 | CouponAuditLog | ☐ |
-| E-04 | action별 staffId | ☐ |
-| E-05 | `/coupon/close-day` | ☐ |
-| E-06 | manager만 수수료 금액 | ☐ |
+| E-01 | AgencyStaff / staff allowlist | ✅ |
+| E-02 | cashier / scanner / manager | ✅ |
+| E-03 | CouponAuditLog | ✅ |
+| E-04 | action별 staffId | ✅ |
+| E-05 | `/coupon/close-day` | ✅ |
+| E-06 | manager만 수수료 금액 | ✅ |
 
 ---
 
@@ -103,7 +105,7 @@
 coupon-pilot에서 `paymentMethod` 컬럼 추가 후:
 
 ```bash
-cd ~/Desktop/호케이/coupon-pilot
+cd ~/Desktop/호케이-coupon/coupon-pilot
 pnpm exec prisma db push --schema=prisma/schema.prisma
 pnpm exec prisma generate --schema=prisma/schema.prisma
 ```

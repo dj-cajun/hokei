@@ -74,13 +74,15 @@ export type ScanResponse =
 
 export type DashboardSummary = {
   weekCount: number;
-  weekPlatformFee: number;
-  pendingPlatformFee: number;
-  commissionFixed: number;
+  weekPlatformFee: number | null;
+  pendingPlatformFee: number | null;
+  commissionFixed: number | null;
   nextSettlementDate: string;
   currency: string;
-  weekRevenue?: number;
-  pendingBalance?: number;
+  staffRole?: string | null;
+  feesHidden?: boolean;
+  weekRevenue?: number | null;
+  pendingBalance?: number | null;
 };
 
 export type TransactionDto = {

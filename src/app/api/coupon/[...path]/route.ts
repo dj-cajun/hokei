@@ -41,6 +41,9 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   const agencyAuth = req.headers.get("authorization");
   if (agencyAuth) headers.Authorization = agencyAuth;
 
+  const staffToken = req.headers.get("x-staff-token");
+  if (staffToken) headers["X-Staff-Token"] = staffToken;
+
   const body =
     req.method !== "GET" && req.method !== "HEAD"
       ? await req.text()

@@ -66,6 +66,19 @@ API는 User upsert 후 쿠폰·주문 처리.
 
 `PartnerStore.ownerId` 미설정 시 대화 생성 생략 (`skipped: true`).
 
+## 현지 직원 · 일 마감 (Phase E)
+
+| 항목 | 값 |
+|------|-----|
+| 직원 목록 | `GET /staff` (Agency JWT) |
+| PIN 로그인 | `POST /staff/verify-pin` `{ staffId, pin }` → `staffToken` |
+| 헤더 | `X-Staff-Token: {staffToken}` (스캔·현금·마감) |
+| 역할 | `cashier` · `scanner` · `manager` |
+| 일 마감 | `POST /staff/close-day` (manager만) |
+| 수수료 UI | manager 외 `feesHidden: true` |
+
+시드 PIN (2d_sketch_cafe): manager `5678` · scanner `1234` · cashier `4321`
+
 ## 결제 방식 (Phase B)
 
 | `paymentMethod` | 구매자 | Partner |

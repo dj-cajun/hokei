@@ -30,13 +30,20 @@ export default function PartnerCouponDashboardPage() {
 
   const weekPlatformFee = summary.weekPlatformFee ?? summary.weekRevenue ?? 0;
   const pendingPlatformFee = summary.pendingPlatformFee ?? summary.pendingBalance ?? 0;
+  const feesHidden = summary.feesHidden === true;
 
   return (
     <div className="mx-auto w-full max-w-md flex-1 px-4 py-6">
       <h1 className="text-xl font-bold">수수료 대시보드</h1>
-      <p className="mt-1 text-xs text-muted-foreground">
-        건당 {summary.commissionFixed.toLocaleString()}₫ · 손님 결제금은 매장 직수금
-      </p>
+      {feesHidden ? (
+        <p className="mt-1 text-xs text-amber-700">
+          매니저 PIN으로 로그인하면 수수료 금액을 볼 수 있습니다.
+        </p>
+      ) : (
+        <p className="mt-1 text-xs text-muted-foreground">
+          건당 {(summary.commissionFixed ?? 0).toLocaleString()}₫ · 손님 결제금은 매장 직수금
+        </p>
+      )}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-secondary p-4">
           <p className="text-xs text-muted-foreground">이번 주 교환</p>
@@ -44,11 +51,15 @@ export default function PartnerCouponDashboardPage() {
         </div>
         <div className="rounded-xl bg-secondary p-4">
           <p className="text-xs text-muted-foreground">이번 주 수수료</p>
-          <p className="mt-1 text-lg font-bold">{weekPlatformFee.toLocaleString()}₫</p>
+          <p className="mt-1 text-lg font-bold">
+            {feesHidden ? "—" : `${weekPlatformFee.toLocaleString()}₫`}
+          </p>
         </div>
         <div className="rounded-xl bg-secondary p-4">
           <p className="text-xs text-muted-foreground">납부 예정 수수료</p>
-          <p className="mt-1 text-lg font-bold">{pendingPlatformFee.toLocaleString()}₫</p>
+          <p className="mt-1 text-lg font-bold">
+            {feesHidden ? "—" : `${pendingPlatformFee.toLocaleString()}₫`}
+          </p>
         </div>
         <div className="rounded-xl bg-secondary p-4">
           <p className="text-xs text-muted-foreground">다음 정산일</p>

@@ -37,3 +37,4 @@ export function storeSlugForAgencyLoginId(loginId: string): string | undefined {
 export const PARTNER_COUPON_BASE = "/account/partner/coupon";
 
 export const AGENCY_TOKEN_KEY = "hokei_agency_token";
+export const STAFF_TOKEN_KEY = "hokei_staff_token";
