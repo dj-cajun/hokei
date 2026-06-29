@@ -109,3 +109,18 @@ VIETQR_AUTO_APPROVE=true
 ```
 
 `COUPON_INTERNAL_SECRET` 은 **호케이 ↔ coupon API 공유** (서버 간만).
+
+## VietQR 이미지 (Phase G-03)
+
+`GET /orders/:id/payment-qr` 응답에 `vietQrImageUrl`, `bankAcqId` 추가 — 은행 앱 스캔용 `img.vietqr.io`.
+
+## POS 스캔 (Phase G-04)
+
+| 항목 | 값 |
+|------|-----|
+| 스캔 | `POST /pos/scan` |
+| 인증 | `X-Pos-Api-Key: {발급 키}` |
+| 기기 관리 | `GET/POST/DELETE /pos/devices` (Agency JWT + manager) |
+| UI | `/account/partner/coupon/kiosk` · `/pos` |
+
+→ [POS-API.md](./POS-API.md)

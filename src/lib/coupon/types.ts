@@ -37,6 +37,8 @@ export type PaymentQrInfo = {
   transferNote: string;
   autoApproveEnabled?: boolean;
   agencyName?: string;
+  bankAcqId?: string;
+  vietQrImageUrl?: string;
 };
 
 export type PendingCashOrderDto = {

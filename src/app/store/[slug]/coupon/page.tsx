@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { couponServerFetch } from "@/lib/coupon/server-api";
 import { agencyLoginIdForStore, isCouponStore, storeCouponBase } from "@/lib/coupon/config";
 import { COUPON_WALLET_SHORT } from "@/lib/coupon/labels";
+import { ZaloShareButton } from "@/components/coupon/zalo-share-button";
 import type { ProductDto } from "@/lib/coupon/types";
 
 export default async function StoreCouponPage({
@@ -31,6 +32,9 @@ export default async function StoreCouponPage({
       <p className="mt-1 text-sm text-muted-foreground">
         업소 계좌 QR 또는 매장 현금 결제 후 QR로 사용
       </p>
+      <div className="mt-3">
+        <ZaloShareButton slug={slug} />
+      </div>
       <div className="mt-4 space-y-3">
         {products.map((p) => (
           <div

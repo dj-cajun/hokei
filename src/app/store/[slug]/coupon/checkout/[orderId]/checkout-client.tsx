@@ -1,12 +1,12 @@
 "use client";
 
-import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { couponFetch } from "@/lib/coupon/api";
 import { COUPON_WALLET_SHORT } from "@/lib/coupon/labels";
 import { storeCouponBase } from "@/lib/coupon/config";
+import { isZaloInAppBrowser } from "@/lib/coupon/zalo";
 import type { OrderDto, PaymentQrInfo } from "@/lib/coupon/types";
 
 type Props = {
@@ -19,7 +19,12 @@ export function CouponCheckoutClient({ slug, orderId }: Props) {
   const [order, setOrder] = useState<OrderDto | null>(null);
   const [info, setInfo] = useState<PaymentQrInfo | null>(null);
   const [loading, setLoading] = useState(false);
+  const [inZalo, setInZalo] = useState(false);
   const base = storeCouponBase(slug);
+
+  useEffect(() => {
+    setInZalo(isZaloInAppBrowser(navigator.userAgent));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -139,11 +144,14 @@ export function CouponCheckoutClient({ slug, orderId }: Props) {
     );
   }
 
-  const qrValue = `bank://${info.bankAccount}?amount=${info.amount}&note=${info.transferNote}`;
-
   return (
-    <div className="mx-auto w-full max-w-[480px] flex-1 px-4 py-6">
+    <div className={`mx-auto w-full flex-1 px-4 py-6 ${inZalo ? "max-w-[420px]" : "max-w-[480px]"}`}>
       <h1 className="text-xl font-bold">결제하기</h1>
+      {inZalo ? (
+        <p className="mt-2 rounded-lg bg-[#0068ff]/10 px-3 py-2 text-xs text-[#0068ff]">
+          Zalo에서 열림 — 은행 앱으로 송금 후 이 화면을 유지해 주세요.
+        </p>
+      ) : null}
       <p className="mt-2 text-sm">
         <strong>{info.amount.toLocaleString()}₫</strong>을 아래 <strong>업소(대리점)</strong>{" "}
         계좌로 송금해 주세요.
@@ -158,7 +166,20 @@ export function CouponCheckoutClient({ slug, orderId }: Props) {
         </p>
       ) : null}
       <div className="my-6 flex justify-center">
-        <QRCodeSVG value={qrValue} size={200} />
+        {info.vietQrImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={info.vietQrImageUrl}
+            alt="VietQR 결제"
+            width={220}
+            height={220}
+            className="rounded-lg border border-border-light bg-white"
+          />
+        ) : (
+          <div className="flex h-[220px] w-[220px] items-center justify-center rounded-lg border border-dashed border-border-light text-xs text-muted-foreground">
+            VietQR 미지원 은행 — 계좌 정보로 송금
+          </div>
+        )}
       </div>
       <div className="space-y-1 text-sm text-muted-foreground">
         <div>은행: {info.bankName}</div>

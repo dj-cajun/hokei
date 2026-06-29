@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, QrCode, BarChart3, List, Banknote, MessageCircle, ClipboardList } from "lucide-react";
+import { ArrowLeft, QrCode, BarChart3, List, Banknote, MessageCircle, ClipboardList, Monitor, KeyRound } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { PARTNER_COUPON_BASE } from "@/lib/coupon/config";
 import { PartnerCouponMessagesPanel } from "@/components/coupon/partner-coupon-messages-panel";
@@ -11,6 +11,8 @@ export default async function PartnerCouponHubPage() {
 
   const links = [
     { href: `${PARTNER_COUPON_BASE}/scan`, label: "QR 스캐너", icon: QrCode },
+    { href: `${PARTNER_COUPON_BASE}/kiosk`, label: "키오스크 모드", icon: Monitor },
+    { href: `${PARTNER_COUPON_BASE}/pos`, label: "POS 연동", icon: KeyRound },
     { href: `${PARTNER_COUPON_BASE}/orders`, label: "현금 결제", icon: Banknote },
     { href: `${PARTNER_COUPON_BASE}/dashboard`, label: "수수료 대시보드", icon: BarChart3 },
     { href: `${PARTNER_COUPON_BASE}/transactions`, label: "교환 이력", icon: List },
