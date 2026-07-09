@@ -105,6 +105,9 @@ export default async function RootLayout({
       className={`${pretendard.variable} ${pretendard.className} h-full antialiased${darkClass ? ` ${darkClass}` : ""}`}
       suppressHydrationWarning
     >
+      <head>
+        <AdSenseScript />
+      </head>
       <body
         className="flex min-h-full flex-col bg-background pb-12 text-foreground lg:pb-0"
         suppressHydrationWarning
@@ -135,7 +138,6 @@ export default async function RootLayout({
           </ToastProvider>
         </AuthSessionProvider>
         </ThemeProvider>
-        <AdSenseScript />
         <RegisterServiceWorker />
         <Analytics />
       </body>

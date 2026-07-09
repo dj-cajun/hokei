@@ -20,7 +20,17 @@ type AdminPost = {
   isAutomated: boolean;
   isGuest?: boolean;
   authorName: string;
-  category: { label: string };
+  boardLabel?: string;
+  category: { label: string; parent?: { label: string } | null };
+};
+
+type AdminCategory = {
+  id: string;
+  slug: string;
+  label: string;
+  parentId: string | null;
+  parent?: { id: string; label: string; slug: string } | null;
+  _count?: { posts: number };
 };
 
 type AdminComment = {
@@ -33,13 +43,25 @@ type AdminComment = {
   post: { title: string };
 };
 
+type PostFilters = {
+  sectionSlug: string;
+  categoryId: string;
+};
+
 const PAGE_LIMIT = 50;
 const MATCH_LIMIT = 500;
 
-function postsQueryString(q: string, guestOnly: boolean, cursor?: string | null) {
+function postsQueryString(
+  q: string,
+  guestOnly: boolean,
+  filters: PostFilters,
+  cursor?: string | null
+) {
   const params = new URLSearchParams();
   if (q.trim()) params.set("q", q.trim());
   if (guestOnly) params.set("guestOnly", "1");
+  if (filters.categoryId) params.set("categoryId", filters.categoryId);
+  else if (filters.sectionSlug) params.set("section", filters.sectionSlug);
   params.set("limit", String(PAGE_LIMIT));
   if (cursor) params.set("cursor", cursor);
   return params.toString();
@@ -50,6 +72,9 @@ export function ModerationPanel() {
   const [tab, setTab] = useState<Tab>("posts");
   const [q, setQ] = useState("");
   const [guestOnly, setGuestOnly] = useState(false);
+  const [sectionSlug, setSectionSlug] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -59,11 +84,37 @@ export function ModerationPanel() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [acting, setActing] = useState(false);
 
+  const postFilters: PostFilters = { sectionSlug, categoryId };
+  const sections = categories.filter((c) => !c.parentId);
+  const activeSection = sections.find((s) => s.slug === sectionSlug);
+  const subcategories = activeSection
+    ? categories.filter((c) => c.parentId === activeSection.id)
+    : [];
+  const sectionPostCount = (section: AdminCategory) => {
+    const childTotal = categories
+      .filter((c) => c.parentId === section.id)
+      .reduce((sum, c) => sum + (c._count?.posts ?? 0), 0);
+    return (section._count?.posts ?? 0) + childTotal;
+  };
+  const hasPostFilter =
+    Boolean(q.trim()) || guestOnly || Boolean(sectionSlug) || Boolean(categoryId);
+
+  useEffect(() => {
+    void fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data: { categories?: AdminCategory[] }) => {
+        if (data.categories) setCategories(data.categories);
+      })
+      .catch(() => {});
+  }, []);
+
   const loadPosts = useCallback(
     async (
       mode: "replace" | "append" = "replace",
-      cursorForAppend?: string | null
+      cursorForAppend?: string | null,
+      filtersOverride?: PostFilters
     ) => {
+      const filters = filtersOverride ?? { sectionSlug, categoryId };
       if (mode === "replace") {
         setLoading(true);
         setSelected(new Set());
@@ -73,7 +124,7 @@ export function ModerationPanel() {
       try {
         const cursor = mode === "append" ? cursorForAppend : null;
         const res = await fetch(
-          `/api/admin/posts?${postsQueryString(q, guestOnly, cursor)}`
+          `/api/admin/posts?${postsQueryString(q, guestOnly, filters, cursor)}`
         );
         const data = (await res.json()) as {
           posts?: AdminPost[];
@@ -86,7 +137,7 @@ export function ModerationPanel() {
 
         if (mode === "replace") {
           const idRes = await fetch(
-            `/api/admin/posts/ids?${postsQueryString(q, guestOnly)}&limit=${MATCH_LIMIT}`
+            `/api/admin/posts/ids?${postsQueryString(q, guestOnly, filters)}&limit=${MATCH_LIMIT}`
           );
           const idData = (await idRes.json()) as { total?: number };
           if (idRes.ok) setMatchTotal(idData.total ?? null);
@@ -96,7 +147,7 @@ export function ModerationPanel() {
         setLoadingMore(false);
       }
     },
-    [q, guestOnly]
+    [q, guestOnly, sectionSlug, categoryId]
   );
 
   const loadComments = useCallback(async () => {
@@ -150,7 +201,7 @@ export function ModerationPanel() {
     setActing(true);
     try {
       const res = await fetch(
-        `/api/admin/posts/ids?${postsQueryString(q, guestOnly)}&limit=${MATCH_LIMIT}`
+        `/api/admin/posts/ids?${postsQueryString(q, guestOnly, postFilters)}&limit=${MATCH_LIMIT}`
       );
       const data = (await res.json()) as {
         ids?: string[];
@@ -178,8 +229,25 @@ export function ModerationPanel() {
     return {
       q: q.trim() || undefined,
       guestOnly: guestOnly || undefined,
+      section: sectionSlug || undefined,
+      categoryId: categoryId || undefined,
       max: MATCH_LIMIT,
     };
+  }
+
+  function selectSection(slug: string) {
+    const next = { sectionSlug: slug, categoryId: "" };
+    setSectionSlug(slug);
+    setCategoryId("");
+    setSelected(new Set());
+    if (tab === "posts") void loadPosts("replace", null, next);
+  }
+
+  function selectSubcategory(id: string) {
+    const next = { sectionSlug, categoryId: id };
+    setCategoryId(id);
+    setSelected(new Set());
+    if (tab === "posts") void loadPosts("replace", null, next);
   }
 
   async function bulkPost(
@@ -353,10 +421,91 @@ export function ModerationPanel() {
             </Button>
           </div>
 
-          {tab === "posts" && matchTotal !== null && q.trim() && (
+          {tab === "posts" && sections.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">게시판</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => selectSection("")}
+                  className={cn(
+                    "rounded-xl px-3 py-1.5 text-xs font-medium",
+                    !sectionSlug
+                      ? "bg-accent text-primary"
+                      : "bg-surface text-muted-foreground"
+                  )}
+                >
+                  전체
+                </button>
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => selectSection(section.slug)}
+                    className={cn(
+                      "rounded-xl px-3 py-1.5 text-xs font-medium",
+                      sectionSlug === section.slug && !categoryId
+                        ? "bg-accent text-primary"
+                        : sectionSlug === section.slug
+                          ? "bg-accent/60 text-primary"
+                          : "bg-surface text-muted-foreground"
+                    )}
+                  >
+                    {section.label}
+                    <span className="ml-1 opacity-70">
+                      ({sectionPostCount(section)})
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {activeSection && subcategories.length > 0 && (
+                <div className="flex flex-wrap gap-2 pl-1">
+                  <button
+                    type="button"
+                    onClick={() => selectSection(sectionSlug)}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 text-xs",
+                      !categoryId
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-surface"
+                    )}
+                  >
+                    {activeSection.label} 전체
+                  </button>
+                  {subcategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => selectSubcategory(cat.id)}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1 text-xs",
+                        categoryId === cat.id
+                          ? "bg-secondary text-foreground"
+                          : "text-muted-foreground hover:bg-surface"
+                      )}
+                    >
+                      {cat.label}
+                      {cat._count?.posts != null && (
+                        <span className="ml-1 opacity-70">
+                          ({cat._count.posts})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "posts" && matchTotal !== null && hasPostFilter && (
             <p className="text-xs text-muted-foreground">
-              검색 결과 약 {matchTotal.toLocaleString()}건
+              조건에 맞는 글 약 {matchTotal.toLocaleString()}건
               {guestOnly ? " (비회원)" : ""}
+              {categoryId
+                ? ` · ${subcategories.find((c) => c.id === categoryId)?.label ?? "카테고리"}`
+                : sectionSlug
+                  ? ` · ${activeSection?.label ?? sectionSlug}`
+                  : ""}
             </p>
           )}
 
@@ -371,14 +520,14 @@ export function ModerationPanel() {
             >
               {allVisibleSelected ? "현재 목록 선택 해제" : "현재 목록 전체 선택"}
             </Button>
-            {tab === "posts" && q.trim() && (
+            {tab === "posts" && hasPostFilter && (
               <Button
                 size="sm"
                 variant="outline"
                 disabled={acting}
                 onClick={() => void selectAllMatching()}
               >
-                검색 결과 전체 선택
+                조건 일치 전체 선택
               </Button>
             )}
             {selected.size > 0 && (
@@ -388,7 +537,7 @@ export function ModerationPanel() {
             )}
           </div>
 
-          {(selected.size > 0 || (tab === "posts" && q.trim())) && (
+          {(selected.size > 0 || (tab === "posts" && hasPostFilter)) && (
             <div className="flex flex-wrap gap-2 rounded-2xl bg-surface p-3">
               {selected.size > 0 && (
                 <span className="text-sm text-muted-foreground">
@@ -430,14 +579,14 @@ export function ModerationPanel() {
                     <Trash2 className="mr-1 h-4 w-4" />
                     선택 영구 삭제
                   </Button>
-                  {q.trim() && (
+                  {hasPostFilter && (
                     <Button
                       size="sm"
                       variant="destructive"
                       disabled={acting}
                       onClick={() => void bulkPost("DELETE", { useQuery: true })}
                     >
-                      검색 결과 일괄 삭제
+                      조건 일치 일괄 삭제
                     </Button>
                   )}
                 </>
@@ -508,7 +657,10 @@ export function ModerationPanel() {
                         </span>
                       )}
                       <span className="text-xs text-muted-foreground">
-                        {p.category.label}
+                        {p.boardLabel ??
+                          (p.category.parent
+                            ? `${p.category.parent.label} · ${p.category.label}`
+                            : p.category.label)}
                       </span>
                     </div>
                     <p className="mt-1 font-medium">{p.title}</p>
@@ -575,7 +727,9 @@ export function ModerationPanel() {
               ((tab === "posts" && posts.length === 0) ||
                 (tab === "comments" && comments.length === 0)) && (
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  검색 후 목록이 표시됩니다.
+                  {tab === "posts" && !hasPostFilter
+                    ? "게시판을 선택하거나 검색하면 목록이 표시됩니다."
+                    : "조건에 맞는 항목이 없습니다."}
                 </p>
               )}
           </div>

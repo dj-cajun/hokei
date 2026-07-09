@@ -13,6 +13,8 @@ const querySchema = z.object({
   storeName: z.string().max(120).optional(),
   guestOnly: z.boolean().optional(),
   moderation: z.enum(["VISIBLE", "HIDDEN", "REMOVED", "ALL"]).optional(),
+  section: z.string().max(80).optional(),
+  categoryId: z.string().cuid().optional(),
   max: z.number().int().min(1).max(500).optional(),
 });
 
@@ -38,6 +40,8 @@ async function resolveBulkPostIds(
     storeName: query?.storeName,
     guestOnly: query?.guestOnly,
     moderation: (query?.moderation ?? "ALL") as ModerationStatus | "ALL",
+    sectionSlug: query?.section,
+    categoryId: query?.categoryId,
   });
   const max = query?.max ?? 200;
 

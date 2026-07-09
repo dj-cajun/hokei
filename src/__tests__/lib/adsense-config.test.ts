@@ -12,9 +12,10 @@ describe("adsense-config", () => {
     process.env = { ...envBackup };
   });
 
-  it("is disabled without client id", () => {
+  it("is enabled with default publisher when env is unset", () => {
     delete process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
-    expect(isAdSenseEnabled()).toBe(false);
+    expect(isAdSenseEnabled()).toBe(true);
+    expect(getAdSenseClientId()).toBe("ca-pub-7386903584540643");
   });
 
   it("resolves home and article slots", () => {

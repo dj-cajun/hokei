@@ -5,7 +5,29 @@ export type AdminPostSearchParams = {
   storeName?: string;
   moderation?: ModerationStatus | "ALL";
   guestOnly?: boolean;
+  /** 1depth 섹션 slug (community, promo, news …) */
+  sectionSlug?: string;
+  /** leaf 카테고리 id */
+  categoryId?: string;
 };
+
+export function parseAdminPostSearchParams(
+  searchParams: URLSearchParams
+): AdminPostSearchParams {
+  const moderation = searchParams.get("moderation") as
+    | ModerationStatus
+    | "ALL"
+    | null;
+
+  return {
+    q: searchParams.get("q")?.trim() || undefined,
+    storeName: searchParams.get("storeName")?.trim() || undefined,
+    moderation: moderation ?? undefined,
+    guestOnly: searchParams.get("guestOnly") === "1",
+    sectionSlug: searchParams.get("section")?.trim() || undefined,
+    categoryId: searchParams.get("categoryId")?.trim() || undefined,
+  };
+}
 
 export function buildAdminPostWhere(
   params: AdminPostSearchParams
@@ -20,6 +42,16 @@ export function buildAdminPostWhere(
   if (params.guestOnly) {
     where.authorId = null;
     where.guestName = { not: null };
+  }
+  if (params.categoryId) {
+    where.categoryId = params.categoryId;
+  } else if (params.sectionSlug) {
+    where.category = {
+      OR: [
+        { parent: { slug: params.sectionSlug } },
+        { slug: params.sectionSlug },
+      ],
+    };
   }
   if (q) {
     where.OR = [

@@ -1,5 +1,8 @@
 export type AdSenseSlotKind = "home" | "article" | "feed";
 
+/** 공개 Publisher ID — env 미설정 시에도 심사·ads.txt·메타 태그 동작 */
+export const ADSENSE_PUBLISHER_ID = "ca-pub-7386903584540643";
+
 const SLOT_ENV_KEYS: Record<AdSenseSlotKind, string> = {
   home: "NEXT_PUBLIC_ADSENSE_SLOT_HOME",
   article: "NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE",
@@ -12,7 +15,8 @@ const SLOT_FALLBACK: Partial<Record<AdSenseSlotKind, AdSenseSlotKind>> = {
 };
 
 export function getAdSenseClientId(): string | undefined {
-  return process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || undefined;
+  const fromEnv = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim();
+  return fromEnv || ADSENSE_PUBLISHER_ID;
 }
 
 export function getAdSenseSlot(kind: AdSenseSlotKind): string | undefined {

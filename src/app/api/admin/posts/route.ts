@@ -1,9 +1,11 @@
 import { enforcePreset } from "@/lib/api/enforce-rate-limit";
 import { apiSuccess } from "@/lib/api-response";
-import { buildAdminPostWhere } from "@/lib/admin/post-search-where";
+import {
+  buildAdminPostWhere,
+  parseAdminPostSearchParams,
+} from "@/lib/admin/post-search-where";
 import { requireAdminApi } from "@/lib/admin/require-admin-api";
 import { prisma } from "@/lib/prisma";
-import type { ModerationStatus } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -14,22 +16,11 @@ export async function GET(request: Request) {
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim() ?? "";
-  const storeName = searchParams.get("storeName")?.trim() ?? "";
-  const guestOnly = searchParams.get("guestOnly") === "1";
-  const moderation = searchParams.get("moderation") as
-    | ModerationStatus
-    | "ALL"
-    | null;
+  const filters = parseAdminPostSearchParams(searchParams);
   const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit")) || 30));
   const cursor = searchParams.get("cursor") ?? undefined;
 
-  const where = buildAdminPostWhere({
-    q: q || undefined,
-    storeName: storeName || undefined,
-    moderation: moderation ?? undefined,
-    guestOnly,
-  });
+  const where = buildAdminPostWhere(filters);
 
   const posts = await prisma.post.findMany({
     where,
@@ -47,7 +38,13 @@ export async function GET(request: Request) {
       moderationStatus: true,
       status: true,
       sourceUrl: true,
-      category: { select: { label: true, slug: true } },
+      category: {
+        select: {
+          label: true,
+          slug: true,
+          parent: { select: { label: true, slug: true } },
+        },
+      },
       author: { select: { name: true, email: true } },
       guestName: true,
     },
@@ -62,6 +59,9 @@ export async function GET(request: Request) {
       publishedAt: p.publishedAt.toISOString(),
       authorName: p.author?.name ?? p.guestName ?? "익명",
       isGuest: !p.author && Boolean(p.guestName),
+      boardLabel: p.category.parent
+        ? `${p.category.parent.label} · ${p.category.label}`
+        : p.category.label,
     })),
     nextCursor: hasMore ? items[items.length - 1]?.id : null,
   });
