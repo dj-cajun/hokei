@@ -14,6 +14,7 @@ import { ToastProvider } from "@/components/providers/toast-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { WriteFab } from "@/components/layout/write-fab";
 import { AdSenseScript } from "@/components/ads/adsense-script";
+import { getAdSenseClientId } from "@/lib/ads/adsense-config";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { resolveSiteUrl } from "@/lib/site-url";
@@ -25,11 +26,15 @@ import {
 
 const siteUrl = resolveSiteUrl();
 const googleVerification = getGoogleSiteVerification();
+const adsenseClient = getAdSenseClientId();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   ...(googleVerification
     ? { verification: { google: googleVerification } }
+    : {}),
+  ...(adsenseClient
+    ? { other: { "google-adsense-account": adsenseClient } }
     : {}),
   title: "호케이 Hokei - 호치민 한국 교민 포털",
   description:

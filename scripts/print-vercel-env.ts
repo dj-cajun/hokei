@@ -21,8 +21,9 @@ const recommended = [
 
 const optional = [
   ["NEXT_PUBLIC_ADSENSE_CLIENT", "Google AdSense ca-pub-xxx"],
-  ["NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE", "AdSense 글 상세 슬롯 ID"],
   ["NEXT_PUBLIC_ADSENSE_SLOT_HOME", "AdSense 홈 슬롯 ID"],
+  ["NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE", "AdSense 글·가이드 상세 슬롯 ID"],
+  ["NEXT_PUBLIC_ADSENSE_SLOT_FEED", "AdSense 목록 슬롯 (선택, 없으면 HOME)"],
   ["GOOGLE_SITE_VERIFICATION", "Search Console HTML 태그 content 값"],
   ["SENTRY_DSN", "Sentry DSN (javascript-nextjs)"],
   ["NEXT_PUBLIC_SENTRY_DSN", "Sentry 클라이언트 DSN (동일 URL)"],

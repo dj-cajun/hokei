@@ -5,11 +5,12 @@ import {
   getAdSenseClientId,
   getAdSenseSlot,
   isAdSenseEnabled,
+  type AdSenseSlotKind,
 } from "@/lib/ads/adsense-config";
 import { cn } from "@/lib/utils";
 
 type AdSenseUnitProps = {
-  slotKind: "article" | "home";
+  slotKind: AdSenseSlotKind;
   className?: string;
 };
 

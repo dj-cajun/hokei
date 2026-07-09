@@ -11,6 +11,7 @@ import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { resolveSectionSlugForCategory } from "@/lib/category-tree";
 import { postCreateBodySchema } from "@/lib/validation/post-create";
 import { enforceCanWrite } from "@/lib/user-moderation";
+import { rejectIfBannedWords } from "@/lib/moderation/banned-words";
 import {
   assertPartnerOwnerPromoStoreName,
   revalidatePromoStoreTimeline,
@@ -102,6 +103,11 @@ export async function POST(request: Request) {
 
     const summary = content.replace(/\s+/g, " ").trim().slice(0, 160);
     const firstImage = attachments.find((a) => a.kind === "IMAGE");
+
+    const banned = await rejectIfBannedWords([title, content, storeName ?? ""]);
+    if (!banned.ok) {
+      return apiError(banned.message, 400);
+    }
 
     const post = await prisma.post.create({
       data: {

@@ -7,6 +7,8 @@ import type { ModerationStatus } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
+const MAX_IDS = 500;
+
 export async function GET(request: Request) {
   const limited = await enforcePreset(request, "general");
   if (limited) return limited;
@@ -21,8 +23,10 @@ export async function GET(request: Request) {
     | ModerationStatus
     | "ALL"
     | null;
-  const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit")) || 30));
-  const cursor = searchParams.get("cursor") ?? undefined;
+  const limit = Math.min(
+    MAX_IDS,
+    Math.max(1, Number(searchParams.get("limit")) || MAX_IDS)
+  );
 
   const where = buildAdminPostWhere({
     q: q || undefined,
@@ -31,38 +35,18 @@ export async function GET(request: Request) {
     guestOnly,
   });
 
-  const posts = await prisma.post.findMany({
+  const rows = await prisma.post.findMany({
     where,
-    take: limit + 1,
-    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    take: limit,
     orderBy: { publishedAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      publishedAt: true,
-      views: true,
-      commentCount: true,
-      isAutomated: true,
-      isNotice: true,
-      moderationStatus: true,
-      status: true,
-      sourceUrl: true,
-      category: { select: { label: true, slug: true } },
-      author: { select: { name: true, email: true } },
-      guestName: true,
-    },
+    select: { id: true },
   });
 
-  const hasMore = posts.length > limit;
-  const items = hasMore ? posts.slice(0, limit) : posts;
+  const total = await prisma.post.count({ where });
 
   return apiSuccess({
-    posts: items.map((p) => ({
-      ...p,
-      publishedAt: p.publishedAt.toISOString(),
-      authorName: p.author?.name ?? p.guestName ?? "익명",
-      isGuest: !p.author && Boolean(p.guestName),
-    })),
-    nextCursor: hasMore ? items[items.length - 1]?.id : null,
+    ids: rows.map((r) => r.id),
+    total,
+    capped: total > limit,
   });
 }

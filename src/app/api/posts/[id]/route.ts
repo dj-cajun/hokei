@@ -28,6 +28,7 @@ import { isValidRegion } from "@/lib/regions";
 import { revalidatePostCaches } from "@/lib/revalidate-content";
 import { deleteUploadFile } from "@/lib/upload";
 import { enforceCanWrite } from "@/lib/user-moderation";
+import { rejectIfBannedWords } from "@/lib/moderation/banned-words";
 
 const attachmentSchema = z.object({
   url: z.string().min(1),
@@ -129,6 +130,14 @@ export async function PATCH(request: Request, context: RouteContext) {
       content !== undefined
         ? content.replace(/\s+/g, " ").trim().slice(0, 160)
         : undefined;
+
+    const bannedTexts = [title ?? post.title, content ?? post.content].filter(
+      (v): v is string => Boolean(v)
+    );
+    const banned = await rejectIfBannedWords(bannedTexts);
+    if (!banned.ok) {
+      return apiError(banned.message, 400);
+    }
 
     const firstImage = attachments?.find((a) => a.kind === "IMAGE");
 

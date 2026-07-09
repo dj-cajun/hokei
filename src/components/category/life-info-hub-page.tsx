@@ -5,6 +5,7 @@ import { TextListItem } from "@/components/home/news-list-item";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PromoHubBannerBar } from "@/components/partner/promo-hub-banner-bar";
 import type { PremiumPartnerNameItem } from "@/components/partner/premium-partner-name-grid";
 import { LIFE_INFO_HUB_HREF } from "@/lib/life-info-hub";
@@ -47,6 +48,8 @@ export function LifeInfoHubPage({
         </LifeInfoHubStrip>
 
         <PromoHubBannerBar premiumStores={premiumStores} />
+
+        <AdSenseUnit slotKind="feed" className="my-1 px-1" />
 
         <section className="bg-surface lg:rounded-xl">
           <header className="flex items-center justify-between border-b border-[#f3f4f6] px-2 py-1.5">

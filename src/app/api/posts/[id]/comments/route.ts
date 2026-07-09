@@ -12,6 +12,7 @@ import { isCommentOwner } from "@/lib/post-permissions";
 import { visibleCommentWhere } from "@/lib/moderation";
 import { notifyPostComment } from "@/lib/notifications";
 import { enforceCanWrite } from "@/lib/user-moderation";
+import { rejectIfBannedWords } from "@/lib/moderation/banned-words";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(COMMENT_MAX_LENGTH),
@@ -110,6 +111,11 @@ export async function POST(request: Request, context: RouteContext) {
       if (parent.parentId) {
         return apiError("답글에는 답글을 달 수 없습니다.", 400);
       }
+    }
+
+    const banned = await rejectIfBannedWords([content]);
+    if (!banned.ok) {
+      return apiError(banned.message, 400);
     }
 
     const comment = await prisma.comment.create({

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Download, ExternalLink } from "lucide-react";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { Sidebar } from "@/components/layout/sidebar";
 import { LifeAudioButton } from "@/components/life/life-audio-button";
 import { AdminLifeGuideDeleteButton } from "@/components/life/admin-life-guide-delete-button";
@@ -156,6 +157,8 @@ export default async function LifeDetailPage({ params }: PageProps) {
               댓글·피드백 기능은 곧 연결됩니다.
             </p>
           )}
+
+          <AdSenseUnit slotKind="article" className="mt-6" />
         </article>
         <div className="border-t border-border-light px-3 py-3 text-center">
           <Link href={listHref} className="text-xs text-primary hover:underline">

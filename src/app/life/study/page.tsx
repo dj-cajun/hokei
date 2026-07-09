@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { Sidebar } from "@/components/layout/sidebar";
 import { LifeGuideStudyList } from "@/components/life/life-guide-study-list";
 import { isDatabaseAvailable } from "@/lib/database-available";
@@ -32,6 +33,7 @@ export default async function LifeStudyPage() {
             </Link>
           </div>
         </header>
+        <AdSenseUnit slotKind="feed" className="px-3" />
         <LifeGuideStudyList items={items} emptyMessage="아직 등록된 표현이 없습니다." />
         <div className="flex justify-center gap-4 border-t border-border-light px-3 py-3 text-center">
           <Link href="/life" className="text-xs text-primary hover:underline">
