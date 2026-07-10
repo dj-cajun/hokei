@@ -32,9 +32,12 @@ export function createPostgresPrisma(connectionString: string): PrismaClient {
     // dev: 동시 4쿼리가 각각 새 연결을 열면 라오스→Neon에서 타임아웃 — 풀 작게 유지
     max: isDev ? 3 : 10,
     idleTimeoutMillis: 30_000,
-    ssl: connectionString.includes("neon.tech")
-      ? { rejectUnauthorized: false }
-      : undefined,
+    ssl:
+      connectionString.includes("neon.tech") ||
+      connectionString.includes("supabase.co") ||
+      connectionString.includes("pooler.supabase.com")
+        ? { rejectUnauthorized: false }
+        : undefined,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
