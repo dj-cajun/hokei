@@ -91,8 +91,8 @@ export function PostLikeButton({
     >
       <Heart
         className={cn(
-          "h-4 w-4",
-          liked && "fill-rose-500 text-rose-500",
+          "h-4 w-4 fill-none",
+          liked && "text-rose-500",
           bounce && "animate-heart-bounce"
         )}
       />

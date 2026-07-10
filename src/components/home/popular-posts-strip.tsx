@@ -48,7 +48,7 @@ export function PopularPostsStrip({
                 </p>
                 <p className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span className="inline-flex items-center gap-0.5 text-rose-600">
-                    <Heart className="h-3 w-3 fill-rose-500" />
+                    <Heart className="h-3 w-3 fill-none" />
                     {item.likes ?? 0}
                   </span>
                   <span>조회 {item.views}</span>
