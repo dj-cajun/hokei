@@ -11,14 +11,31 @@ function isManagedCloudPostgres(connectionString: string): boolean {
 }
 
 /**
- * pg v8+ SSL 경고 방지.
- * Neon/Supabase 풀러는 중간 인증서 때문에 verify-full이 실패하므로 require 유지.
+ * pg v8.21+ 는 sslmode=require|prefer|verify-ca 를 verify-full 로 취급한다.
+ * 그 경우 Pool 의 ssl.rejectUnauthorized=false 가 무시되어(빈 ssl 객체)
+ * Supabase/Neon 중간 인증서에서 TLS 실패한다 → managed 는 no-verify 로 고정.
  */
 export function normalizePostgresConnectionString(
   connectionString: string
 ): string {
   if (isManagedCloudPostgres(connectionString)) {
-    return connectionString;
+    try {
+      const url = new URL(connectionString);
+      url.searchParams.set("sslmode", "no-verify");
+      return url.toString();
+    } catch {
+      if (/[?&]sslmode=/.test(connectionString)) {
+        return connectionString.replace(
+          /([?&]sslmode=)[^&]*/g,
+          "$1no-verify"
+        );
+      }
+      return (
+        connectionString +
+        (connectionString.includes("?") ? "&" : "?") +
+        "sslmode=no-verify"
+      );
+    }
   }
   try {
     const url = new URL(connectionString);
