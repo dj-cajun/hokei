@@ -66,6 +66,16 @@ API는 User upsert 후 쿠폰·주문 처리.
 
 `PartnerStore.ownerId` 미설정 시 대화 생성 생략 (`skipped: true`).
 
+## 입금완료 신청 → 사장님 알림
+
+| 항목 | 값 |
+|------|-----|
+| Trigger | coupon API `confirmDeposit` |
+| 호출 | `POST {BUYER_URL}/api/internal/coupon/order-pending` |
+| Header | `X-Coupon-Internal-Secret: {COUPON_INTERNAL_SECRET}` |
+| Body | `{ orderId, buyerUserId, agencyLoginId, productName, amount }` |
+| 결과 | `PartnerStore.ownerId` 에 SYSTEM 알림 → Partner 입금 승인 화면 링크 |
+
 ## 현지 직원 · 일 마감 (Phase E)
 
 | 항목 | 값 |

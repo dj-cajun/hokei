@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { storeSlugForAgencyLoginId } from "@/lib/coupon/config";
-import { ensureCouponOrderConversation } from "@/lib/coupon/order-conversation";
+import { PARTNER_COUPON_BASE, storeSlugForAgencyLoginId } from "@/lib/coupon/config";
 import { createNotification } from "@/lib/notifications";
 import { log } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 const bodySchema = z.object({
@@ -11,7 +11,6 @@ const bodySchema = z.object({
   agencyLoginId: z.string().min(1),
   productName: z.string().min(1),
   amount: z.number().positive(),
-  paymentMethod: z.string().min(1),
 });
 
 function verifyInternalSecret(request: Request): boolean {
@@ -34,42 +33,36 @@ export async function POST(request: Request) {
     );
   }
 
+  const { orderId, agencyLoginId, productName, amount } = parsed.data;
+  const storeSlug = storeSlugForAgencyLoginId(agencyLoginId);
+  if (!storeSlug) {
+    return NextResponse.json({ success: true, skipped: true, reason: "unknown_agency" });
+  }
+
+  const store = await prisma.partnerStore.findFirst({
+    where: { slug: storeSlug, ownerId: { not: null } },
+    select: { ownerId: true, name: true },
+  });
+
+  if (!store?.ownerId) {
+    return NextResponse.json({ success: true, skipped: true, reason: "no_partner_owner" });
+  }
+
   try {
-    const result = await ensureCouponOrderConversation(parsed.data);
-    if (!result) {
-      return NextResponse.json({
-        success: true,
-        skipped: true,
-        reason: "no_partner_owner",
-      });
-    }
-
-    const storeSlug = storeSlugForAgencyLoginId(parsed.data.agencyLoginId);
-    const walletHref = storeSlug
-      ? `/store/${storeSlug}/coupon/wallet`
-      : "/store/2d-sketch-cafe/coupon/wallet";
-
     await createNotification({
-      userId: parsed.data.buyerUserId,
+      userId: store.ownerId,
       type: "SYSTEM",
-      title: "쿠폰이 발급되었습니다",
-      body: `${parsed.data.productName} — 쿠폰함에서 QR을 사용해 주세요.`,
-      href: walletHref,
+      title: "입금 확인 대기",
+      body: `${productName} ${amount.toLocaleString("vi-VN")}₫ — 손님이 입금완료를 신청했습니다.`,
+      href: `${PARTNER_COUPON_BASE}/orders`,
     });
 
-    return NextResponse.json({
-      success: true,
-      conversationId: result.conversationId,
-      created: result.created,
-    });
+    return NextResponse.json({ success: true, orderId, notifiedUserId: store.ownerId });
   } catch (err) {
-    log("error", "coupon order-paid conversation failed", {
-      orderId: parsed.data.orderId,
+    log("error", "coupon order-pending notify failed", {
+      orderId,
       error: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
-      { message: "대화를 생성하지 못했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "알림을 보내지 못했습니다." }, { status: 500 });
   }
 }
