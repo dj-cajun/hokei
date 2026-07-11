@@ -3,6 +3,14 @@
 export const COUPON_API_URL =
   process.env.NEXT_PUBLIC_COUPON_API_URL ?? "http://localhost:3020";
 
+/** 인프로세스 쿠폰 API 사용 여부 (env만 검사 — 클라이언트 번들 안전) */
+export function useInProcessCouponApi(): boolean {
+  if (process.env.COUPON_IN_PROCESS === "false") return false;
+  const external = process.env.NEXT_PUBLIC_COUPON_API_URL?.trim();
+  if (process.env.COUPON_IN_PROCESS === "true") return true;
+  return !external;
+}
+
 export type CouponStoreEntry = {
   slug: string;
   agencyLoginId: string;

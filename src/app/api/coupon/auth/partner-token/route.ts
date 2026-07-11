@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { agencyLoginIdForStore, COUPON_API_URL, isCouponStore } from "@/lib/coupon/config";
+import { handleCouponRequest, useInProcessCouponApi } from "@/lib/coupon/server";
 import { getPartnerStoreByOwnerId } from "@/lib/partner/queries";
 import { NextResponse } from "next/server";
 
@@ -28,6 +29,33 @@ export async function POST() {
       { message: "COUPON_INTERNAL_SECRET 미설정" },
       { status: 503 },
     );
+  }
+
+  if (useInProcessCouponApi()) {
+    const result = await handleCouponRequest(
+      "POST",
+      "auth/hokei-partner",
+      { "x-coupon-internal-secret": internalSecret },
+      { agencyLoginId, hokeiUserId: session.user.id },
+    );
+    const data = result.body as {
+      success?: boolean;
+      token?: string;
+      agency?: { name: string };
+      message?: string;
+    };
+    if (result.status >= 400 || !data.success || !data.token) {
+      return NextResponse.json(
+        { message: data.message ?? "쿠폰 토큰 발급 실패" },
+        { status: result.status >= 400 ? result.status : 502 },
+      );
+    }
+    return NextResponse.json({
+      success: true,
+      token: data.token,
+      agencyName: data.agency?.name,
+      storeSlug: store.slug,
+    });
   }
 
   const res = await fetch(`${COUPON_API_URL}/auth/hokei-partner`, {

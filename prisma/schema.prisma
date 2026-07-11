@@ -78,6 +78,9 @@ model User {
   sentMessages      DirectMessage[]
   lifeGuides        LifeGuide[]
   partnerStores     PartnerStore[]
+  couponOrders      CouponOrder[]
+  couponWalletItems CouponWalletItem[]
+  couponRedemptionTokens CouponRedemptionToken[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
@@ -563,4 +566,231 @@ model NewsIngestRun {
   durationMs   Int?
   triggeredBy  String?
   timezone     String   @default("Asia/Ho_Chi_Minh")
+}
+
+// --- O2O Coupon (merged from coupon-pilot) ---
+
+enum CouponPaymentMethod {
+  bank_qr
+  cash_at_store
+}
+
+enum CouponOrderStatus {
+  pending_payment
+  payment_pending_review
+  paid
+  cancelled
+}
+
+enum CouponWalletStatus {
+  issued
+  redeemed
+  expired
+  cancelled
+}
+
+enum CouponSettlementStatus {
+  pending
+  completed
+  failed
+}
+
+enum CouponStaffRole {
+  cashier
+  scanner
+  manager
+}
+
+enum CouponAuditAction {
+  staff_login
+  redeemed
+  cash_confirmed
+  close_day
+}
+
+model CouponAgency {
+  id                String   @id @default(uuid())
+  name              String
+  loginId           String   @unique @map("login_id")
+  passwordHash      String   @map("password_hash")
+  balance           Decimal  @default(0) @db.Decimal(12, 2)
+  commissionFixed   Decimal  @default(3000) @map("commission_fixed") @db.Decimal(12, 2)
+  commissionPercent Decimal? @map("commission_percent") @db.Decimal(5, 2)
+  bankName          String?  @map("bank_name")
+  bankAccount       String?  @map("bank_account")
+  bankHolder        String?  @map("bank_holder")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  products      CouponProduct[]
+  transactions  CouponPlatformTxn[]
+  settlements   CouponSettlement[]
+  usedTokens    CouponRedemptionToken[] @relation("CouponRedemptionUsedBy")
+  staff         CouponAgencyStaff[]
+  auditLogs     CouponAuditLog[]
+  posDevices    CouponPosDevice[]
+
+  @@map("coupon_agencies")
+}
+
+model CouponPosDevice {
+  id         String    @id @default(uuid())
+  agencyId   String    @map("agency_id")
+  name       String
+  apiKeyHash String    @map("api_key_hash")
+  lastUsedAt DateTime? @map("last_used_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  agency CouponAgency @relation(fields: [agencyId], references: [id])
+
+  @@index([agencyId, isActive])
+  @@map("coupon_pos_devices")
+}
+
+model CouponProduct {
+  id          String   @id @default(uuid())
+  agencyId    String   @map("agency_id")
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(12, 2)
+  imageUrl    String?  @map("image_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  agency  CouponAgency       @relation(fields: [agencyId], references: [id])
+  orders  CouponOrder[]
+  walletItems CouponWalletItem[]
+
+  @@index([agencyId])
+  @@map("coupon_products")
+}
+
+model CouponOrder {
+  id            String              @id @default(uuid())
+  userId        String              @map("user_id")
+  productId     String              @map("product_id")
+  amount        Decimal             @db.Decimal(12, 2)
+  status        CouponOrderStatus   @default(pending_payment)
+  paymentMethod CouponPaymentMethod @default(bank_qr) @map("payment_method")
+  paymentRef    String?             @map("payment_ref")
+  paidAt        DateTime?           @map("paid_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  buyer   User           @relation(fields: [userId], references: [id])
+  product CouponProduct  @relation(fields: [productId], references: [id])
+  walletItem CouponWalletItem?
+
+  @@index([userId])
+  @@map("coupon_orders")
+}
+
+model CouponWalletItem {
+  id         String             @id @default(uuid())
+  userId     String             @map("user_id")
+  productId  String             @map("product_id")
+  orderId    String?            @unique @map("order_id")
+  status     CouponWalletStatus @default(issued)
+  issuedAt   DateTime           @default(now()) @map("issued_at")
+  redeemedAt DateTime?          @map("redeemed_at")
+  expiresAt  DateTime?          @map("expires_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+
+  buyer            User                    @relation(fields: [userId], references: [id])
+  product          CouponProduct           @relation(fields: [productId], references: [id])
+  order            CouponOrder?            @relation(fields: [orderId], references: [id])
+  redemptionTokens CouponRedemptionToken[]
+  platformTxn      CouponPlatformTxn?
+
+  @@index([userId, status])
+  @@map("coupon_wallet_items")
+}
+
+model CouponRedemptionToken {
+  id             String    @id @default(uuid())
+  jti            String    @unique
+  walletItemId   String    @map("wallet_item_id")
+  userId         String    @map("user_id")
+  expiresAt      DateTime  @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  usedAt         DateTime? @map("used_at")
+  usedByAgencyId String?   @map("used_by_agency_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  walletItem   CouponWalletItem @relation(fields: [walletItemId], references: [id])
+  buyer        User             @relation(fields: [userId], references: [id])
+  usedByAgency CouponAgency?    @relation("CouponRedemptionUsedBy", fields: [usedByAgencyId], references: [id])
+
+  @@index([walletItemId])
+  @@map("coupon_redemption_tokens")
+}
+
+model CouponPlatformTxn {
+  id           String    @id @default(uuid())
+  agencyId     String    @map("agency_id")
+  walletItemId String    @unique @map("wallet_item_id")
+  amount       Decimal   @db.Decimal(12, 2)
+  productPrice Decimal?  @map("product_price") @db.Decimal(12, 2)
+  productName  String    @map("product_name")
+  occurredAt   DateTime  @map("occurred_at")
+  settlementId String?   @map("settlement_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  agency       CouponAgency      @relation(fields: [agencyId], references: [id])
+  walletItem   CouponWalletItem  @relation(fields: [walletItemId], references: [id])
+  settlement   CouponSettlement? @relation(fields: [settlementId], references: [id])
+
+  @@index([agencyId, occurredAt])
+  @@index([settlementId])
+  @@map("coupon_platform_txns")
+}
+
+model CouponSettlement {
+  id               String                 @id @default(uuid())
+  agencyId         String                 @map("agency_id")
+  periodStart      DateTime               @map("period_start") @db.Date
+  periodEnd        DateTime               @map("period_end") @db.Date
+  totalAmount      Decimal                @map("total_amount") @db.Decimal(12, 2)
+  transactionCount Int                    @map("transaction_count")
+  status           CouponSettlementStatus @default(pending)
+  settledAt        DateTime?              @map("settled_at")
+  createdAt        DateTime               @default(now()) @map("created_at")
+
+  agency       CouponAgency        @relation(fields: [agencyId], references: [id])
+  transactions CouponPlatformTxn[]
+
+  @@index([agencyId])
+  @@map("coupon_settlements")
+}
+
+model CouponAgencyStaff {
+  id        String          @id @default(uuid())
+  agencyId  String          @map("agency_id")
+  name      String
+  pinHash   String          @map("pin_hash")
+  role      CouponStaffRole
+  isActive  Boolean         @default(true) @map("is_active")
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  agency    CouponAgency     @relation(fields: [agencyId], references: [id])
+  auditLogs CouponAuditLog[]
+
+  @@index([agencyId, isActive])
+  @@map("coupon_agency_staff")
+}
+
+model CouponAuditLog {
+  id         String            @id @default(uuid())
+  agencyId   String            @map("agency_id")
+  staffId    String?           @map("staff_id")
+  action     CouponAuditAction
+  metadata   Json?
+  occurredAt DateTime          @default(now()) @map("occurred_at")
+
+  agency CouponAgency       @relation(fields: [agencyId], references: [id])
+  staff  CouponAgencyStaff? @relation(fields: [staffId], references: [id])
+
+  @@index([agencyId, occurredAt])
+  @@index([agencyId, action, occurredAt])
+  @@map("coupon_audit_logs")
 }
